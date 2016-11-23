@@ -15,7 +15,6 @@ class Config {
         // Create configuration file
         // at ~/.config/git-annex/turtle-watch
         // to store list of git-annex directories to watch
-        // http://stackoverflow.com/questions/29695496/create-folder-in-home-directory
         let dataPath = "\(NSHomeDirectory())/.config/git-annex/turtle-watch"
         if (!FileManager.default.fileExists(atPath: dataPath)) {
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
@@ -43,21 +42,9 @@ class Config {
             print(os.streamError!.localizedDescription)
             exit(-1)
         }
-        
-        //        let towrite = "\r\n\(repo)"
-        //        let os = OutputStream(toFileAtPath: self.configFile, append: true)!
-        //        os.open()
-        //        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
-        //        os.close()
-        //        if success == -1 {
-        //            print("Unable to add repository to configuration file at \(configFile)")
-        //            print(os.streamError!.localizedDescription)
-        //            exit(-1)
-        //        }
     }
     
     func listWatchedRepos() -> [String] {
-        // http://stackoverflow.com/questions/31778700/read-a-text-file-line-by-line-in-swift
         do {
             let data = try String(contentsOfFile: configFile, encoding: .utf8)
             let repos = data.components(separatedBy: .newlines)
