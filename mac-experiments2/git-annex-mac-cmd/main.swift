@@ -12,14 +12,7 @@ import Foundation
 
 var error: NSError?
 
-// Create configuration file
-// at ~/.config/git-annex/turtle-watch
-// to store list of git-annex directories to watch
-let dataPath = "\(NSHomeDirectory())/.config/git-annex/turtle-watch"
-if (!FileManager.default.fileExists(atPath: dataPath)) {
-    var success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
-}
-
 let finder = Finder()
 finder.staticMode()
+
 

@@ -14,6 +14,7 @@
 		490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */; };
 		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
 		495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
+		4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
@@ -81,6 +82,7 @@
 		490BCBA21DE5444D00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		495DD1B71DE5F3FB00219E03 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		4981FE0A1DE61774002E6CB3 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		499B44601DE544F00091E0E3 /* git-annex-finder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "git-annex-finder.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				499B44741DE54A250091E0E3 /* main.swift */,
 				495DD1B71DE5F3FB00219E03 /* StringExtension.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
+				4981FE0A1DE61774002E6CB3 /* Config.swift */,
 				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
 			);
 			path = "git-annex-mac-cmd";
@@ -427,6 +430,7 @@
 			files = (
 				495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
+				4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */,
 				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
 			);

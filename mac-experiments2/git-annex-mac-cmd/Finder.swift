@@ -9,6 +9,7 @@
 import Foundation
 
 class Finder {
+    let config = Config()
     let consoleIO = ConsoleIO()
     
     func staticMode() {
@@ -43,8 +44,11 @@ class Finder {
                 // TODO
                 consoleIO.writeMessage("TODO")
             case .list:
-                // TODO
-                consoleIO.writeMessage("TODO")
+                let repos = config.listWatchedRepos()
+                print("watched repositories: ")
+                for repo in repos {
+                    print(repo)
+                }
             case .help:
                 ConsoleIO.printUsage()
             case .unknown, .quit:
