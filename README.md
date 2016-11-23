@@ -6,4 +6,4 @@
 
 ### Tutorials / Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial
- * https://www.raywenderlich.com/128039/command-line-programs-macos-tutorial commandline tutorial
+ * https://www.raywenderlich.com/128039/command-line-programs-macos-tutorial commandline tutorial (XCode 8)

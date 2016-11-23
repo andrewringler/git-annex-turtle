@@ -8,5 +8,12 @@
 
 import Foundation
 
-print("Hello, World!")
+//print("Hello, World!")
+
+let finder = Finder()
+if CommandLine.argc < 2 {
+    finder.interactiveMode()
+} else {
+    finder.staticMode() 
+}
 

@@ -12,6 +12,8 @@
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
 		490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */; };
 		490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */; };
+		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
+		495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
@@ -77,6 +79,8 @@
 		490BCB9C1DE5444D00734FF4 /* git-annex-macUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-macUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_macUITests.swift; sourceTree = "<group>"; };
 		490BCBA21DE5444D00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
+		495DD1B71DE5F3FB00219E03 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		499B44601DE544F00091E0E3 /* git-annex-finder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "git-annex-finder.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
@@ -200,7 +204,9 @@
 			isa = PBXGroup;
 			children = (
 				499B44741DE54A250091E0E3 /* main.swift */,
+				495DD1B71DE5F3FB00219E03 /* StringExtension.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
+				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
 			);
 			path = "git-annex-mac-cmd";
 			sourceTree = "<group>";
@@ -304,7 +310,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "Andrew Ringler";
 				TargetAttributes = {
 					490BCB811DE5444C00734FF4 = {
@@ -323,6 +329,7 @@
 					};
 					499B44711DE54A250091E0E3 = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0810;
 					};
 				};
 			};
@@ -418,7 +425,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
+				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -469,8 +478,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -514,8 +525,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -534,15 +547,16 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
 		490BCBA61DE5444D00734FF4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac";
@@ -553,9 +567,9 @@
 		490BCBA71DE5444D00734FF4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
-				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac";
@@ -643,6 +657,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -650,6 +665,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
