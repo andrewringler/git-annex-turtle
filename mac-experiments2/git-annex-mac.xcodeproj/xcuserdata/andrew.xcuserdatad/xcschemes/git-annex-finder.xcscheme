@@ -43,13 +43,23 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "4981FE1A1DE62B55002E6CB3"
+               BuildableName = "git-annex-turtle-sharedTests.xctest"
+               BlueprintName = "git-annex-turtle-sharedTests"
+               ReferencedContainer = "container:git-annex-mac.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "499B445F1DE544F00091E0E3"
-            BuildableName = "git-annex-finder.appex"
-            BlueprintName = "git-annex-finder"
+            BlueprintIdentifier = "490BCB811DE5444C00734FF4"
+            BuildableName = "git-annex-mac.app"
+            BlueprintName = "git-annex-mac"
             ReferencedContainer = "container:git-annex-mac.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
