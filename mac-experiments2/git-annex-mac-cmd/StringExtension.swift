@@ -9,6 +9,11 @@
 import Foundation
 
 extension String {
+    func isGitAnnexRepository() -> Bool {
+        // TODO
+        return true
+    }
+
     func isAnagramOfString(_ s: String) -> Bool {
         //1
         let lowerSelf = self.lowercased().replacingOccurrences(of: " ", with: "")

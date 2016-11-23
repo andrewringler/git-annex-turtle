@@ -21,9 +21,5 @@ if (!FileManager.default.fileExists(atPath: dataPath)) {
 }
 
 let finder = Finder()
-if CommandLine.argc < 2 {
-    finder.interactiveMode()
-} else {
-    finder.staticMode()
-}
+finder.staticMode()
 

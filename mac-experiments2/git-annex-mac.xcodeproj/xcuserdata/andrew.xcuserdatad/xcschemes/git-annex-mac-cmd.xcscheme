@@ -42,7 +42,7 @@
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = ""
       selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       launchStyle = "0"
@@ -67,7 +67,7 @@
       </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "${BUILT_PRODUCTS_DIR}/${FULL_PRODUCT_NAME}"
+            argument = "cd ${BUILT_PRODUCTS_DIR}/"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
