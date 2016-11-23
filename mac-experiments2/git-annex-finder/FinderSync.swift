@@ -10,7 +10,7 @@ import Cocoa
 import FinderSync
 
 class FinderSync: FIFinderSync {
-
+    let config = Config()
     var myFolderURL: URL = URL(fileURLWithPath: "/Users/Shared/MySyncExtension Documents")
 
     override init() {
