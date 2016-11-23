@@ -32,12 +32,13 @@ class Finder {
                     consoleIO.writeMessage("")
                     ConsoleIO.printUsage()
                 } else {
-                    let dir = CommandLine.arguments[2]
+                    let repo = CommandLine.arguments[2]
                     
-                    if dir.isGitAnnexRepository() {
-                        consoleIO.writeMessage("\(dir) is a git-annex repository")
+                    if repo.isGitAnnexRepository() {
+                        config.watchRepo(repo: repo)
+                        consoleIO.writeMessage("watching \(repo)")
                     } else {
-                        consoleIO.writeMessage("\(dir) is not a git-annex repository")
+                        consoleIO.writeMessage("\(repo) is not a git-annex repository")
                     }
                 }
             case .unwatch:

@@ -30,6 +30,32 @@ class Config {
         }
     }
     
+    func watchRepo(repo: String) {
+        var currentRepos = listWatchedRepos()
+        currentRepos.append(repo)
+        let towrite = currentRepos.joined(separator: "\n")
+        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+        os.open()
+        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+        os.close()
+        if success == -1 {
+            print("Unable to add repository to configuration file at \(configFile)")
+            print(os.streamError!.localizedDescription)
+            exit(-1)
+        }
+        
+        //        let towrite = "\r\n\(repo)"
+        //        let os = OutputStream(toFileAtPath: self.configFile, append: true)!
+        //        os.open()
+        //        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+        //        os.close()
+        //        if success == -1 {
+        //            print("Unable to add repository to configuration file at \(configFile)")
+        //            print(os.streamError!.localizedDescription)
+        //            exit(-1)
+        //        }
+    }
+    
     func listWatchedRepos() -> [String] {
         // http://stackoverflow.com/questions/31778700/read-a-text-file-line-by-line-in-swift
         do {
