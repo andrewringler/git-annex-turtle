@@ -19,11 +19,6 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
-		<key>git-annex-turtle-shared.xcscheme</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>3</integer>
-		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
@@ -38,16 +33,6 @@
 			<true/>
 		</dict>
 		<key>490BCB9B1DE5444D00734FF4</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>4981FE121DE62B55002E6CB3</key>
-		<dict>
-			<key>primary</key>
-			<true/>
-		</dict>
-		<key>4981FE1A1DE62B55002E6CB3</key>
 		<dict>
 			<key>primary</key>
 			<true/>

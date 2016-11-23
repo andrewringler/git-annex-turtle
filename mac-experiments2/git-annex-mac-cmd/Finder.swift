@@ -8,7 +8,7 @@
 
 import Foundation
 
-class TurtleCommandLine {
+class Finder {
     let config = Config()
     let consoleIO = ConsoleIO()
     

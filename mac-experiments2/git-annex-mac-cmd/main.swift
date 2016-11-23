@@ -12,7 +12,7 @@ import Foundation
 
 var error: NSError?
 
-let turtleCommandLine = TurtleCommandLine()
-turtleCommandLine.staticMode()
+let finder = Finder()
+finder.staticMode()
 
 

@@ -12,14 +12,9 @@
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
 		490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */; };
 		490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */; };
-		495DD1B61DE5EEBB00219E03 /* TurtleCommandLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* TurtleCommandLine.swift */; };
+		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
 		495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
 		4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
-		4981FE1C1DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */; };
-		4981FE231DE62B55002E6CB3 /* git_annex_turtle_sharedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE221DE62B55002E6CB3 /* git_annex_turtle_sharedTests.swift */; };
-		4981FE251DE62B55002E6CB3 /* git-annex-turtle-shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 4981FE151DE62B55002E6CB3 /* git-annex-turtle-shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4981FE281DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */; };
-		4981FE291DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
@@ -41,27 +36,6 @@
 			remoteGlobalIDString = 490BCB811DE5444C00734FF4;
 			remoteInfo = "git-annex-mac";
 		};
-		4981FE1D1DE62B55002E6CB3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4981FE121DE62B55002E6CB3;
-			remoteInfo = "git-annex-turtle-shared";
-		};
-		4981FE1F1DE62B55002E6CB3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 490BCB811DE5444C00734FF4;
-			remoteInfo = "git-annex-mac";
-		};
-		4981FE261DE62B55002E6CB3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4981FE121DE62B55002E6CB3;
-			remoteInfo = "git-annex-turtle-shared";
-		};
 		499B44671DE544F00091E0E3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
@@ -72,17 +46,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		4981FE2D1DE62B55002E6CB3 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				4981FE291DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		499B446D1DE544F00091E0E3 /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -117,15 +80,9 @@
 		490BCB9C1DE5444D00734FF4 /* git-annex-macUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-macUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_macUITests.swift; sourceTree = "<group>"; };
 		490BCBA21DE5444D00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		495DD1B51DE5EEBB00219E03 /* TurtleCommandLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TurtleCommandLine.swift; sourceTree = "<group>"; };
-		495DD1B71DE5F3FB00219E03 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StringExtension.swift; path = "../git-annex-mac-cmd/StringExtension.swift"; sourceTree = "<group>"; };
-		4981FE0A1DE61774002E6CB3 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = "../git-annex-mac-cmd/Config.swift"; sourceTree = "<group>"; };
-		4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "git-annex-turtle-shared.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4981FE151DE62B55002E6CB3 /* git-annex-turtle-shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "git-annex-turtle-shared.h"; sourceTree = "<group>"; };
-		4981FE161DE62B55002E6CB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4981FE1B1DE62B55002E6CB3 /* git-annex-turtle-sharedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-turtle-sharedTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		4981FE221DE62B55002E6CB3 /* git_annex_turtle_sharedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_turtle_sharedTests.swift; sourceTree = "<group>"; };
-		4981FE241DE62B55002E6CB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
+		495DD1B71DE5F3FB00219E03 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		4981FE0A1DE61774002E6CB3 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		499B44601DE544F00091E0E3 /* git-annex-finder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "git-annex-finder.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
@@ -140,7 +97,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4981FE281DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,21 +111,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4981FE0F1DE62B55002E6CB3 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4981FE181DE62B55002E6CB3 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4981FE1C1DE62B55002E6CB3 /* git-annex-turtle-shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,8 +139,6 @@
 				490BCB9F1DE5444D00734FF4 /* git-annex-macUITests */,
 				499B44611DE544F00091E0E3 /* git-annex-finder */,
 				499B44731DE54A250091E0E3 /* git-annex-mac-cmd */,
-				4981FE141DE62B55002E6CB3 /* git-annex-turtle-shared */,
-				4981FE211DE62B55002E6CB3 /* git-annex-turtle-sharedTests */,
 				490BCB831DE5444C00734FF4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -212,8 +151,6 @@
 				490BCB9C1DE5444D00734FF4 /* git-annex-macUITests.xctest */,
 				499B44601DE544F00091E0E3 /* git-annex-finder.appex */,
 				499B44721DE54A250091E0E3 /* git-annex-mac-cmd */,
-				4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */,
-				4981FE1B1DE62B55002E6CB3 /* git-annex-turtle-sharedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -247,26 +184,6 @@
 			path = "git-annex-macUITests";
 			sourceTree = "<group>";
 		};
-		4981FE141DE62B55002E6CB3 /* git-annex-turtle-shared */ = {
-			isa = PBXGroup;
-			children = (
-				495DD1B71DE5F3FB00219E03 /* StringExtension.swift */,
-				4981FE0A1DE61774002E6CB3 /* Config.swift */,
-				4981FE151DE62B55002E6CB3 /* git-annex-turtle-shared.h */,
-				4981FE161DE62B55002E6CB3 /* Info.plist */,
-			);
-			path = "git-annex-turtle-shared";
-			sourceTree = "<group>";
-		};
-		4981FE211DE62B55002E6CB3 /* git-annex-turtle-sharedTests */ = {
-			isa = PBXGroup;
-			children = (
-				4981FE221DE62B55002E6CB3 /* git_annex_turtle_sharedTests.swift */,
-				4981FE241DE62B55002E6CB3 /* Info.plist */,
-			);
-			path = "git-annex-turtle-sharedTests";
-			sourceTree = "<group>";
-		};
 		499B44611DE544F00091E0E3 /* git-annex-finder */ = {
 			isa = PBXGroup;
 			children = (
@@ -289,24 +206,15 @@
 			isa = PBXGroup;
 			children = (
 				499B44741DE54A250091E0E3 /* main.swift */,
+				495DD1B71DE5F3FB00219E03 /* StringExtension.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
-				495DD1B51DE5EEBB00219E03 /* TurtleCommandLine.swift */,
+				4981FE0A1DE61774002E6CB3 /* Config.swift */,
+				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
 			);
 			path = "git-annex-mac-cmd";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXHeadersBuildPhase section */
-		4981FE101DE62B55002E6CB3 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4981FE251DE62B55002E6CB3 /* git-annex-turtle-shared.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		490BCB811DE5444C00734FF4 /* git-annex-mac */ = {
@@ -317,13 +225,11 @@
 				490BCB7F1DE5444C00734FF4 /* Frameworks */,
 				490BCB801DE5444C00734FF4 /* Resources */,
 				499B446D1DE544F00091E0E3 /* Embed App Extensions */,
-				4981FE2D1DE62B55002E6CB3 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				499B44681DE544F00091E0E3 /* PBXTargetDependency */,
-				4981FE271DE62B55002E6CB3 /* PBXTargetDependency */,
 			);
 			name = "git-annex-mac";
 			productName = "git-annex-mac";
@@ -366,43 +272,6 @@
 			productReference = 490BCB9C1DE5444D00734FF4 /* git-annex-macUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		4981FE121DE62B55002E6CB3 /* git-annex-turtle-shared */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4981FE2A1DE62B55002E6CB3 /* Build configuration list for PBXNativeTarget "git-annex-turtle-shared" */;
-			buildPhases = (
-				4981FE0E1DE62B55002E6CB3 /* Sources */,
-				4981FE0F1DE62B55002E6CB3 /* Frameworks */,
-				4981FE101DE62B55002E6CB3 /* Headers */,
-				4981FE111DE62B55002E6CB3 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "git-annex-turtle-shared";
-			productName = "git-annex-turtle-shared";
-			productReference = 4981FE131DE62B55002E6CB3 /* git-annex-turtle-shared.framework */;
-			productType = "com.apple.product-type.framework";
-		};
-		4981FE1A1DE62B55002E6CB3 /* git-annex-turtle-sharedTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4981FE2E1DE62B55002E6CB3 /* Build configuration list for PBXNativeTarget "git-annex-turtle-sharedTests" */;
-			buildPhases = (
-				4981FE171DE62B55002E6CB3 /* Sources */,
-				4981FE181DE62B55002E6CB3 /* Frameworks */,
-				4981FE191DE62B55002E6CB3 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				4981FE1E1DE62B55002E6CB3 /* PBXTargetDependency */,
-				4981FE201DE62B55002E6CB3 /* PBXTargetDependency */,
-			);
-			name = "git-annex-turtle-sharedTests";
-			productName = "git-annex-turtle-sharedTests";
-			productReference = 4981FE1B1DE62B55002E6CB3 /* git-annex-turtle-sharedTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		499B445F1DE544F00091E0E3 /* git-annex-finder */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 499B446C1DE544F00091E0E3 /* Build configuration list for PBXNativeTarget "git-annex-finder" */;
@@ -443,7 +312,7 @@
 		490BCB7A1DE5444C00734FF4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0810;
+				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "Andrew Ringler";
 				TargetAttributes = {
@@ -456,15 +325,6 @@
 					};
 					490BCB9B1DE5444D00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
-						TestTargetID = 490BCB811DE5444C00734FF4;
-					};
-					4981FE121DE62B55002E6CB3 = {
-						CreatedOnToolsVersion = 8.1;
-						ProvisioningStyle = Automatic;
-					};
-					4981FE1A1DE62B55002E6CB3 = {
-						CreatedOnToolsVersion = 8.1;
-						ProvisioningStyle = Automatic;
 						TestTargetID = 490BCB811DE5444C00734FF4;
 					};
 					499B445F1DE544F00091E0E3 = {
@@ -494,8 +354,6 @@
 				490BCB9B1DE5444D00734FF4 /* git-annex-macUITests */,
 				499B445F1DE544F00091E0E3 /* git-annex-finder */,
 				499B44711DE54A250091E0E3 /* git-annex-mac-cmd */,
-				4981FE121DE62B55002E6CB3 /* git-annex-turtle-shared */,
-				4981FE1A1DE62B55002E6CB3 /* git-annex-turtle-sharedTests */,
 			);
 		};
 /* End PBXProject section */
@@ -518,20 +376,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		490BCB9A1DE5444D00734FF4 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4981FE111DE62B55002E6CB3 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4981FE191DE62B55002E6CB3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -572,21 +416,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4981FE0E1DE62B55002E6CB3 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		4981FE171DE62B55002E6CB3 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				4981FE231DE62B55002E6CB3 /* git_annex_turtle_sharedTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		499B445C1DE544F00091E0E3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -602,7 +431,7 @@
 				495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
 				4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */,
-				495DD1B61DE5EEBB00219E03 /* TurtleCommandLine.swift in Sources */,
+				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -619,21 +448,6 @@
 			isa = PBXTargetDependency;
 			target = 490BCB811DE5444C00734FF4 /* git-annex-mac */;
 			targetProxy = 490BCB9D1DE5444D00734FF4 /* PBXContainerItemProxy */;
-		};
-		4981FE1E1DE62B55002E6CB3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4981FE121DE62B55002E6CB3 /* git-annex-turtle-shared */;
-			targetProxy = 4981FE1D1DE62B55002E6CB3 /* PBXContainerItemProxy */;
-		};
-		4981FE201DE62B55002E6CB3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 490BCB811DE5444C00734FF4 /* git-annex-mac */;
-			targetProxy = 4981FE1F1DE62B55002E6CB3 /* PBXContainerItemProxy */;
-		};
-		4981FE271DE62B55002E6CB3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4981FE121DE62B55002E6CB3 /* git-annex-turtle-shared */;
-			targetProxy = 4981FE261DE62B55002E6CB3 /* PBXContainerItemProxy */;
 		};
 		499B44681DE544F00091E0E3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -817,94 +631,6 @@
 			};
 			name = Release;
 		};
-		4981FE2B1DE62B55002E6CB3 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_SUSPICIOUS_MOVES = YES;
-				CODE_SIGN_IDENTITY = "";
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "git-annex-turtle-shared/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-shared";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 3.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
-		4981FE2C1DE62B55002E6CB3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_SUSPICIOUS_MOVES = YES;
-				CODE_SIGN_IDENTITY = "";
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = "git-annex-turtle-shared/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-shared";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		4981FE2F1DE62B55002E6CB3 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_SUSPICIOUS_MOVES = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "git-annex-turtle-sharedTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-sharedTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-mac.app/Contents/MacOS/git-annex-mac";
-			};
-			name = Debug;
-		};
-		4981FE301DE62B55002E6CB3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_SUSPICIOUS_MOVES = YES;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = "git-annex-turtle-sharedTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-sharedTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-mac.app/Contents/MacOS/git-annex-mac";
-			};
-			name = Release;
-		};
 		499B446A1DE544F00091E0E3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -985,22 +711,6 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
-		};
-		4981FE2A1DE62B55002E6CB3 /* Build configuration list for PBXNativeTarget "git-annex-turtle-shared" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4981FE2B1DE62B55002E6CB3 /* Debug */,
-				4981FE2C1DE62B55002E6CB3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-		};
-		4981FE2E1DE62B55002E6CB3 /* Build configuration list for PBXNativeTarget "git-annex-turtle-sharedTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4981FE2F1DE62B55002E6CB3 /* Debug */,
-				4981FE301DE62B55002E6CB3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
 		};
 		499B446C1DE544F00091E0E3 /* Build configuration list for PBXNativeTarget "git-annex-finder" */ = {
 			isa = XCConfigurationList;
