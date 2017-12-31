@@ -43,6 +43,8 @@ class FinderSync: FIFinderSync {
     override func requestBadgeIdentifier(for url: URL) {
         debugPrint("requestBadgeIdentifierForURL: %@", (url as NSURL).filePathURL!)
         
+        GitAnnexQueries.gitAnnexPathIsPresent(for: url, in: myFolderURL.path)
+        
         // For demonstration purposes, this picks one of our two badges, or no badge at all, based on the filename.
         let whichBadge = abs(((url as NSURL).filePathURL! as NSURL).hash) % 3
         let badgeIdentifier = ["", "One", "Two"][whichBadge]

@@ -18,6 +18,7 @@
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
+		49C215531FF9A11D000E39F9 /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		49CE60DB1DE63D5A00EAAFA3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		49CE60DC1DE63D6100EAAFA3 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
 		49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */; };
@@ -91,6 +92,7 @@
 		499B44661DE544F00091E0E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		499B44721DE54A250091E0E3 /* git-annex-mac-cmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "git-annex-mac-cmd"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44741DE54A250091E0E3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -190,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				499B44641DE544F00091E0E3 /* FinderSync.swift */,
+				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
 				499B44661DE544F00091E0E3 /* Info.plist */,
 				499B44621DE544F00091E0E3 /* Supporting Files */,
 			);
@@ -426,6 +429,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C215531FF9A11D000E39F9 /* GitAnnexQueries.swift in Sources */,
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49CE60DB1DE63D5A00EAAFA3 /* Config.swift in Sources */,
 				49CE60DC1DE63D6100EAAFA3 /* StringExtension.swift in Sources */,
