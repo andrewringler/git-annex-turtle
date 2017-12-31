@@ -10,7 +10,7 @@ import Cocoa
 import FinderSync
 
 class FinderSync: FIFinderSync {
-    let config = Config()
+    //let config = Config()
     var myFolderURL: URL = URL(fileURLWithPath: "/Users/Shared/MySyncExtension Documents")
 
     override init() {
@@ -22,8 +22,8 @@ class FinderSync: FIFinderSync {
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
         
         // Set up images for our badge identifiers. For demonstration purposes, this uses off-the-shelf images.
-        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImageNameColorPanel)!, label: "Status One" , forBadgeIdentifier: "One")
-        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImageNameCaution)!, label: "Status Two", forBadgeIdentifier: "Two")
+        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.colorPanel)!, label: "Status One" , forBadgeIdentifier: "One")
+        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.caution)!, label: "Status Two", forBadgeIdentifier: "Two")
     }
 
     // MARK: - Primary Finder Sync protocol methods
@@ -60,7 +60,7 @@ class FinderSync: FIFinderSync {
     }
 
     override var toolbarItemImage: NSImage {
-        return NSImage(named: NSImageNameCaution)!
+        return NSImage(named: NSImage.Name.caution)!
     }
 
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
