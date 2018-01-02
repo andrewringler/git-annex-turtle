@@ -11,13 +11,15 @@ import FinderSync
 import Foundation
 
 class FinderSync: FIFinderSync {
+    let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
     //let config = Config()
-    var myFolderURL: URL = URL(fileURLWithPath: "/Users/Shared/MySyncExtension Documents")
+    let myFolderURL: URL
 
     override init() {
+        myFolderURL =  URL(fileURLWithPath: defaults!.string(forKey: "myFolderURL")!)
         super.init()
-
-        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath)
+        
+        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ")
 
         // Set up the directory we are syncing.
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
@@ -48,7 +50,6 @@ class FinderSync: FIFinderSync {
 
         // do we already have the status cached?
         var whichBadge :Int = 0
-        let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
         let status :String? = defaults?.string(forKey: "gitannex." + absolutePath)
 //        let status :String? = defaults?.objectForKey(forKey: "gitannex." + absolutePath)
         if status != nil && !status!.isEmpty {

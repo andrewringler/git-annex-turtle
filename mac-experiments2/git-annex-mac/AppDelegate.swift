@@ -11,11 +11,19 @@ import Foundation
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
-
+    let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
+    // hard-coded folder for now
+    let myFolderURL: URL = URL(fileURLWithPath: "/Users/Shared/MySyncExtension Documents")
+    
     @IBOutlet weak var window: NSWindow!
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
+
+        // just set a single folder to watch, FinderSync will read this
+        // hard-coded single folder for now
+        defaults!.set("/Users/Shared/MySyncExtension Documents", forKey: "myFolderURL")
+        defaults!.synchronize()
         
         // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
         let task = Process()
@@ -30,12 +38,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         while true {
 //            debugPrint(".")
-            let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
             let allKeys = defaults?.dictionaryRepresentation().keys
             var updatesAvailable :Bool = false
             for key in allKeys! {
                 if key.starts(with: "gitannex.") {
                     //NSLog("main app found request " + key)
+                    //GitAnnexQueries.gitAnnexPathIsPresent(for: url, in: myFolderURL.path)
+                    
                     if key.contains("YEAH") {
                         defaults!.set("special", forKey: key)
                         updatesAvailable = true
