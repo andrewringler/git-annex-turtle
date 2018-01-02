@@ -44,18 +44,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //            var updatesAvailable :Bool = false
             for key in allKeys! {
                 if key.starts(with: "gitannex.") {
-                    //NSLog("main app found request " + key)
-//                    let url = URL(fileURLWithPath: key.
-                    var url :String = key
-                    url.removeFirst("gitannex.".count)
-                    let present = GitAnnexQueries.gitAnnexPathIsPresent(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
-                    
-                    if present {
-                        defaults!.set("special", forKey: key)
-//                        updatesAvailable = true
-                    } else {
-                        defaults!.set("true", forKey: key)
-//                        updatesAvailable = true
+                    if(defaults!.string(forKey: key)! == "request"){
+                        //NSLog("main app found request " + key)
+                        //                    let url = URL(fileURLWithPath: key.
+                        var url :String = key
+                        url.removeFirst("gitannex.".count)
+                        let present = GitAnnexQueries.gitAnnexPathIsPresent(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
+                        
+                        if present {
+                            defaults!.set("special", forKey: key)
+                            //                        updatesAvailable = true
+                        } else {
+                            defaults!.set("true", forKey: key)
+                            //                        updatesAvailable = true
+                        }
                     }
                 }
             }
