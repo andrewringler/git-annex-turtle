@@ -83,6 +83,7 @@
 		490BCB9C1DE5444D00734FF4 /* git-annex-macUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-macUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_macUITests.swift; sourceTree = "<group>"; };
 		490BCBA21DE5444D00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		495DD1B71DE5F3FB00219E03 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StringExtension.swift; path = "git-annex-mac-cmd/StringExtension.swift"; sourceTree = SOURCE_ROOT; };
 		4981FE0A1DE61774002E6CB3 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = "git-annex-mac-cmd/Config.swift"; sourceTree = SOURCE_ROOT; };
@@ -162,6 +163,7 @@
 		490BCB841DE5444C00734FF4 /* git-annex-mac */ = {
 			isa = PBXGroup;
 			children = (
+				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
 				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
 				490BCB871DE5444C00734FF4 /* Assets.xcassets */,
 				490BCB891DE5444C00734FF4 /* MainMenu.xib */,
@@ -324,6 +326,11 @@
 					490BCB811DE5444C00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0920;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+						};
 					};
 					490BCB901DE5444D00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -338,6 +345,11 @@
 					499B445F1DE544F00091E0E3 = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0920;
+						SystemCapabilities = {
+							com.apple.ApplicationGroups.Mac = {
+								enabled = 1;
+							};
+						};
 					};
 					499B44711DE54A250091E0E3 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -584,6 +596,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "git-annex-mac/git-annex-mac.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -599,6 +612,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "git-annex-mac/git-annex-mac.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";

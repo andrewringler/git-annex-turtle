@@ -50,10 +50,10 @@ class GitAnnexQueries {
         let path :String = (url as NSURL).path!
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "info", "\"" + path + "\"")
         
-        debugPrint("git annex info for " + path)
-        debugPrint("status: %@", status)
-        debugPrint("output: %@", output)
-        debugPrint("error: %@", error)
+        NSLog("git annex info for " + path)
+        NSLog("status: %@", status)
+        NSLog("output: %@", output)
+        NSLog("error: %@", error)
         
         return false
     }
