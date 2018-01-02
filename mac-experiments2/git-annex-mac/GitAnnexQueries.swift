@@ -67,7 +67,7 @@ class GitAnnexQueries {
                     if let success = dictionary["success"] as? Bool {
                         if success == true, let present = dictionary["present"] as? Bool {
                             if(present == true){
-                                NSLog("returning true for ", output)
+                                //NSLog("returning true for ", output)
                                 return true
                             }
                         }
