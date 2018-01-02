@@ -19,7 +19,7 @@ class FinderSync: FIFinderSync {
         myFolderURL =  URL(fileURLWithPath: defaults!.string(forKey: "myFolderURL")!)
         super.init()
         
-        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ")
+        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ", (myFolderURL as NSURL).path!)
 
         // Set up the directory we are syncing.
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
@@ -34,17 +34,17 @@ class FinderSync: FIFinderSync {
     override func beginObservingDirectory(at url: URL) {
         // The user is now seeing the container's contents.
         // If they see it in more than one view at a time, we're only told once.
-        NSLog("beginObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
+        //NSLog("beginObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
     }
 
 
     override func endObservingDirectory(at url: URL) {
         // The user is no longer seeing the container's contents.
-        NSLog("endObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
+        //NSLog("endObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
     }
 
     override func requestBadgeIdentifier(for url: URL) {
-        NSLog("requestBadgeIdentifierForURL: " + (url as NSURL).filePathURL!.absoluteString)
+        //NSLog("requestBadgeIdentifierForURL: " + (url as NSURL).filePathURL!.absoluteString)
 
         let absolutePath :String = (url as NSURL).path!
 
@@ -57,17 +57,17 @@ class FinderSync: FIFinderSync {
 //            whichBadge = 1
 //            NSLog("hmmmm '" + status! + "'")
             if status == "true" {
-                NSLog("FinderSync got updates from main host app!")
+                //NSLog("FinderSync got updates from main host app!")
                 whichBadge = 2
             }
             if status == "special" {
-                NSLog("FinderSync got updates from main host app!")
+                //NSLog("FinderSync got updates from main host app!")
                 whichBadge = 1
             }
         } else {
             defaults!.set("request", forKey: "gitannex." + absolutePath)
             defaults!.synchronize()
-            NSLog("set key " + "gitannex." + absolutePath)
+            //NSLog("set key " + "gitannex." + absolutePath)
         }
         
 //        var defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.shared-group")

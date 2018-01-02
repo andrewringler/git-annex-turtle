@@ -43,9 +43,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             for key in allKeys! {
                 if key.starts(with: "gitannex.") {
                     //NSLog("main app found request " + key)
-                    //GitAnnexQueries.gitAnnexPathIsPresent(for: url, in: myFolderURL.path)
+//                    let url = URL(fileURLWithPath: key.
+                    var url :String = key
+                    url.removeFirst("gitannex.".count)
+                    let present = GitAnnexQueries.gitAnnexPathIsPresent(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
                     
-                    if key.contains("YEAH") {
+                    if present {
                         defaults!.set("special", forKey: key)
                         updatesAvailable = true
                     } else {
@@ -77,7 +80,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
-        NSLog("quiting git-annex-mac AppDelegate")
+        //NSLog("quiting git-annex-mac AppDelegate")
     }
 
 
