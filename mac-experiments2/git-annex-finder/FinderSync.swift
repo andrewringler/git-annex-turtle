@@ -108,6 +108,7 @@ class FinderSync: FIFinderSync {
 //            })
 
             // OK wait for an update to come in on this icon
+            // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
             DispatchQueue.global(qos: .background).async {
                 while true {
                     let status :String? = self.defaults?.string(forKey: "gitannex." + absolutePath)
