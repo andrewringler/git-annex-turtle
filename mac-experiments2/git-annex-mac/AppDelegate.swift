@@ -26,6 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         defaults!.synchronize()
         
         // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
+        // FinderSync seems to be gettings started by some other means
+        // I guess we dont need this
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
@@ -39,7 +41,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         while true {
 //            debugPrint(".")
             let allKeys = defaults?.dictionaryRepresentation().keys
-            var updatesAvailable :Bool = false
+//            var updatesAvailable :Bool = false
             for key in allKeys! {
                 if key.starts(with: "gitannex.") {
                     //NSLog("main app found request " + key)
@@ -50,16 +52,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     
                     if present {
                         defaults!.set("special", forKey: key)
-                        updatesAvailable = true
+//                        updatesAvailable = true
                     } else {
                         defaults!.set("true", forKey: key)
-                        updatesAvailable = true
+//                        updatesAvailable = true
                     }
                 }
             }
-            if updatesAvailable {
-                defaults!.synchronize()
-            }
+//            if updatesAvailable {
+//                defaults!.synchronize()
+//            }
 
 //            let status :String? = defaults?.string(forKey: absolutePath)
 //            if let thestatus = status {
