@@ -8,7 +8,7 @@
 
 import Cocoa
 import FinderSync
-import Foundation
+//import Foundation
 
 class FinderSync: FIFinderSync {
     let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
@@ -26,8 +26,17 @@ class FinderSync: FIFinderSync {
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
         
         // Set up images for our badge identifiers. For demonstration purposes, this uses off-the-shelf images.
-        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.colorPanel)!, label: "Status One" , forBadgeIdentifier: "One")
-        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.caution)!, label: "Status Two", forBadgeIdentifier: "Two")
+//        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.colorPanel)!, label: "Status One" , forBadgeIdentifier: "One")
+//        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.caution)!, label: "Status Two", forBadgeIdentifier: "Two")
+
+        let imgPresent = NSImage(named:NSImage.Name(rawValue: "gitannex-present"))
+        let imgAbsent = NSImage(named:NSImage.Name(rawValue: "gitannex-absent"))
+
+        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "Present")
+        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "Absent")
+        
+//        FIFinderSyncController.default().setBadgeImage(img, label: "Present" , forBadgeIdentifier: "Present")
+//        FIFinderSyncController.default().setBadgeImage(NSImage(named: ), label: "Absent", forBadgeIdentifier: "Absent")
         
         //        DispatchQueue.main.async(execute: {
         //            debugPrint("dispatch")
@@ -70,7 +79,7 @@ class FinderSync: FIFinderSync {
             whichBadge = 1
         }
         
-        let badgeIdentifier = ["", "One", "Two"][whichBadge]
+        let badgeIdentifier = ["", "Present", "Absent"][whichBadge]
         FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
     }
     
@@ -143,7 +152,7 @@ class FinderSync: FIFinderSync {
         
         // For demonstration purposes, this picks one of our two badges, or no badge at all, based on the filename.
 //        let whichBadge = abs(((url as NSURL).filePathURL! as NSURL).hash) % 3
-        let badgeIdentifier = ["", "One", "Two"][whichBadge]
+        let badgeIdentifier = ["", "Present", "Absent"][whichBadge]
         FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
     }
 
