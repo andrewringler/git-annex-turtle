@@ -13,6 +13,13 @@ import FinderSync
 class FinderSync: FIFinderSync {
     var defaults: UserDefaults
     let myFolderURL: URL
+    let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
+    let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
+    let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
+    let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
+    let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
+    let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
+    let gitAnnexLogoColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
 
     override init() {
         defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
@@ -23,13 +30,6 @@ class FinderSync: FIFinderSync {
 
         // Set up the directory we are syncing.
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
-        
-        let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
-        let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
-        let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
-        let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
-        let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
-
 
         FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "present")
         FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "absent")
@@ -55,29 +55,29 @@ class FinderSync: FIFinderSync {
         // The user is no longer seeing the container's contents.
     }
 
-    func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-        NSLog("notified of change on key " + keyPath!)
-    }
+//    func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+//        NSLog("notified of change on key " + keyPath!)
+//    }
     
     private func updateBadge(for url: URL, with status: String) {
         var whichBadge :Int = 0
         if status == "absent" {
             whichBadge = 1
-            NSLog("Absent Icon")
+//            NSLog("Absent Icon")
         } else if status == "present" {
             whichBadge = 2
-            NSLog("Present Icon")
+//            NSLog("Present Icon")
         } else if status == "unknown" {
             whichBadge = 3
-            NSLog("Unknown Icon")
+//            NSLog("Unknown Icon")
         } else if status == "fully-present-directory" {
             whichBadge = 4
-            NSLog("Fully Present Directory")
+//            NSLog("Fully Present Directory")
         } else if status == "partially-present-directory" {
             whichBadge = 5
-            NSLog("Partially Present Directory")
+//            NSLog("Partially Present Directory")
         } else {
-            NSLog("No Icon Yet!")
+//            NSLog("No Icon Yet!")
         }
         
         let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory", "partially-present-directory"][whichBadge]
@@ -129,7 +129,14 @@ class FinderSync: FIFinderSync {
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         // Produce a menu for the extension.
         let menu = NSMenu(title: "")
-        menu.addItem(withTitle: "git-annex", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        menuItem = menu.addItem(withTitle: "git add", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem.image = gitLogoOrange
         return menu
     }
 

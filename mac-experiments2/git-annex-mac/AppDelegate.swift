@@ -60,7 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             if(defaults.string(forKey: key)! == "request"){
                                 var url :String = key
                                 url.removeFirst("gitannex.".count)
-//                                NSLog(".")
                                 let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
                                 
                                 if status == "present" {
