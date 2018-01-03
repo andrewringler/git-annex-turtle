@@ -45,14 +45,14 @@ class GitAnnexQueries {
         return (output, error, status)
     }
     
-    class func gitAnnexPathIsPresent(for url: URL, in workingDirectory: String) -> Bool {
+    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
 //        url.standardizedFileURL
         let path :String = (url as NSURL).path!
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "info", path)
         
 //        NSLog("git annex info for " + path)
 //        NSLog("status: %@", status)
-        NSLog("output: %@", output)
+//        NSLog("output: %@", output)
 //        NSLog("error: %@", error)
         
         // if command didnt return an error, parse the JSON
@@ -69,7 +69,9 @@ class GitAnnexQueries {
                         if success == true, let present = dictionary["present"] as? Bool {
                             if(present == true){
                                 //NSLog("returning true for ", output)
-                                return true
+                                return "present"
+                            } else {
+                                return "absent"
                             }
                         }
                         // access individual value in dictionary
@@ -97,7 +99,7 @@ class GitAnnexQueries {
             
         }
         
-        return false
+        return "unknown"
     }
 }
 
