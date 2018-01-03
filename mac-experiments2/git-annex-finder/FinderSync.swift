@@ -129,23 +129,53 @@ class FinderSync: FIFinderSync {
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
         // Produce a menu for the extension.
         let menu = NSMenu(title: "")
-        var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
-        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
-        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
-        menuItem = menu.addItem(withTitle: "git add", action: #selector(sampleAction(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git add", action: #selector(gitAdd(_:)), keyEquivalent: "")
         menuItem.image = gitLogoOrange
         return menu
     }
 
-    @IBAction func sampleAction(_ sender: AnyObject?) {
+    @IBAction func gitAnnexGet(_ sender: AnyObject?) {
         let target = FIFinderSyncController.default().targetedURL()
         let items = FIFinderSyncController.default().selectedItemURLs()
-
+        
         let item = sender as! NSMenuItem
-        NSLog("sampleAction: menu item: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        NSLog("git annex get: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
+    @IBAction func gitAnnexAdd(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git annex add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
+    @IBAction func gitAnnexDrop(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git annex drop: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
+    @IBAction func gitAdd(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
         }
