@@ -13,6 +13,7 @@
 		490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */; };
 		490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */; };
 		49114EFA1FFC869200FBEFA7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
+		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
 		495DD1B81DE5F3FB00219E03 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
@@ -20,7 +21,6 @@
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
-		49CE60DB1DE63D5A00EAAFA3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		49CE60DC1DE63D6100EAAFA3 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B71DE5F3FB00219E03 /* StringExtension.swift */; };
 		49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */; };
 /* End PBXBuildFile section */
@@ -421,6 +421,7 @@
 			files = (
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
+				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -445,7 +446,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
-				49CE60DB1DE63D5A00EAAFA3 /* Config.swift in Sources */,
 				49CE60DC1DE63D6100EAAFA3 /* StringExtension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
