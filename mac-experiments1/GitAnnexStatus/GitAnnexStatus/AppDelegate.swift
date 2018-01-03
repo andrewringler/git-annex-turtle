@@ -12,33 +12,53 @@ import Cocoa
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet weak var window: NSWindow!
-    let statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(-2)
+//    let statusItem = NSStatusBar.system.statusItem(withLength: -2)
+    let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
     let popover = NSPopover()
     var eventMonitor: EventMonitor?
     
-    func applicationDidFinishLaunching(notification: NSNotification) {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
-            button.image = NSImage(named: "StatusBarButtonImage")
-            button.action = Selector("togglePopover:")
+            button.image = NSImage(named:NSImage.Name("StatusBarButtonImage"))
+            button.action = #selector(printQuote(_:))
         }
         
-        popover.contentViewController = QuotesViewController(nibName: "QuotesViewController", bundle: nil)
+        popover.contentViewController = QuotesViewController(nibName: NSNib.Name(rawValue: "QuotesViewController"), bundle: nil)
         
-        eventMonitor = EventMonitor(mask: [.LeftMouseDownMask, .RightMouseDownMask]) { [unowned self] event in
-            if self.popover.shown {
-                self.closePopover(event)
+        constructMenu()
+        
+        eventMonitor = EventMonitor(mask: [NSEvent.EventTypeMask.leftMouseDown, NSEvent.EventTypeMask.rightMouseDown]) { [unowned self] event in
+            if self.popover.isShown {
+                self.closePopover(sender: event)
             }
         }
         eventMonitor?.start()
     }
 
-    func applicationWillTerminate(aNotification: NSNotification) {
+    func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
 
+    @objc func printQuote(_ sender: Any?) {
+        let quoteText = "Never put off until tomorrow what you can do the day after tomorrow."
+        let quoteAuthor = "Mark Twain"
+        
+        print("\(quoteText) — \(quoteAuthor)")
+    }
+    
+    func constructMenu() {
+        let menu = NSMenu()
+        
+        menu.addItem(NSMenuItem(title: "Print Quote", action: #selector(AppDelegate.printQuote(_:)), keyEquivalent: "P"))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit Quotes", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        
+        statusItem.menu = menu
+    }
+    
     func showPopover(sender: AnyObject?) {
         if let button = statusItem.button {
-            popover.showRelativeToRect(button.bounds, ofView: button, preferredEdge: NSRectEdge.MinY)
+            popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
         }
         eventMonitor?.start()
     }
@@ -49,10 +69,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func togglePopover(sender: AnyObject?) {
-        if popover.shown {
-            closePopover(sender)
+        if popover.isShown {
+            closePopover(sender: sender)
         } else {
-            showPopover(sender)
+            showPopover(sender: sender)
         }
     }
 }
