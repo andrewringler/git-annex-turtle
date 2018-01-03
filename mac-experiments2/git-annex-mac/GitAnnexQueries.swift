@@ -90,7 +90,7 @@ class GitAnnexQueries {
                     if success != nil && (success as! Bool) == true
                         && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
                         && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
-                        return "present"
+                        return "fully-present-directory"
                     }
                     
                     // a directory in the annex who is missing some
