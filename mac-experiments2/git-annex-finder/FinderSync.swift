@@ -50,7 +50,7 @@ class FinderSync: FIFinderSync {
         // The user is no longer seeing the container's contents.
     }
 
-     func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
+    func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
         NSLog("notified of change on key " + keyPath!)
     }
     

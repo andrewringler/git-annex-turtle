@@ -65,18 +65,58 @@ class GitAnnexQueries {
                 var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
                 
                 if let dictionary = json as? [String: Any] {
-                    if let success = dictionary["success"] as? Bool {
-                        if success == true, let present = dictionary["present"] as? Bool {
-                            if(present == true){
-                                //NSLog("returning true for ", output)
-                                return "present"
-                            } else {
-                                return "absent"
-                            }
-                        }
-                        // access individual value in dictionary
-//                        NSLog("found success int " + String(success))
+                    let success = dictionary["success"]
+                    let present = dictionary["present"]
+                    let file = dictionary["file"]
+                    let directory = dictionary["directory"]
+                    let localAnnexKeys = dictionary["local annex keys"]
+                    let annexedFilesInWorkingTree = dictionary["annexed files in working tree"]
+                    let command = dictionary["command"]
+                    
+                    // a file in the annex that is present
+                    if success != nil && (success as! Bool) == true
+                        && present != nil && (present as! Bool) == true {
+                        return "present"
                     }
+                    
+                    // a file in the annex that is not present
+                    if success != nil && (success as! Bool) == true
+                        && present != nil && (present as! Bool) == false {
+                        return "absent"
+                    }
+                    
+                    // a directory in the annex who has all the content
+                    // of all his containing files recursively
+                    if success != nil && (success as! Bool) == true
+                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                        && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
+                        return "present"
+                    }
+                    
+                    // a directory in the annex who is missing some
+                    // content from some of his containing files recursively
+                    if success != nil && (success as! Bool) == true
+                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int) {
+                        return "absent"
+                    }
+
+//                    var msg :String = "command [" + (command as! String) + "]" + " present=" + (present as! String) + " success=" + (success as! String)
+//
+//                    NSLog(msg)
+                    
+//                    if let success = dictionary["success"] {
+//                        if success as! Bool == true, let present = dictionary["present"] {
+//
+//                            if(present as! Bool == true){
+//                                return "present"
+//                            } else {
+//                                return "absent"
+//                            }
+//                        }
+//                        // access individual value in dictionary
+////                        NSLog("found success int " + String(success))
+//                    }
                 }
                 
             } catch {

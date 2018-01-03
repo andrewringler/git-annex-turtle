@@ -22,19 +22,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         constructMenu()
 
         DispatchQueue.global(qos: .background).async {
-            let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")
+            let maybeDefaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")
             let config = Config()
             
             // just grab the first repo to watch, for now
             let repo :String? = config.listWatchedRepos().first
             
-            if defaults != nil && repo != nil {
+            if let defaults = maybeDefaults, repo != nil {
                 let myFolderURL = URL(fileURLWithPath: repo!)
                 
                 // FinderSync will read this
-                defaults!.synchronize()
-                defaults!.set(repo, forKey: "myFolderURL")
-                defaults!.synchronize()
+                defaults.synchronize()
+                
+                // USEFUL FOR TESTING
+                // delete all our keys
+                let allKeys = defaults.dictionaryRepresentation().keys
+                for key in allKeys {
+                    if key.starts(with: "gitannex.") {
+                        defaults.removeObject(forKey: key)
+                    }
+                }
+                
+                defaults.set(repo, forKey: "myFolderURL")
+                defaults.synchronize()
                 
                 // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
                 let task = Process()
@@ -43,21 +53,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 task.launch()
                 
                 while true {
-                    let allKeys = defaults!.dictionaryRepresentation().keys
+                    defaults.synchronize()
+                    let allKeys = defaults.dictionaryRepresentation().keys
                     for key in allKeys {
                         if key.starts(with: "gitannex.") {
-                            if(defaults!.string(forKey: key)! == "request"){
+                            if(defaults.string(forKey: key)! == "request"){
                                 var url :String = key
                                 url.removeFirst("gitannex.".count)
-                                NSLog(".")
+//                                NSLog(".")
                                 let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
                                 
                                 if status == "present" {
-                                    defaults!.set("present", forKey: key)
+                                    defaults.set("present", forKey: key)
                                 } else if status == "absent" {
-                                    defaults!.set("absent", forKey: key)
+                                    defaults.set("absent", forKey: key)
                                 } else {
-                                    defaults!.set("unknown", forKey: key)
+                                    defaults.set("unknown", forKey: key)
                                 }
                             }
                         }
