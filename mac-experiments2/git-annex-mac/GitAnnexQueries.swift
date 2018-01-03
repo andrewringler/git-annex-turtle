@@ -52,7 +52,7 @@ class GitAnnexQueries {
         
 //        NSLog("git annex info for " + path)
 //        NSLog("status: %@", status)
-//        NSLog("output: %@", output)
+        NSLog("output: %@", output)
 //        NSLog("error: %@", error)
         
         // if command didnt return an error, parse the JSON
@@ -63,6 +63,7 @@ class GitAnnexQueries {
 //                 (output as NSString).data
                 var data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
                 var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                
                 if let dictionary = json as? [String: Any] {
                     if let success = dictionary["success"] as? Bool {
                         if success == true, let present = dictionary["present"] as? Bool {

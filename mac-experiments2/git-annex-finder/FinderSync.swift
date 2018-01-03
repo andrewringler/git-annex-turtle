@@ -11,37 +11,27 @@ import FinderSync
 //import Foundation
 
 class FinderSync: FIFinderSync {
-    let defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.sharedgroup")
-    //let config = Config()
+    var defaults: UserDefaults
     let myFolderURL: URL
 
     override init() {
-        myFolderURL =  URL(fileURLWithPath: defaults!.string(forKey: "myFolderURL")!)
+        defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
+        myFolderURL =  URL(fileURLWithPath: defaults.string(forKey: "myFolderURL")!)
         super.init()
         
-//        NSLog("V2 ==============")
-//        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ", (myFolderURL as NSURL).path!)
+        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ", (myFolderURL as NSURL).path!)
 
         // Set up the directory we are syncing.
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
         
-        // Set up images for our badge identifiers. For demonstration purposes, this uses off-the-shelf images.
-//        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.colorPanel)!, label: "Status One" , forBadgeIdentifier: "One")
-//        FIFinderSyncController.default().setBadgeImage(NSImage(named: NSImage.Name.caution)!, label: "Status Two", forBadgeIdentifier: "Two")
+        let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
+        let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
+        let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
 
-        let imgPresent = NSImage(named:NSImage.Name(rawValue: "gitannex-present"))
-        let imgAbsent = NSImage(named:NSImage.Name(rawValue: "gitannex-absent"))
+        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "present")
+        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "absent")
+        FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: "unknown")
 
-        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "Present")
-        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "Absent")
-        
-//        FIFinderSyncController.default().setBadgeImage(img, label: "Present" , forBadgeIdentifier: "Present")
-//        FIFinderSyncController.default().setBadgeImage(NSImage(named: ), label: "Absent", forBadgeIdentifier: "Absent")
-        
-        //        DispatchQueue.main.async(execute: {
-        //            debugPrint("dispatch")
-        //        })
-//        NSLog("starting qeus")
 //        DispatchQueue.global(qos: .background).async {
 //            while true {
 //                NSLog("a background task every 5 seconds")
@@ -50,18 +40,14 @@ class FinderSync: FIFinderSync {
 //        }
     }
 
-    // MARK: - Primary Finder Sync protocol methods
-
     override func beginObservingDirectory(at url: URL) {
         // The user is now seeing the container's contents.
         // If they see it in more than one view at a time, we're only told once.
-        //NSLog("beginObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
+        // Unless it is in a file dialog
     }
-
 
     override func endObservingDirectory(at url: URL) {
         // The user is no longer seeing the container's contents.
-        //NSLog("endObservingDirectoryAtURL: " + (url as NSURL).filePathURL!.absoluteString)
     }
 
      func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
@@ -70,59 +56,41 @@ class FinderSync: FIFinderSync {
     
     private func updateBadge(for url: URL, with status: String) {
         var whichBadge :Int = 0
-        if status == "true" {
-            //NSLog("FinderSync got updates from main host app!")
-            whichBadge = 2
-        }
-        if status == "special" {
-            //NSLog("FinderSync got updates from main host app!")
+        if status == "absent" {
             whichBadge = 1
+            NSLog("Absent Icon")
+        } else if status == "present" {
+            whichBadge = 2
+            NSLog("Present Icon")
+        } else if status == "unknown" {
+            whichBadge = 3
+            NSLog("Unknown Icon")
+        } else {
+            NSLog("No Icon Yet!")
         }
         
-        let badgeIdentifier = ["", "Present", "Absent"][whichBadge]
+        let badgeIdentifier = ["", "absent", "present", "unknown"][whichBadge]
         FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
     }
     
     override func requestBadgeIdentifier(for url: URL) {
-        //NSLog("requestBadgeIdentifierForURL: " + (url as NSURL).filePathURL!.absoluteString)
-
         let absolutePath :String = (url as NSURL).path!
-
+        let status :String? = defaults.string(forKey: "gitannex." + absolutePath)
+        
         // do we already have the status cached?
-        var whichBadge :Int = 0
-        let status :String? = defaults?.string(forKey: "gitannex." + absolutePath)
-//        let status :String? = defaults?.objectForKey(forKey: "gitannex." + absolutePath)
         if status != nil && !status!.isEmpty {
             // we have a status object, lets use it
-//            whichBadge = 1
-//            NSLog("hmmmm '" + status! + "'")
-            if status == "true" {
-                //NSLog("FinderSync got updates from main host app!")
-                whichBadge = 2
-            }
-            if status == "special" {
-                //NSLog("FinderSync got updates from main host app!")
-                whichBadge = 1
-            }
+            updateBadge(for: url, with: status!)
         } else {
+            // TODO observer on specific property? or global observer?
             // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
-//            defaults.obser
-//            defaults.keyPath
-//            defaults?.observe(KeyPath<UserDefaults, Value>, changeHandler: <#T##(UserDefaults, NSKeyValueObservedChange<Value>) -> Void#>)
-//            defaults?.observe(forKeyPath: #keyPath("gitannex." + absolutePath), changeHandler: { (defaults, change) in
-            
-//            })
-//            defaults?.observe(self, forKeyPath: "gitannex." + absolutePath, options: NSKeyValueObservingOptions.new, context: nil, changeHandler: { (defaults, change) in
-            
-//            })
 
             // OK wait for an update to come in on this icon
             // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
             DispatchQueue.global(qos: .background).async {
                 while true {
-                    let status :String? = self.defaults?.string(forKey: "gitannex." + absolutePath)
+                    let status :String? = self.defaults.string(forKey: "gitannex." + absolutePath)
                     if status != nil && !status!.isEmpty && status! != "request" {
-                        NSLog("just got a badge update! for " + absolutePath)
                         self.updateBadge(for: url, with: status!)
                         return
                     }
@@ -130,33 +98,10 @@ class FinderSync: FIFinderSync {
                 }
             }
 
-            defaults!.set("request", forKey: "gitannex." + absolutePath)
-//            defaults!.synchronize()
-            
-//            [[UserDefaults defaults] addObserver:self
-//                forKeyPath:@"MyPreference"
-//                options:NSKeyValueObservingOptionNew
-//                context:{
-//                    NSLog("my key was updated")
-//                }];
-            
-//            defaults.addOb
-            //NSLog("set key " + "gitannex." + absolutePath)
+            defaults.set("request", forKey: "gitannex." + absolutePath)
+            defaults.synchronize()
         }
-        
-//        var defaults = UserDefaults(suiteName: "com.andrewringler.git-annex-mac.shared-group")
-//        defaults.setObject(“blueTheme”, forKey: “request-git-annex-status”)
-//        defaults.synchronize()
-        
-//        GitAnnexQueries.gitAnnexPathIsPresent(for: url, in: myFolderURL.path)
-        
-        // For demonstration purposes, this picks one of our two badges, or no badge at all, based on the filename.
-//        let whichBadge = abs(((url as NSURL).filePathURL! as NSURL).hash) % 3
-        let badgeIdentifier = ["", "Present", "Absent"][whichBadge]
-        FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
     }
-
-    // MARK: - Menu and toolbar item support
 
     override var toolbarItemName: String {
         return "git-annex-finder"
