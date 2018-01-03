@@ -69,6 +69,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                     defaults.set("absent", forKey: key)
                                 } else if status == "fully-present-directory" {
                                     defaults.set("fully-present-directory", forKey: key)
+                                } else if status == "partially-present-directory" {
+                                    defaults.set("partially-present-directory", forKey: key)
                                 } else {
                                     defaults.set("unknown", forKey: key)
                                 }

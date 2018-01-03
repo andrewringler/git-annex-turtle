@@ -90,16 +90,29 @@ class GitAnnexQueries {
                     if success != nil && (success as! Bool) == true
                         && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
                         && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
-                        return "fully-present-directory"
+                        return "present"
+                    }
+                    
+                    // a directory in the annex who is missing all
+                    // content from some all of his containing files recursively
+                    if success != nil && (success as! Bool) == true
+                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
+                        && (localAnnexKeys as! Int) == 0
+                    {
+                        return "absent"
                     }
                     
                     // a directory in the annex who is missing some
                     // content from some of his containing files recursively
                     if success != nil && (success as! Bool) == true
                         && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
-                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int) {
-                        return "absent"
+                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
+                        && (localAnnexKeys as! Int) > 0
+                    {
+                        return "partially-present-directory"
                     }
+
 
 //                    var msg :String = "command [" + (command as! String) + "]" + " present=" + (present as! String) + " success=" + (success as! String)
 //

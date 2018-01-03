@@ -28,11 +28,14 @@ class FinderSync: FIFinderSync {
         let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
         let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
         let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
+        let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
+
 
         FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "present")
         FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "absent")
         FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: "unknown")
         FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
+        FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: "partially-present-directory")
 
 //        DispatchQueue.global(qos: .background).async {
 //            while true {
@@ -70,11 +73,14 @@ class FinderSync: FIFinderSync {
         } else if status == "fully-present-directory" {
             whichBadge = 4
             NSLog("Fully Present Directory")
+        } else if status == "partially-present-directory" {
+            whichBadge = 5
+            NSLog("Partially Present Directory")
         } else {
             NSLog("No Icon Yet!")
         }
         
-        let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory"][whichBadge]
+        let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory", "partially-present-directory"][whichBadge]
         FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
     }
     

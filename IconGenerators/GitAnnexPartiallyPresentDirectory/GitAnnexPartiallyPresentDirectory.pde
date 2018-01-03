@@ -17,9 +17,7 @@ void setup() {
   red = color(216, 56, 45);
   grey = color(102, 102, 102);
 
-  g = createGraphics(width, height, P3D);
   //g.hint(DISABLE_OPTIMIZED_STROKE);
-  g.hint(ENABLE_DEPTH_SORT);
   //hint(ENABLE_DEPTH_MASK);
   //hint(ENABLE_DEPTH_TEST);
   //hint(ENABLE_STROKE_PERSPECTIVE);
@@ -46,8 +44,9 @@ void draw() {
 
 
   // Do all your drawing here
+  g = createGraphics(width, height, P3D);
+  g.hint(ENABLE_DEPTH_SORT);
   g.beginDraw();
-  g.background(204);
   g.camera(width/1.9, height/1.9, (height/4.7) / tan(PI*30.0 / 180.0), // eye
     width/2.0, height/2.0, 0, // center
     0, 1, 0); // up
@@ -66,10 +65,11 @@ void draw() {
   g.fill(255, 0);
   g.box(200.0);
   
-  g.noStroke();
-  g.fill(green);
-  g.translate(0.0, 0.0, 0.0);
-  g.box(150.4, 150.4, 150.3);
+  b = 1.2;
+  g.stroke(64.0*b, 191.0*b, 76.0*b, 255);
+  g.fill(64, 191, 76, 255);
+  g.translate(0, 0, -62);
+  g.box(177.9, 173.5, 79.4);
   g.endDraw();
 
   image(g, 0, 0);
