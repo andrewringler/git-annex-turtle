@@ -1,6 +1,10 @@
 # git-annex-mac
 *git-annex-mac* provides git-annex status updates on the Mac via integration with Finder and a Menubar icon (aka menubar extra). This app relies on the Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later.
 
+## TODO
+ * Get context menus working for get and drop
+ * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
+
 ## Notes
  * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
 

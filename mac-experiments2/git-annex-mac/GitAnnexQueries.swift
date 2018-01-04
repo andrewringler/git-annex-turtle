@@ -44,15 +44,31 @@ class GitAnnexQueries {
         
         return (output, error, status)
     }
-    
+
+    class func gitAnnexGet(for url: URL, in workingDirectory: String) -> Bool {
+        let path :String = (url as NSURL).path!
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "get", path)
+
+        if status != 0 {
+            NSLog("gitAnnexGet")
+            NSLog("status: %@", status)
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        
+        return status == 0
+    }
+
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
         let path :String = (url as NSURL).path!
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "info", path)
         
-//        NSLog("git annex info for " + path)
-//        NSLog("status: %@", status)
-//        NSLog("output: %@", output)
-//        NSLog("error: %@", error)
+        if status != 0 {
+            NSLog("gitAnnexPathInfo")
+            NSLog("status: %@", status)
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift

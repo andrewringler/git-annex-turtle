@@ -175,8 +175,9 @@ class FinderSync: FIFinderSync {
         
         let item = sender as! NSMenuItem
         NSLog("git annex get: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
+        for obj: URL in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: "gitannex.command.git-annex-get." + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAnnexAdd(_ sender: AnyObject?) {
