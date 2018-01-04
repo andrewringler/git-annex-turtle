@@ -45,18 +45,25 @@ class FinderSync: FIFinderSync {
                 let allKeys = self.defaults.dictionaryRepresentation().keys
                 var statusUpdates :Int = 0
                 for key in allKeys {
-                    if key.starts(with: "gitannex.status.") {
-                        // OK update badge with the new status
+                    if key.starts(with: "gitannex.status.updated.") {
+                        // OK lets update the badge icon with the new updated status
                         var path = key
-                        path.removeFirst("gitannex.status.".count)
+                        path.removeFirst("gitannex.status.updated.".count)
                         
                         if let status = self.defaults.string(forKey: key) {
                             self.updateBadge(for: URL(fileURLWithPath: path), with: status)
+                            
+                            // remove this .new key, we have handled it
+                            self.defaults.removeObject(forKey: key)
+                            
+                            // replace with a standard key, that we can check for
+                            // when we receive a requestBadgeIdentifier from the OS
+                            // this would happen if the user closes and re-opens the
+                            // a finder window we already have data for
+                            self.defaults.set(status, forKey: "gitannex.status." + path)
+                            
                             statusUpdates += 1
                         }
-                        
-                        // remove key, we have handled it
-                        self.defaults.removeObject(forKey: key)
                     }
                 }
                 // TODO wait on updates flag? instead of sleep / polling?

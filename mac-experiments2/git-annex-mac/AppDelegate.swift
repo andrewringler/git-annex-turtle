@@ -56,30 +56,53 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 task.launch()
                 
                 while true {
-                    defaults.synchronize()
-                    let allKeys = defaults.dictionaryRepresentation().keys
-                    for key in allKeys {
-                        if key.starts(with: "gitannex.requestbadge.") {
-                            // OK Finder Sync requested this URL, is it still in view?
-                            var path = key
-                            path.removeFirst("gitannex.requestbadge.".count)
-                            let url = URL(fileURLWithPath: path)
-                            var parentURL = url
-                            parentURL.deleteLastPathComponent() // containing folder
-                            if let parentPath = (parentURL as NSURL).path {
-                                let observingKey = "gitannex.observing." + parentPath
-                                if defaults.string(forKey: observingKey) != nil {
-                                    // OK we are still observing this directory
-                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: (myFolderURL as NSURL).path!)
-                                    // Add updated status
-                                    defaults.set(status, forKey: "gitannex.status." + path)
-                                    // Remove the request from Finder Sync
-                                    defaults.removeObject(forKey: key)
+                    // handle all direct requests first
+                    var numberOfDirectRequest :Int = 0
+                    repeat {
+                        let allKeys = defaults.dictionaryRepresentation().keys
+                        numberOfDirectRequest = 0
+                        for key in allKeys {
+                            if key.starts(with: "gitannex.requestbadge.") {
+                                // OK Finder Sync requested this URL, is it still in view?
+                                var path = key
+                                path.removeFirst("gitannex.requestbadge.".count)
+                                let url = URL(fileURLWithPath: path)
+                                var parentURL = url
+                                parentURL.deleteLastPathComponent() // containing folder
+                                if let parentPath = (parentURL as NSURL).path {
+                                    let observingKey = "gitannex.observing." + parentPath
+                                    if defaults.string(forKey: observingKey) != nil {
+                                        // OK we are still observing this directory
+                                        let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: (myFolderURL as NSURL).path!)
+                                        // Add updated status
+                                        defaults.set(status, forKey: "gitannex.status.updated." + path)
+                                        
+                                        // Remove the request we have handled it
+                                        defaults.removeObject(forKey: key)
+                                        numberOfDirectRequest += 1
+                                    }
                                 }
                             }
                         }
-                    }
+                    } while numberOfDirectRequest > 0
+                    // keep looking for direct requests until we haven't found any new ones
+                    
+                    // OK there are no new direct requests for badges
+                    // lets give our CPU a break
                     sleep(1)
+
+                    // OK maybe file state has changed via OS commands
+                    // git or git annex commands since we last checked
+                    // lets periodically poll all files in observed folders
+                    // IE all files that are in Finder windows that are visible to a user
+//                    let allKeys = defaults.dictionaryRepresentation().keys
+//                    for key in allKeys {
+//                        if key.starts(with: "gitannex.observing.") {
+//                            var observingPath = key
+//                            observingPath.removeFirst("gitannex.observing.".count)
+//                            let observingURL = URL(fileURLWithPath: observingPath)
+//                        }
+//                    }
                 }
             } else {
                 NSLog("did not find any folders to watch, quiting")
