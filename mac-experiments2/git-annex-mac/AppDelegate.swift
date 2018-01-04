@@ -28,12 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         constructMenu(watching: repo)
 
         DispatchQueue.global(qos: .background).async {
-            
             if let defaults = maybeDefaults, repo != nil {
                 let myFolderURL = URL(fileURLWithPath: repo!)
-                
-                // FinderSync will read this
-                defaults.synchronize()
                 
                 // delete all of our keys
                 // THIS IS USEFUL FOR TESTING
@@ -45,6 +41,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 
                 defaults.set(repo, forKey: "myFolderURL")
+                // defaults.synchronize() will ensure we dont relaunch
+                // our Finder extension until we have set the folders
+                // it should listen on
+                // TODO it should constantly be checking if this has changed
+                // once we are doing that, we can get rid of this
+                // synchronize call
                 defaults.synchronize()
                 
                 // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
@@ -58,9 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let allKeys = defaults.dictionaryRepresentation().keys
                     for key in allKeys {
                         if key.starts(with: "gitannex.requestbadge.") {
-//                            NSLog("requesting badge for :" + key)
-//                            defaults.removeObject(forKey: key)
-                            
                             // OK Finder Sync requested this URL, is it still in view?
                             var path = key
                             path.removeFirst("gitannex.requestbadge.".count)
@@ -71,43 +70,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 let observingKey = "gitannex.observing." + parentPath
                                 if defaults.string(forKey: observingKey) != nil {
                                     // OK we are still observing this directory
-//                                    NSLog("Got request for " + path + " and we are still observing on parent :)")
                                     let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: (myFolderURL as NSURL).path!)
                                     // Add updated status
                                     defaults.set(status, forKey: "gitannex.status." + path)
                                     // Remove the request from Finder Sync
                                     defaults.removeObject(forKey: key)
                                 }
-                                
-//                                let key = "gitannex.observing." + path
-//                                defaults.set(url, forKey: key)
-
                             }
-                            // let path = (url as NSURL).path
-                            
-                            
                         }
-                        
-                        
-//                        if key.starts(with: "gitannex.") {
-//                            if let v = defaults.string(forKey: key), v == "request" {
-//                                var url :String = key
-//                                url.removeFirst("gitannex.".count)
-//                                let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
-//
-//                                if status == "present" {
-//                                    defaults.set("present", forKey: key)
-//                                } else if status == "absent" {
-//                                    defaults.set("absent", forKey: key)
-//                                } else if status == "fully-present-directory" {
-//                                    defaults.set("fully-present-directory", forKey: key)
-//                                } else if status == "partially-present-directory" {
-//                                    defaults.set("partially-present-directory", forKey: key)
-//                                } else {
-//                                    defaults.set("unknown", forKey: key)
-//                                }
-//                            }
-//                        }
                     }
                     sleep(1)
                 }
@@ -145,8 +115,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func constructMenu(watching :String?) {
         let menu = NSMenu()
         
-//        menu.addItem(NSMenuItem(title: "Print Quote", action: #selector(AppDelegate.printQuote(_:)), keyEquivalent: "P"))
-//        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "git-annex-turtle", action: nil, keyEquivalent: ""))
         if let watchString = watching {
             var watchingStringTruncated = watchString

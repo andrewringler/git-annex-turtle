@@ -37,13 +37,6 @@ class FinderSync: FIFinderSync {
         FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
         FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: "partially-present-directory")
 
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                NSLog("a background task every 5 seconds")
-//                sleep(5)
-//            }
-//        }
-        
         // Poll for changes
         // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
         // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
@@ -97,21 +90,17 @@ class FinderSync: FIFinderSync {
         var whichBadge :Int = 0
         if status == "absent" {
             whichBadge = 1
-//            NSLog("Absent Icon")
         } else if status == "present" {
             whichBadge = 2
-//            NSLog("Present Icon")
         } else if status == "unknown" {
             whichBadge = 3
-//            NSLog("Unknown Icon")
         } else if status == "fully-present-directory" {
             whichBadge = 4
-//            NSLog("Fully Present Directory")
         } else if status == "partially-present-directory" {
             whichBadge = 5
-//            NSLog("Partially Present Directory")
         } else {
-//            NSLog("No Icon Yet!")
+            // nothing, no icon
+            // setBadgeIdentifier below will clear an icon if there was one
         }
         
         let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory", "partially-present-directory"][whichBadge]
@@ -132,45 +121,6 @@ class FinderSync: FIFinderSync {
             let requestKey = "gitannex.requestbadge." + path
             defaults.set(url, forKey: requestKey)
         }
-        
-//        if status != nil && !status!.isEmpty {
-//            // we have a status object, lets use it
-//            updateBadge(for: url, with: status!)
-//            return
-//        }
-        
-//        if let path = (url as NSURL).path {
-//            let key = "gitannex.requestbadge." + path
-//            defaults.set(url, forKey: key)
-//        }
-//
-//        let absolutePath :String = (url as NSURL).path!
-//        let status :String? = defaults.string(forKey: "gitannex." + absolutePath)
-        
-        // do we already have the status cached?
-//        if status != nil && !status!.isEmpty {
-//            // we have a status object, lets use it
-//            updateBadge(for: url, with: status!)
-//        } else {
-//            // TODO observer on specific property? or global observer?
-//            // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
-//
-//            // OK wait for an update to come in on this icon
-//            // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
-//            DispatchQueue.global(qos: .background).async {
-//                while true {
-//                    let status :String? = self.defaults.string(forKey: "gitannex." + absolutePath)
-//                    if status != nil && !status!.isEmpty && status! != "request" {
-//                        self.updateBadge(for: url, with: status!)
-//                        return
-//                    }
-//                    sleep(1)
-//                }
-//            }
-//
-//            defaults.set("request", forKey: "gitannex." + absolutePath)
-//            defaults.synchronize()
-//        }
     }
 
     override var toolbarItemName: String {
