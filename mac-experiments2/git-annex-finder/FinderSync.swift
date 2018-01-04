@@ -26,7 +26,7 @@ class FinderSync: FIFinderSync {
         myFolderURL =  URL(fileURLWithPath: defaults.string(forKey: "myFolderURL")!)
         super.init()
         
-        NSLog("FinderSync() launched from %@", Bundle.main.bundlePath, " watching ", (myFolderURL as NSURL).path!)
+        NSLog("FinderSync() watching %@", (myFolderURL as NSURL).path!)
 
         // Set up the directory we are syncing.
         FIFinderSyncController.default().directoryURLs = [self.myFolderURL]
