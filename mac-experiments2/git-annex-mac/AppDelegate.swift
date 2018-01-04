@@ -35,8 +35,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // FinderSync will read this
                 defaults.synchronize()
                 
-                // USEFUL FOR TESTING
-                // delete all our keys
+                // delete all of our keys
+                // THIS IS USEFUL FOR TESTING
                 let allKeys = defaults.dictionaryRepresentation().keys
                 for key in allKeys {
                     if key.starts(with: "gitannex.") {
@@ -58,7 +58,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let allKeys = defaults.dictionaryRepresentation().keys
                     for key in allKeys {
                         if key.starts(with: "gitannex.") {
-                            if(defaults.string(forKey: key)! == "request"){
+                            if let v = defaults.string(forKey: key), v == "request" {
                                 var url :String = key
                                 url.removeFirst("gitannex.".count)
                                 let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)

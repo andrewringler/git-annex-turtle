@@ -49,10 +49,36 @@ class FinderSync: FIFinderSync {
         // The user is now seeing the container's contents.
         // If they see it in more than one view at a time, we're only told once.
         // Unless it is in a file dialog
+        
+        // Add this URL to our list of observing directories
+        // if it is not already there
+        if let absolutePath = (url as NSURL).path {
+            if var observing: [String: String] = defaults.dictionary(forKey: "gitannex.observing") as? [String : String] {
+                if observing[absolutePath] == nil {
+                    observing.updateValue(absolutePath, forKey: absolutePath)
+                    defaults.set(observing, forKey: "gitannex.observing")
+                }
+            } else {
+                // create initial entry in UserDefaults
+                var observing: [String: String] = [absolutePath: absolutePath]
+                defaults.set(observing, forKey: "gitannex.observing")
+            }
+        }
     }
 
     override func endObservingDirectory(at url: URL) {
         // The user is no longer seeing the container's contents.
+        
+        // Remove this URL from the list of observing directories
+        if let absolutePath = (url as NSURL).path {
+            if var observing: [String: String] = defaults.dictionary(forKey: "gitannex.observing") as? [String : String] {
+                if observing[absolutePath] != nil {
+                    // remove this URL from our datastore
+                    observing.removeValue(forKey: absolutePath)
+                    defaults.set(observing, forKey: "gitannex.observing")
+                }
+            }
+        }
     }
 
 //    func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {

@@ -16,6 +16,7 @@
   * http://www.atomicbird.com/blog/sharing-with-app-extensions
   * https://stackoverflow.com/questions/30156107/swift-share-sqlite-database-between-app-and-extension
   * http://dscoder.com/defaults.html
+* See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
  
 Check if our Finder Sync extension is running:
 
