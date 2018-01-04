@@ -6,7 +6,7 @@
 //  Copyright © 2016 Andrew Ringler. All rights reserved.
 //
 import Cocoa
-//import Foundation
+import Foundation
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -95,14 +95,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     // git or git annex commands since we last checked
                     // lets periodically poll all files in observed folders
                     // IE all files that are in Finder windows that are visible to a user
-//                    let allKeys = defaults.dictionaryRepresentation().keys
-//                    for key in allKeys {
-//                        if key.starts(with: "gitannex.observing.") {
-//                            var observingPath = key
-//                            observingPath.removeFirst("gitannex.observing.".count)
-//                            let observingURL = URL(fileURLWithPath: observingPath)
-//                        }
-//                    }
+                    let allKeys = defaults.dictionaryRepresentation().keys
+                    for key in allKeys {
+                        if key.starts(with: "gitannex.observing.") {
+                            if let observingURL :URL = defaults.url(forKey: key) {
+                                if let filesToCheck: [String] = try? FileManager.default.contentsOfDirectory(atPath: (observingURL as NSURL).path!) {
+                                    // TODO PERFORMANCE
+                                    // we can actually pass git-annex a whole list of files
+                                    // which would probably be quicker than launching
+                                    // separate processes to run the bash commands in
+                                    for file in filesToCheck {
+                                        let fullPath = observingURL.appendingPathComponent(file)
+                                        let status = GitAnnexQueries.gitAnnexPathInfo(for: fullPath, in: (myFolderURL as NSURL).path!)
+                                        
+                                         //is there already an old status for this
+                                         //that is equivalent?
+                                        if let oldStatus = defaults.string(forKey: "gitannex.status." + (fullPath as NSURL).path!) {
+                                            if oldStatus != status {
+                                                // OK, we have a new status, lets
+                                                // let Finder Sync extension know
+                                                defaults.set(status, forKey: "gitannex.status.updated." + (fullPath as NSURL).path!)
+                                            }
+                                        } else {
+                                            defaults.set(status, forKey: "gitannex.status.updated." + (fullPath as NSURL).path!)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } else {
                 NSLog("did not find any folders to watch, quiting")
