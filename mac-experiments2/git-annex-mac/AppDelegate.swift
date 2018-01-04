@@ -15,18 +15,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        let maybeDefaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")
+        let config = Config()
+        
+        // just grab the first repo to watch, for now
+        let repo :String? = config.listWatchedRepos().first
+
         if let button = statusItem.button {
             button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
             button.action = #selector(printQuote(_:))
         }
-        constructMenu()
+        constructMenu(watching: repo)
 
         DispatchQueue.global(qos: .background).async {
-            let maybeDefaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")
-            let config = Config()
-            
-            // just grab the first repo to watch, for now
-            let repo :String? = config.listWatchedRepos().first
             
             if let defaults = maybeDefaults, repo != nil {
                 let myFolderURL = URL(fileURLWithPath: repo!)
@@ -109,14 +110,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("\(quoteText) — \(quoteAuthor)")
     }
     
-    func constructMenu() {
+    func constructMenu(watching :String?) {
         let menu = NSMenu()
         
 //        menu.addItem(NSMenuItem(title: "Print Quote", action: #selector(AppDelegate.printQuote(_:)), keyEquivalent: "P"))
 //        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit git-annex-turtle", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "git-annex-turtle", action: nil, keyEquivalent: ""))
+        if let watchString = watching {
+            var watchingStringTruncated = watchString
+            if(watchingStringTruncated.count > 40){
+                watchingStringTruncated = "…" + watchingStringTruncated.suffix(40)
+            }
+            menu.addItem(NSMenuItem(title: "Watching “" + watchingStringTruncated + "”", action: nil, keyEquivalent: ""))
+        } else {
+            menu.addItem(NSMenuItem(title: "Not watching any repos", action: nil, keyEquivalent: ""))
+        }
+
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
         
         statusItem.menu = menu
     }
+    
+    @IBAction func nilAction(_ sender: AnyObject?) {}
 }
 
