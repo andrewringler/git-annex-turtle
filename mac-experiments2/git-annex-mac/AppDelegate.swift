@@ -57,25 +57,57 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     defaults.synchronize()
                     let allKeys = defaults.dictionaryRepresentation().keys
                     for key in allKeys {
-                        if key.starts(with: "gitannex.") {
-                            if let v = defaults.string(forKey: key), v == "request" {
-                                var url :String = key
-                                url.removeFirst("gitannex.".count)
-                                let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
-                                
-                                if status == "present" {
-                                    defaults.set("present", forKey: key)
-                                } else if status == "absent" {
-                                    defaults.set("absent", forKey: key)
-                                } else if status == "fully-present-directory" {
-                                    defaults.set("fully-present-directory", forKey: key)
-                                } else if status == "partially-present-directory" {
-                                    defaults.set("partially-present-directory", forKey: key)
-                                } else {
-                                    defaults.set("unknown", forKey: key)
+                        if key.starts(with: "gitannex.requestbadge.") {
+//                            NSLog("requesting badge for :" + key)
+//                            defaults.removeObject(forKey: key)
+                            
+                            // OK Finder Sync requested this URL, is it still in view?
+                            var path = key
+                            path.removeFirst("gitannex.requestbadge.".count)
+                            let url = URL(fileURLWithPath: path)
+                            var parentURL = url
+                            parentURL.deleteLastPathComponent() // containing folder
+                            if let parentPath = (parentURL as NSURL).path {
+                                let observingKey = "gitannex.observing." + parentPath
+                                if defaults.string(forKey: observingKey) != nil {
+                                    // OK we are still observing this directory
+//                                    NSLog("Got request for " + path + " and we are still observing on parent :)")
+                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: (myFolderURL as NSURL).path!)
+                                    // Add updated status
+                                    defaults.set(status, forKey: "gitannex.status." + path)
+                                    // Remove the request from Finder Sync
+                                    defaults.removeObject(forKey: key)
                                 }
+                                
+//                                let key = "gitannex.observing." + path
+//                                defaults.set(url, forKey: key)
+
                             }
+                            // let path = (url as NSURL).path
+                            
+                            
                         }
+                        
+                        
+//                        if key.starts(with: "gitannex.") {
+//                            if let v = defaults.string(forKey: key), v == "request" {
+//                                var url :String = key
+//                                url.removeFirst("gitannex.".count)
+//                                let status = GitAnnexQueries.gitAnnexPathInfo(for: URL(fileURLWithPath: url), in: (myFolderURL as NSURL).path!)
+//
+//                                if status == "present" {
+//                                    defaults.set("present", forKey: key)
+//                                } else if status == "absent" {
+//                                    defaults.set("absent", forKey: key)
+//                                } else if status == "fully-present-directory" {
+//                                    defaults.set("fully-present-directory", forKey: key)
+//                                } else if status == "partially-present-directory" {
+//                                    defaults.set("partially-present-directory", forKey: key)
+//                                } else {
+//                                    defaults.set("unknown", forKey: key)
+//                                }
+//                            }
+//                        }
                     }
                     sleep(1)
                 }

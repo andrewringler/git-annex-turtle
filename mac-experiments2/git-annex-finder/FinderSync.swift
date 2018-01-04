@@ -43,47 +43,55 @@ class FinderSync: FIFinderSync {
 //                sleep(5)
 //            }
 //        }
+        
+        // Poll for changes
+        // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
+        // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                let allKeys = self.defaults.dictionaryRepresentation().keys
+                var statusUpdates :Int = 0
+                for key in allKeys {
+                    if key.starts(with: "gitannex.status.") {
+                        // OK update badge with the new status
+                        var path = key
+                        path.removeFirst("gitannex.status.".count)
+                        
+                        if let status = self.defaults.string(forKey: key) {
+                            self.updateBadge(for: URL(fileURLWithPath: path), with: status)
+                            statusUpdates += 1
+                        }
+                        
+                        // remove key, we have handled it
+                        self.defaults.removeObject(forKey: key)
+                    }
+                }
+                // TODO wait on updates flag? instead of sleep / polling?
+                // only sleep/delay if we haven't received any updates
+                // otherwise there might already been more waiting
+                // while we handled these ones
+                if statusUpdates == 0 {
+                    sleep(1)
+                }
+            }
+        }
     }
 
+    // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
-        // The user is now seeing the container's contents.
-        // If they see it in more than one view at a time, we're only told once.
-        // Unless it is in a file dialog
-        
-        // Add this URL to our list of observing directories
-        // if it is not already there
-        if let absolutePath = (url as NSURL).path {
-            if var observing: [String: String] = defaults.dictionary(forKey: "gitannex.observing") as? [String : String] {
-                if observing[absolutePath] == nil {
-                    observing.updateValue(absolutePath, forKey: absolutePath)
-                    defaults.set(observing, forKey: "gitannex.observing")
-                }
-            } else {
-                // create initial entry in UserDefaults
-                var observing: [String: String] = [absolutePath: absolutePath]
-                defaults.set(observing, forKey: "gitannex.observing")
-            }
+        if let path = (url as NSURL).path {
+            let key = "gitannex.observing." + path
+            defaults.set(url, forKey: key)
         }
     }
 
+    // The user is no longer seeing the container's contents.
     override func endObservingDirectory(at url: URL) {
-        // The user is no longer seeing the container's contents.
-        
-        // Remove this URL from the list of observing directories
-        if let absolutePath = (url as NSURL).path {
-            if var observing: [String: String] = defaults.dictionary(forKey: "gitannex.observing") as? [String : String] {
-                if observing[absolutePath] != nil {
-                    // remove this URL from our datastore
-                    observing.removeValue(forKey: absolutePath)
-                    defaults.set(observing, forKey: "gitannex.observing")
-                }
-            }
+        if let path = (url as NSURL).path {
+            let key = "gitannex.observing." + path
+            defaults.removeObject(forKey: key)
         }
     }
-
-//    func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?, change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-//        NSLog("notified of change on key " + keyPath!)
-//    }
     
     private func updateBadge(for url: URL, with status: String) {
         var whichBadge :Int = 0
@@ -111,33 +119,58 @@ class FinderSync: FIFinderSync {
     }
     
     override func requestBadgeIdentifier(for url: URL) {
-        let absolutePath :String = (url as NSURL).path!
-        let status :String? = defaults.string(forKey: "gitannex." + absolutePath)
+        if let path = (url as NSURL).path {
+            let statusKey = "gitannex.status." + path
+            
+            // do we already have the status cached?
+            if let status = defaults.string(forKey: statusKey) {
+                updateBadge(for: url, with: status)
+                return
+            }
+            
+            // OK status is not available, lets request it
+            let requestKey = "gitannex.requestbadge." + path
+            defaults.set(url, forKey: requestKey)
+        }
+        
+//        if status != nil && !status!.isEmpty {
+//            // we have a status object, lets use it
+//            updateBadge(for: url, with: status!)
+//            return
+//        }
+        
+//        if let path = (url as NSURL).path {
+//            let key = "gitannex.requestbadge." + path
+//            defaults.set(url, forKey: key)
+//        }
+//
+//        let absolutePath :String = (url as NSURL).path!
+//        let status :String? = defaults.string(forKey: "gitannex." + absolutePath)
         
         // do we already have the status cached?
-        if status != nil && !status!.isEmpty {
-            // we have a status object, lets use it
-            updateBadge(for: url, with: status!)
-        } else {
-            // TODO observer on specific property? or global observer?
-            // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
-
-            // OK wait for an update to come in on this icon
-            // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
-            DispatchQueue.global(qos: .background).async {
-                while true {
-                    let status :String? = self.defaults.string(forKey: "gitannex." + absolutePath)
-                    if status != nil && !status!.isEmpty && status! != "request" {
-                        self.updateBadge(for: url, with: status!)
-                        return
-                    }
-                    sleep(1)
-                }
-            }
-
-            defaults.set("request", forKey: "gitannex." + absolutePath)
-            defaults.synchronize()
-        }
+//        if status != nil && !status!.isEmpty {
+//            // we have a status object, lets use it
+//            updateBadge(for: url, with: status!)
+//        } else {
+//            // TODO observer on specific property? or global observer?
+//            // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
+//
+//            // OK wait for an update to come in on this icon
+//            // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
+//            DispatchQueue.global(qos: .background).async {
+//                while true {
+//                    let status :String? = self.defaults.string(forKey: "gitannex." + absolutePath)
+//                    if status != nil && !status!.isEmpty && status! != "request" {
+//                        self.updateBadge(for: url, with: status!)
+//                        return
+//                    }
+//                    sleep(1)
+//                }
+//            }
+//
+//            defaults.set("request", forKey: "gitannex." + absolutePath)
+//            defaults.synchronize()
+//        }
     }
 
     override var toolbarItemName: String {
