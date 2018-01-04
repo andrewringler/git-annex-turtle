@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let repo :String? = config.listWatchedRepos().first
 
         if let button = statusItem.button {
-            button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
+            button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default2"))
             button.action = #selector(printQuote(_:))
         }
         constructMenu(watching: repo)

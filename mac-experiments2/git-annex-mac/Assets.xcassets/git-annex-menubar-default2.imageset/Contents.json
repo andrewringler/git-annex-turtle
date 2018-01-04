@@ -1,15 +1,12 @@
 {
   "images" : [
     {
-      "idiom" : "mac"
-    },
-    {
       "idiom" : "mac",
       "scale" : "1x"
     },
     {
       "idiom" : "mac",
-      "filename" : "git-annex-menubar-default.png",
+      "filename" : "git-annex-turtle-menubar-default2.png",
       "scale" : "2x"
     }
   ],

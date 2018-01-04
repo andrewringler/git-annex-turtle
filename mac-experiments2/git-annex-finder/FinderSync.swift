@@ -131,10 +131,23 @@ class FinderSync: FIFinderSync {
         let menu = NSMenu(title: "")
         var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
-        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
         menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
+        menuItem = menu.addItem(withTitle: "git annex lock", action: #selector(gitAnnexLock(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        menuItem = menu.addItem(withTitle: "git annex unlock", action: #selector(gitAnnexUnlock(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        
+        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+
+        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
+        menuItem.image = gitAnnexLogoColor
+        let gitAnnexCopyToMenu = NSMenu(title: "")
+        gitAnnexCopyToMenu.addItem(withTitle: "cloud", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
+        gitAnnexCopyToMenu.addItem(withTitle: "usb 2tb", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
+        menuItem.submenu = gitAnnexCopyToMenu
+        
         menuItem = menu.addItem(withTitle: "git add", action: #selector(gitAdd(_:)), keyEquivalent: "")
         menuItem.image = gitLogoOrange
         return menu
@@ -170,12 +183,42 @@ class FinderSync: FIFinderSync {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
         }
     }
+    @IBAction func gitAnnexLock(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git annex lock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
+    @IBAction func gitAnnexUnlock(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git annex unlock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
     @IBAction func gitAdd(_ sender: AnyObject?) {
         let target = FIFinderSyncController.default().targetedURL()
         let items = FIFinderSyncController.default().selectedItemURLs()
         
         let item = sender as! NSMenuItem
         NSLog("git add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
+        for obj in items! {
+            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+        }
+    }
+    @IBAction func gitAnnexCopy(_ sender: AnyObject?) {
+        let target = FIFinderSyncController.default().targetedURL()
+        let items = FIFinderSyncController.default().selectedItemURLs()
+        
+        let item = sender as! NSMenuItem
+        NSLog("git annex copy --to=", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
         }
