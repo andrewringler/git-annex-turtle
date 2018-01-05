@@ -88,7 +88,7 @@ class GitAnnexQueries {
 
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
         let path :String = (url as NSURL).path!
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "info", path)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
         
         if status != 0 {
             NSLog("gitAnnexPathInfo")
