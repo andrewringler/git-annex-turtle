@@ -21,9 +21,18 @@
   * https://stackoverflow.com/questions/30156107/swift-share-sqlite-database-between-app-and-extension
   * http://dscoder.com/defaults.html
 * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
+* https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for 
  
 Check if our Finder Sync extension is running:
 
     pluginkit -m | grep finder
 
 Depending on which target is running, debug output might not show up in the XCode console. But if you launch the system Console app, it should be there.
+
+Check for open files <https://www.cyberciti.biz/faq/howto-linux-get-list-of-open-files/>, first get process ID
+
+    ps -aef | grep git-annex
+    
+Then list open files
+
+    lsof -p <process-id> | less

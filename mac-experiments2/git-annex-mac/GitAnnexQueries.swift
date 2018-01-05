@@ -9,40 +9,64 @@
 import Foundation
 
 class GitAnnexQueries {
+    // TODO one queue per repository
+    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
+    
     // https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
     private class func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], exitCode: Int32) {
+        // protect access to git annex, I don't think you can query it
+        // too heavily concurrently on the same repo, and plus I was getting
+        // too many open files warnings
+        // when I let all my processes access this method
         
-        var output : [String] = []
-        var error : [String] = []
+        // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
+        var ret: (output: [String], error: [String], exitCode: Int32) = ([""], ["ERROR: task did not run"], -1)
         
-        let task = Process()
-        task.launchPath = cmd
-        task.currentDirectoryPath = workingDirectory
-        task.arguments = args
-        
-        let outpipe = Pipe()
-        task.standardOutput = outpipe
-        let errpipe = Pipe()
-        task.standardError = errpipe
-        
-        task.launch()
-        
-        let outdata = outpipe.fileHandleForReading.readDataToEndOfFile()
-        if var string = String(data: outdata, encoding: .utf8) {
-            string = string.trimmingCharacters(in: .newlines)
-            output = string.components(separatedBy: "\n")
+        gitAnnexQueryQueue.sync {
+            var output : [String] = []
+            var error : [String] = []
+            
+            let task = Process()
+            task.launchPath = cmd
+            task.currentDirectoryPath = workingDirectory
+            task.arguments = args
+            
+            let outpipe = Pipe()
+            task.standardOutput = outpipe
+            let errpipe = Pipe()
+            task.standardError = errpipe
+            
+            task.launch()
+            
+            let outputFileHandle = outpipe.fileHandleForReading
+            let outdata = outputFileHandle.readDataToEndOfFile()
+            if var string = String(data: outdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                output = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            outputFileHandle.closeFile()
+            
+            let errFileHandle = errpipe.fileHandleForReading
+            let errdata = errFileHandle.readDataToEndOfFile()
+            if var string = String(data: errdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                error = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            errFileHandle.closeFile()
+            
+            task.waitUntilExit()
+            let status = task.terminationStatus
+            
+            ret = (output, error, status)
         }
         
-        let errdata = errpipe.fileHandleForReading.readDataToEndOfFile()
-        if var string = String(data: errdata, encoding: .utf8) {
-            string = string.trimmingCharacters(in: .newlines)
-            error = string.components(separatedBy: "\n")
-        }
-        
-        task.waitUntilExit()
-        let status = task.terminationStatus
-        
-        return (output, error, status)
+        return ret
     }
 
     class func gitAnnexGet(for url: URL, in workingDirectory: String) -> Bool {
