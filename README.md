@@ -1,11 +1,22 @@
 # git-annex-mac
 *git-annex-mac* provides git-annex status updates on the Mac via integration with Finder and a Menubar icon (aka menubar extra). This app relies on the Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later.
 
+## Build a Release
+ * Open mac-experiments2/git-annex-turtle.xcodeproj in XCode 9.2
+ * Click on the git-annex-turtle scheme (to the right of the triangle play button top of screen), click Edit Scheme, Make sure Run > Build Configuration is set to Release
+ * Product > Build
+ * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
+
+ 
+
+
 ## TODO
  * Get context menus working for get and drop
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * and context menu errors, where to display?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
+ * rename git-annex-finder process name to 'git-annex-turtle Finder'
+ * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
 
 ## Notes
  * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
