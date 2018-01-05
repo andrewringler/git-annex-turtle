@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		490733C92000081D00B422F9 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
@@ -448,6 +449,7 @@
 			files = (
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49CE60DC1DE63D6100EAAFA3 /* StringExtension.swift in Sources */,
+				490733C92000081D00B422F9 /* Config.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

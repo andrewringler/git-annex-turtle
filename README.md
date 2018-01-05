@@ -4,6 +4,8 @@
 ## TODO
  * Get context menus working for get and drop
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
+ * and context menu errors, where to display?
+ * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
 
 ## Notes
  * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
@@ -21,7 +23,7 @@
   * https://stackoverflow.com/questions/30156107/swift-share-sqlite-database-between-app-and-extension
   * http://dscoder.com/defaults.html
 * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
-* https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for 
+* https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex
  
 Check if our Finder Sync extension is running:
 

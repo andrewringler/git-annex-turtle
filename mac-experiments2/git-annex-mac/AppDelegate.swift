@@ -43,16 +43,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     while true {
                         let allKeys = defaults.dictionaryRepresentation().keys
                         for key in allKeys {
-                            if key.starts(with: "gitannex.command.git-annex-get.") {
-                                if let url = defaults.url(forKey: key) {
-                                    var debugMsg = "git annex get " + (url as NSURL).path!
-                                    NSLog(debugMsg)
-                                    let status = GitAnnexQueries.gitAnnexGet(for: url, in: (myFolderURL as NSURL).path!)
-                                    
-                                    // handled, delete the request
-                                    defaults.removeObject(forKey: key)
+                            // Is this a Git Annex Command?
+                            for command in GitAnnexCommands.all {
+                                if key.starts(with: command.dbPrefix) {
+                                    if let url = defaults.url(forKey: key) {
+                                        let status = GitAnnexQueries.gitAnnexCommand(for: url, in: (myFolderURL as NSURL).path!, cmd: command)
+                                        // TODO, what to do with status?
+                                        
+                                        // handled, delete the request
+                                        defaults.removeObject(forKey: key)
+                                    }
                                 }
                             }
+                            
+                            // Is this a Git Command?
+                            for command in GitCommands.all {
+                                if key.starts(with: command.dbPrefix) {
+                                    if let url = defaults.url(forKey: key) {
+                                        let status = GitAnnexQueries.gitCommand(for: url, in: (myFolderURL as NSURL).path!, cmd: command)
+                                        // TODO, what to do with status?
+                                        
+                                        // handled, delete the request
+                                        defaults.removeObject(forKey: key)
+                                    }
+                                }
+                            }
+                            
+
                         }
                         
                         sleep(1)

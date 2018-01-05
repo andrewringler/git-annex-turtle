@@ -8,6 +8,27 @@
 
 import Foundation
 
+struct GitAnnexCommand {
+    let cmdString :String, dbPrefix :String
+}
+struct GitAnnexCommands {
+    static let Get = GitAnnexCommand(cmdString: "get", dbPrefix: "gitannex.command.git-annex-get.")
+    static let Add = GitAnnexCommand(cmdString: "add", dbPrefix: "gitannex.command.git-annex-add.")
+    static let Drop = GitAnnexCommand(cmdString: "drop", dbPrefix: "gitannex.command.git-annex-drop.")
+    static let Unlock = GitAnnexCommand(cmdString: "unlock", dbPrefix: "gitannex.command.git-annex-unlock.")
+    static let Lock = GitAnnexCommand(cmdString: "lock", dbPrefix: "gitannex.command.git-annex-lock.")
+    
+    static let all = [Get, Add, Drop, Unlock, Lock]
+}
+struct GitCommand {
+    let cmdString :String, dbPrefix :String
+}
+struct GitCommands {
+    static let Add = GitCommand(cmdString: "add", dbPrefix: "gitannex.command.git-add.")
+    
+    static let all = [Add]
+}
+
 class Config {
     var configFile: String
     

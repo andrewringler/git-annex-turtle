@@ -72,12 +72,12 @@ class GitAnnexQueries {
         return ret
     }
 
-    class func gitAnnexGet(for url: URL, in workingDirectory: String) -> Bool {
+    class func gitAnnexCommand(for url: URL, in workingDirectory: String, cmd: GitAnnexCommand) -> Bool {
         let path :String = (url as NSURL).path!
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "get", path)
-
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", cmd.cmdString, path)
+        
+        NSLog("git annex %@ %@",cmd.cmdString,path)
         if status != 0 {
-            NSLog("gitAnnexGet")
             NSLog("status: %@", status)
             NSLog("output: %@", output)
             NSLog("error: %@", error)
@@ -85,7 +85,19 @@ class GitAnnexQueries {
         
         return status == 0
     }
-
+    class func gitCommand(for url: URL, in workingDirectory: String, cmd: GitCommand) -> Bool {
+        let path :String = (url as NSURL).path!
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.cmdString, path)
+        
+        NSLog("git %@ %@",cmd.cmdString,path)
+        if status != 0 {
+            NSLog("status: %@", status)
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        
+        return status == 0
+    }
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
         let path :String = (url as NSURL).path!
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)

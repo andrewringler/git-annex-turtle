@@ -157,12 +157,12 @@ class FinderSync: FIFinderSync {
         menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
         menuItem.image = gitAnnexLogoColor
 
-        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
-        let gitAnnexCopyToMenu = NSMenu(title: "")
-        gitAnnexCopyToMenu.addItem(withTitle: "cloud", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
-        gitAnnexCopyToMenu.addItem(withTitle: "usb 2tb", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
-        menuItem.submenu = gitAnnexCopyToMenu
+//        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
+//        menuItem.image = gitAnnexLogoColor
+//        let gitAnnexCopyToMenu = NSMenu(title: "")
+//        gitAnnexCopyToMenu.addItem(withTitle: "cloud", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
+//        gitAnnexCopyToMenu.addItem(withTitle: "usb 2tb", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
+//        menuItem.submenu = gitAnnexCopyToMenu
         
         menuItem = menu.addItem(withTitle: "git add", action: #selector(gitAdd(_:)), keyEquivalent: "")
         menuItem.image = gitLogoOrange
@@ -177,7 +177,7 @@ class FinderSync: FIFinderSync {
         NSLog("git annex get: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj: URL in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: "gitannex.command.git-annex-get." + (obj as NSURL).path!)
+            defaults.set(obj, forKey: GitAnnexCommands.Get.dbPrefix + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAnnexAdd(_ sender: AnyObject?) {
@@ -188,6 +188,7 @@ class FinderSync: FIFinderSync {
         NSLog("git annex add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: GitAnnexCommands.Add.dbPrefix + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAnnexDrop(_ sender: AnyObject?) {
@@ -198,6 +199,7 @@ class FinderSync: FIFinderSync {
         NSLog("git annex drop: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: GitAnnexCommands.Drop.dbPrefix + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAnnexLock(_ sender: AnyObject?) {
@@ -208,6 +210,7 @@ class FinderSync: FIFinderSync {
         NSLog("git annex lock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: GitAnnexCommands.Lock.dbPrefix + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAnnexUnlock(_ sender: AnyObject?) {
@@ -218,6 +221,7 @@ class FinderSync: FIFinderSync {
         NSLog("git annex unlock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: GitAnnexCommands.Unlock.dbPrefix + (obj as NSURL).path!)
         }
     }
     @IBAction func gitAdd(_ sender: AnyObject?) {
@@ -228,18 +232,8 @@ class FinderSync: FIFinderSync {
         NSLog("git add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
         for obj in items! {
             NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
+            defaults.set(obj, forKey: GitCommands.Add.dbPrefix + (obj as NSURL).path!)
         }
     }
-    @IBAction func gitAnnexCopy(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex copy --to=", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-        }
-    }
-
 }
 
