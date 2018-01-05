@@ -12,7 +12,10 @@ class GitAnnexQueries {
     // TODO one queue per repository
     static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
-    // https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
+    /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
+     * with fixes for leaving dangling open file descriptors from here:
+     * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+    */
     private class func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], exitCode: Int32) {
         // protect access to git annex, I don't think you can query it
         // too heavily concurrently on the same repo, and plus I was getting
