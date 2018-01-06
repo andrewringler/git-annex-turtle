@@ -28,6 +28,12 @@ struct GitCommands {
     
     static let all = [Add]
 }
+struct GitConfig {
+    let name :String
+}
+struct GitConfigs {
+    static let AnnexUUID = GitConfig(name: "annex.uuid")
+}
 
 class Config {
     var configFile: String
@@ -68,7 +74,8 @@ class Config {
     func listWatchedRepos() -> [String] {
         do {
             let data = try String(contentsOfFile: configFile, encoding: .utf8)
-            let repos = data.components(separatedBy: .newlines)
+            var repos = data.components(separatedBy: .newlines)
+            repos = repos.filter { $0.count > 0 } // remove empty strings
             return repos
         } catch {
             print("Unable to list watched repos from config file at \(configFile)")

@@ -15,10 +15,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
-
+    
+    var watchedFolders :[(UUID, String)] = []
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup") {
             let config = Config()
+
+            // For all watched folders, if it has a valid git-annex UUID then
+            // assume it is a valid git-annex folder and start watching it
+            for watchedFolder in config.listWatchedRepos() {
+                NSLog("About to try to watch '%@'", watchedFolder)
+                if let uuid = GitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
+                    watchedFolders.append((uuid, watchedFolder))
+                    NSLog("Watching: %@ %@", uuid.uuidString, watchedFolder)
+                } else {
+                    // TODO let the user know this?
+                    NSLog("Could not find valid git-annex UUID for '%@', not watching", watchedFolder)
+                }
+            }
             
             // just grab the first repo to watch, for now
             let repo :String? = config.listWatchedRepos().first

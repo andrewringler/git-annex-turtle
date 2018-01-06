@@ -12,28 +12,58 @@ class GitAnnexQueries {
     // TODO one queue per repository
     static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
+    // https://gist.github.com/brennanMKE/a0a2ee6aa5a2e2e66297c580c4df0d66
+    fileprivate class func directoryExistsAtPath(_ path: String) -> Bool {
+        var isDirectory = ObjCBool(true)
+        let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
+    }
+
     /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
     */
-    private class func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], exitCode: Int32) {
+    private class func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
         // protect access to git annex, I don't think you can query it
         // too heavily concurrently on the same repo, and plus I was getting
         // too many open files warnings
         // when I let all my processes access this method
         
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
-        var ret: (output: [String], error: [String], exitCode: Int32) = ([""], ["ERROR: task did not run"], -1)
+        var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
         gitAnnexQueryQueue.sync {
             var output : [String] = []
             var error : [String] = []
             
+            /* check for a valid working directory now, because Process will not let us catch
+             * the exception thrown if the directory is invalid */
+            if !directoryExistsAtPath(workingDirectory) {
+                NSLog("Invalid working directory '%@'", workingDirectory)
+                return
+            }
+
             let task = Process()
             task.launchPath = cmd
             task.currentDirectoryPath = workingDirectory
             task.arguments = args
-            
+
+            // TODO wrap commands in a shell (that is likely to exist) to avoid uncatchable errors
+            // IE if workingDirectory does not exist we cannot catch that error
+            // uncatchable runtime exceptions
+            // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
+//            let task = Process()
+//            task.launchPath = "/bin/bash"
+//            task.currentDirectoryPath = workingDirectory
+//            var bashCmd :[String] = [cmd]
+//            for arg: String in args {
+//                bashCmd.append(arg)
+//            }
+//            let bashCmdString: String = "cd '" + workingDirectory + "';" +
+//            let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
+//            task.arguments = bashArgs
+//            NSLog("How does this look? %@", bashArgs)
+
             let outpipe = Pipe()
             task.standardOutput = outpipe
             let errpipe = Pipe()
@@ -78,7 +108,7 @@ class GitAnnexQueries {
         
         NSLog("git annex %@ %@",cmd.cmdString,path)
         if status != 0 {
-            NSLog("status: %@", status)
+            NSLog("status: %@", String(status))
             NSLog("output: %@", output)
             NSLog("error: %@", error)
         }
@@ -91,12 +121,36 @@ class GitAnnexQueries {
         
         NSLog("git %@ %@",cmd.cmdString,path)
         if status != 0 {
-            NSLog("status: %@", status)
+            NSLog("status: %@", String(status))
             NSLog("output: %@", output)
             NSLog("error: %@", error)
         }
         
         return status == 0
+    }
+    class func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
+        // is this folder even a directory?
+        if !directoryExistsAtPath(workingDirectory) {
+            NSLog("Not a valid git-annex folder, nor even a directory '%@'", workingDirectory)
+            return nil
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: "config", GitConfigs.AnnexUUID.name)
+        
+        NSLog("git config %@",GitConfigs.AnnexUUID.name)
+        if status == 0, output.count == 1 {
+            for uuidString in output {
+                if let uuid = UUID(uuidString: uuidString) {
+                    return uuid
+                }
+                break
+            }
+        }
+        
+        NSLog("status: %@", String(status))
+        NSLog("output: %@", output)
+        NSLog("error: %@", error)
+        return nil
     }
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
         let path :String = (url as NSURL).path!
@@ -104,7 +158,7 @@ class GitAnnexQueries {
         
         if status != 0 {
             NSLog("gitAnnexPathInfo")
-            NSLog("status: %@", status)
+            NSLog("status: %@", String(status))
             NSLog("output: %@", output)
             NSLog("error: %@", error)
         }

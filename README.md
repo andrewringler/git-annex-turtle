@@ -18,6 +18,7 @@
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * on first launch if directory is already showing icons do not appear
+ * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
  
 ## Notes
  * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
