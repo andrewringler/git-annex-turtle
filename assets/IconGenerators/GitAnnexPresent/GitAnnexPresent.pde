@@ -55,7 +55,7 @@ void draw() {
   g.rotateX(0.7);
   g.rotateZ(0.3);
   g.rotateY(-0.5);
-  g.strokeWeight(10.0);
+  g.strokeWeight(20.0);
   //stroke(0, 100);
   //fill(0, 20);
   //stroke(grey);

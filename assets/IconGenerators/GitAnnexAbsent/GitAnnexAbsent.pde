@@ -55,13 +55,14 @@ void draw() {
   g.rotateX(0.7);
   g.rotateZ(0.3);
   g.rotateY(-0.5);
-  g.strokeWeight(10.0);
+  g.strokeWeight(20.0);
   //stroke(0, 100);
   //fill(0, 20);
   //stroke(grey);
   //fill(255, 1);
-  float b = 2.3;
-  g.stroke(64.0*b, 191.0*b, 76.0*b);
+  //float b = 2.3;
+  //g.stroke(64.0*b, 191.0*b, 76.0*b);
+  g.stroke(grey);
   g.fill(255, 0);
   g.box(200.0);
   g.endDraw();
