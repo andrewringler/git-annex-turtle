@@ -62,7 +62,7 @@ void draw() {
   //fill(255, 1);
   //float b = 2.3;
   //g.stroke(64.0*b, 191.0*b, 76.0*b);
-  g.stroke(grey);
+  g.stroke(150);
   g.fill(255, 0);
   g.box(200.0);
   g.endDraw();
