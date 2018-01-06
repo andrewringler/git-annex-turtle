@@ -4,7 +4,7 @@
 ## Build a Release
  * Open mac-experiments2/git-annex-turtle.xcodeproj in XCode 9.2
  * Click on the git-annex-turtle scheme (to the right of the triangle play button top of screen), click Edit Scheme, Make sure Run > Build Configuration is set to Release
- * Product > Build
+ * Select the Scheme 'git-annex-turtle' then build: Product > Build 
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
 
  
@@ -17,7 +17,8 @@
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
-
+ * on first launch if directory is already showing icons do not appear
+ 
 ## Notes
  * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
 

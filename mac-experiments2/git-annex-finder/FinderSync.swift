@@ -19,7 +19,7 @@ class FinderSync: FIFinderSync {
     let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
     let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
-    let gitAnnexLogoColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
+    let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
 
     override init() {
         defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
@@ -146,16 +146,16 @@ class FinderSync: FIFinderSync {
         // Produce a menu for the extension.
         let menu = NSMenu(title: "")
         var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
+        menuItem.image = gitAnnexLogoNoArrowsColor
         menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
+        menuItem.image = gitAnnexLogoNoArrowsColor
         menuItem = menu.addItem(withTitle: "git annex lock", action: #selector(gitAnnexLock(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
+        menuItem.image = gitAnnexLogoNoArrowsColor
         menuItem = menu.addItem(withTitle: "git annex unlock", action: #selector(gitAnnexUnlock(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
+        menuItem.image = gitAnnexLogoNoArrowsColor
         
         menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
-        menuItem.image = gitAnnexLogoColor
+        menuItem.image = gitAnnexLogoNoArrowsColor
 
 //        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
 //        menuItem.image = gitAnnexLogoColor

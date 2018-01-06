@@ -13,6 +13,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
+    let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
+    let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup") {
@@ -22,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let repo :String? = config.listWatchedRepos().first
             
             if let button = statusItem.button {
-                button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default2"))
+                button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
                 button.action = #selector(printQuote(_:))
             }
             constructMenu(watching: repo)
@@ -201,13 +203,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func constructMenu(watching :String?) {
         let menu = NSMenu()
         
-        menu.addItem(NSMenuItem(title: "git-annex-turtle", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "git-annex-turtle is watching:", action: nil, keyEquivalent: ""))
         if let watchString = watching {
             var watchingStringTruncated = watchString
             if(watchingStringTruncated.count > 40){
                 watchingStringTruncated = "…" + watchingStringTruncated.suffix(40)
             }
-            menu.addItem(NSMenuItem(title: "Watching “" + watchingStringTruncated + "”", action: nil, keyEquivalent: ""))
+            let watching = menu.addItem(withTitle: watchingStringTruncated, action: nil, keyEquivalent: "")
+            watching.image = gitAnnexLogoNoArrowsColor
         } else {
             menu.addItem(NSMenuItem(title: "Not watching any repos", action: nil, keyEquivalent: ""))
         }
