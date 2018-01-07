@@ -103,30 +103,39 @@ class GitAnnexQueries {
     }
 
     class func gitAnnexCommand(for url: URL, in workingDirectory: String, cmd: GitAnnexCommand) -> Bool {
-        let path :String = (url as NSURL).path!
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", cmd.cmdString, path)
-        
-        NSLog("git annex %@ %@",cmd.cmdString,path)
-        if status != 0 {
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+        if let path = PathUtils.path(for: url) {
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", cmd.cmdString, path)
+            
+            NSLog("git annex %@ %@",cmd.cmdString,path)
+            if status != 0 {
+                NSLog("status: %@", String(status))
+                NSLog("output: %@", output)
+                NSLog("error: %@", error)
+            }
+            
+            return status == 0
+        } else {
+            NSLog("unable to get path from URL '%@'", url.absoluteString)
         }
         
-        return status == 0
+        return false
     }
     class func gitCommand(for url: URL, in workingDirectory: String, cmd: GitCommand) -> Bool {
-        let path :String = (url as NSURL).path!
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.cmdString, path)
-        
-        NSLog("git %@ %@",cmd.cmdString,path)
-        if status != 0 {
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+        if let path = (url as NSURL).path {
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.cmdString, path)
+            
+            NSLog("git %@ %@",cmd.cmdString,path)
+            if status != 0 {
+                NSLog("status: %@", String(status))
+                NSLog("output: %@", output)
+                NSLog("error: %@", error)
+            }
+            return status == 0
+        } else {
+            NSLog("unable to get path from URL '%@'", url.absoluteString)
         }
-        
-        return status == 0
+
+        return false
     }
     class func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?
@@ -153,75 +162,79 @@ class GitAnnexQueries {
         return nil
     }
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> String {
-        let path :String = (url as NSURL).path!
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
-        
-        if status != 0 {
-            NSLog("gitAnnexPathInfo")
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
-        }
-        
-        // if command didnt return an error, parse the JSON
-        // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
-        if(status == 0){
-            do {
-                var data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
-                var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
-                
-                if let dictionary = json as? [String: Any] {
-                    let success = dictionary["success"]
-                    let present = dictionary["present"]
-                    let file = dictionary["file"]
-                    let directory = dictionary["directory"]
-                    let localAnnexKeys = dictionary["local annex keys"]
-                    let annexedFilesInWorkingTree = dictionary["annexed files in working tree"]
-                    let command = dictionary["command"]
-                    
-                    // a file in the annex that is present
-                    if success != nil && (success as! Bool) == true
-                        && present != nil && (present as! Bool) == true {
-                        return "present"
-                    }
-                    
-                    // a file in the annex that is not present
-                    if success != nil && (success as! Bool) == true
-                        && present != nil && (present as! Bool) == false {
-                        return "absent"
-                    }
-                    
-                    // a directory in the annex who has all the content
-                    // of all his containing files recursively
-                    if success != nil && (success as! Bool) == true
-                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
-                        && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
-                        return "present"
-                    }
-                    
-                    // a directory in the annex who is missing all
-                    // content from some all of his containing files recursively
-                    if success != nil && (success as! Bool) == true
-                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
-                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
-                        && (localAnnexKeys as! Int) == 0
-                    {
-                        return "absent"
-                    }
-                    
-                    // a directory in the annex who is missing some
-                    // content from some of his containing files recursively
-                    if success != nil && (success as! Bool) == true
-                        && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
-                        && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
-                        && (localAnnexKeys as! Int) > 0
-                    {
-                        return "partially-present-directory"
-                    }
-                }
-            } catch {
-                NSLog("unable to parse JSON: '", output, "'")
+        if let path :String = (url as NSURL).path {
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
+            
+            if status != 0 {
+                NSLog("gitAnnexPathInfo")
+                NSLog("status: %@", String(status))
+                NSLog("output: %@", output)
+                NSLog("error: %@", error)
             }
+            
+            // if command didnt return an error, parse the JSON
+            // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
+            if(status == 0){
+                do {
+                    var data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
+                    var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                    
+                    if let dictionary = json as? [String: Any] {
+                        let success = dictionary["success"]
+                        let present = dictionary["present"]
+                        let file = dictionary["file"]
+                        let directory = dictionary["directory"]
+                        let localAnnexKeys = dictionary["local annex keys"]
+                        let annexedFilesInWorkingTree = dictionary["annexed files in working tree"]
+                        let command = dictionary["command"]
+                        
+                        // a file in the annex that is present
+                        if success != nil && (success as! Bool) == true
+                            && present != nil && (present as! Bool) == true {
+                            return "present"
+                        }
+                        
+                        // a file in the annex that is not present
+                        if success != nil && (success as! Bool) == true
+                            && present != nil && (present as! Bool) == false {
+                            return "absent"
+                        }
+                        
+                        // a directory in the annex who has all the content
+                        // of all his containing files recursively
+                        if success != nil && (success as! Bool) == true
+                            && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                            && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
+                            return "present"
+                        }
+                        
+                        // a directory in the annex who is missing all
+                        // content from some all of his containing files recursively
+                        if success != nil && (success as! Bool) == true
+                            && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                            && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
+                            && (localAnnexKeys as! Int) == 0
+                        {
+                            return "absent"
+                        }
+                        
+                        // a directory in the annex who is missing some
+                        // content from some of his containing files recursively
+                        if success != nil && (success as! Bool) == true
+                            && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
+                            && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
+                            && (localAnnexKeys as! Int) > 0
+                        {
+                            return "partially-present-directory"
+                        }
+                    }
+                } catch {
+                    NSLog("unable to parse JSON: '", output, "'")
+                }
+            }
+            return "unknown"
+        } else {
+            NSLog("could not get path for URL '%@'", url.absoluteString)
         }
         return "unknown"
     }

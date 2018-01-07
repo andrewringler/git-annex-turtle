@@ -34,7 +34,7 @@ class Finder {
                 } else {
                     let repo = CommandLine.arguments[2]
                     
-                    if repo.isGitAnnexRepository() {
+                    if isGitAnnexRepository(repo: repo) {
                         config.watchRepo(repo: repo)
                         consoleIO.writeMessage("watching \(repo)")
                     } else {
@@ -58,5 +58,10 @@ class Finder {
                 ConsoleIO.printUsage()
             }
         }
+    }
+    
+    func isGitAnnexRepository(repo: String) -> Bool {
+        // TODO
+        return true
     }
 }
