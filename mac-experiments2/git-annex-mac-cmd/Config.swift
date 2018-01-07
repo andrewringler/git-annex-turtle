@@ -63,6 +63,31 @@ struct GitConfig {
 struct GitConfigs {
     static let AnnexUUID = GitConfig(name: "annex.uuid")
 }
+enum Status: String {
+    case present = "present"
+    case absent = "absent"
+    case unknown = "unknown"
+    case partiallyPresentDirectory = "partially-present-directory"
+    
+    static let all = [present,absent,unknown,partiallyPresentDirectory]
+    static func status(from: String) -> Status {
+        for status in all {
+            if status.rawValue == from {
+                return status
+            }
+        }
+        return unknown
+    }
+}
+enum GitAnnexJSON: String {
+    case success = "success"
+    case present = "present"
+    case directory = "directory"
+    case file = "file"
+    case localAnnexKeys = "local annex keys"
+    case annexedFilesInWorkingTree = "annexed files in working tree"
+    case command = "command"
+}
 
 class PathUtils {
     class func path(for url: URL) -> String? {

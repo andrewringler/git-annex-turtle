@@ -55,11 +55,11 @@ class FinderSync: FIFinderSync {
         // Set up the directory we are syncing
         updateWatchedFolders()
         
-        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: "present")
-        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: "absent")
-        FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: "unknown")
-        FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
-        FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: "partially-present-directory")
+        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: Status.present.rawValue)
+        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: Status.absent.rawValue)
+        FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: Status.unknown.rawValue)
+//        FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
+        FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: Status.partiallyPresentDirectory.rawValue)
         
         // Poll for changes
         // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
@@ -196,25 +196,7 @@ class FinderSync: FIFinderSync {
 //        FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
 //    }
     private func updateBadge(for url: URL, with status: String) {
-        var whichBadge :Int = 0
-        if status == "absent" {
-            whichBadge = 1
-        } else if status == "present" {
-            whichBadge = 2
-        } else if status == "unknown" {
-            whichBadge = 3
-        } else if status == "fully-present-directory" {
-            whichBadge = 4
-        } else if status == "partially-present-directory" {
-            whichBadge = 5
-        } else {
-            NSLog("Invalid status '%@'", status)
-            // nothing, no icon
-            // setBadgeIdentifier below will clear an icon if there was one
-        }
-        
-        let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory", "partially-present-directory"][whichBadge]
-        FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
+        FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
     }
     
     override func requestBadgeIdentifier(for url: URL) {

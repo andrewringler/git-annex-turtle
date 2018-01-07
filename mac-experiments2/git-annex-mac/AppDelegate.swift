@@ -154,7 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //                        }
                             if let path = PathUtils.path(for: url) {
                                 let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
-                                self.defaults.set(status, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+                                self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
                             } else {
                                 NSLog("unable to get path for URL in key %@", key)
                             }
