@@ -8,12 +8,10 @@
 
 import Cocoa
 import FinderSync
-//import Foundation
 
 class FinderSync: FIFinderSync {
     let defaults: UserDefaults
     var watchedFolders = Set<WatchedFolder>()
-    var pathToURL = Dictionary<String, URL>()
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
@@ -36,14 +34,6 @@ class FinderSync: FIFinderSync {
                     NSLog(watchedFolder.pathString)
                     NSLog(watchedFolder.uuid.uuidString)
                 }
-                
-                // WORKAROUND, some badges don't update their icon if set
-                // soon after updating FIFinderSyncController.default().directoryURLs
-                // so we'll just force update of all badges after a few seconds
-//                let delayInSeconds = 20.0
-//                DispatchQueue.main.asyncAfter(deadline: .now() + delayInSeconds) {
-//                    self.updateAllBadges()
-//                }
             }
         }
     }
@@ -77,21 +67,17 @@ class FinderSync: FIFinderSync {
                         if let status = self.defaults.string(forKey: key) {
                             // instantiating URL directly doesn't work, it prepends the container path
                             // see https://stackoverflow.com/questions/27062454/converting-url-to-string-and-back-again
-                            if let url = self.pathToURL[path] {
-                                self.updateBadge(for: url, with: status)
-                                
-                                // remove this .updated key, we have handled it
-                                self.defaults.removeObject(forKey: key)
-                                
-                                // replace with a standard status key, that we can check for
-                                // when we receive a requestBadgeIdentifier from the OS
-                                // this would happen if the user closes and re-opens the
-                                // a finder window we already have data for
-                                self.defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
-                            } else {
-                                NSLog("unable to retrieve url for path '%@'", path)
-                               // NSLog("keys in db are %@", self.pathToURL.keys)
-                            }
+                            let url = PathUtils.url(for: path)
+                            self.updateBadge(for: url, with: status)
+                            
+                            // remove this .updated key, we have handled it
+                            self.defaults.removeObject(forKey: key)
+                            
+                            // replace with a standard status key, that we can check for
+                            // when we receive a requestBadgeIdentifier from the OS
+                            // this would happen if the user closes and re-opens the
+                            // a finder window we already have data for
+                            self.defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
                         } else {
                             NSLog("could not find value for key %@", key)
                         }
@@ -128,27 +114,6 @@ class FinderSync: FIFinderSync {
                 sleep(1)
                 
                 self.updateWatchedFolders()
-            }
-        }
-    }
-    
-    func updateAllBadges() {
-        for watchedFolder in watchedFolders {
-            // find all status update keys for this watched folder
-            let defaultsDict = self.defaults.dictionaryRepresentation()
-            let allKeys = defaultsDict.keys
-            for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder)) }) {
-                var path = key
-                path.removeFirst(GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder).count)
-                if let status = self.defaults.string(forKey: key) {
-                    if let url = pathToURL[path] {
-                        self.updateBadge(for: url, with: status)
-                    } else {
-                        NSLog("unable to update badge, url was never stored for path %@", path)
-                    }
-                } else {
-                    NSLog("unable to retrieve status for key %@", key)
-                }
             }
         }
     }
@@ -201,9 +166,6 @@ class FinderSync: FIFinderSync {
     
     override func requestBadgeIdentifier(for url: URL) {
         if let path = PathUtils.path(for: url) {
-            NSLog("storing url for path '%@'", path)
-            pathToURL.updateValue(url, forKey: path) // store original URL
-            
             for watchedFolder in watchedFolders {
                 if path.starts(with: watchedFolder.pathString) {
                     // do we already have the status cached?
