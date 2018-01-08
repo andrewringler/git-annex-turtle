@@ -5,7 +5,6 @@
 //  Created by Andrew Ringler on 1/6/18.
 //  Copyright © 2018 Andrew Ringler. All rights reserved.
 //
-
 import Foundation
 
 class WatchedFolder: Equatable, Hashable, Swift.Codable {
@@ -22,32 +21,5 @@ class WatchedFolder: Equatable, Hashable, Swift.Codable {
     var hashValue: Int {
         return uuid.hashValue
     }
-
-//    // NSCoding required for runtime archiving with NSKeyedArchiver to send across UserDefaults
-//    required convenience init?(coder aDecoder: NSCoder) {
-//        guard let pathString = aDecoder.decodeObject(forKey: "pathstring") as? String,
-//            let uuidString = aDecoder.decodeObject(forKey: "uuidstring") as? String
-//            else { return nil }
-//
-//        self.init(uuid: UUID(uuidString: uuidString)!, pathString: pathString)
-//    }
-//    func encode(with aCoder: NSCoder) {
-//        aCoder.encode(pathString as String, forKey: "pathstring")
-//        aCoder.encode(uuid.uuidString as String, forKey: "uuidstring")
-//    }
 }
-//extension WatchedFolder : Swift.Codable { }
-//    public convenience init(from aDecoder: Decoder) throws {
-//        guard let pathString = aDecoder.decodeObject(forKey: "pathstring") as? String,
-//            let uuidString = aDecoder.decodeObject(forKey: "uuidstring") as? String
-//            else { throw }
-//
-//        WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: pathString)
-//    }
-//
-//    public func encode(to aCoder: Encoder) throws {
-//        aCoder.encode(pathString as String, forKey: "pathstring")
-//        aCoder.encode(uuid.uuidString as String, forKey: "uuidstring")
-//    }
-//}
 

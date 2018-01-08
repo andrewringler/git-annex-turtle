@@ -44,7 +44,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             
             // notify our Finder Sync extension of the change
-//            let encodedData: Data = NSKeyedArchiver.archivedData(withRootObject: watchedFolders)
             if let encodedData :Data = try? JSONEncoder().encode(watchedFolders) {
                 defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
             } else {
@@ -58,26 +57,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
             button.action = #selector(printQuote(_:))
         }
-        
-        // TODO move into test class
-        // TEST EQUALS
-        var a = UUID()
-        var b = UUID(uuidString: a.uuidString)! // different instant, same value
-        var setA = Set<WatchedFolder>()
-        setA.insert(WatchedFolder(uuid: a, pathString: "a path"))
-        var setB = Set<WatchedFolder>()
-        setB.insert(WatchedFolder(uuid: b, pathString: "a path"))
-        if setA != setB {
-            debugPrint("this is problematic")
-        } else {
-            debugPrint("this is what we want")
-        }
 
-        // delete all of our keys
         // THIS IS USEFUL FOR TESTING
+        // delete all of our keys
         let allKeys = defaults.dictionaryRepresentation().keys
         for key in allKeys {
-            if key.starts(with: "gitannex.") {
+            if key.starts(with: GitAnnexTurtleDbPrefix) {
                 defaults.removeObject(forKey: key)
             }
         }
@@ -85,7 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check if watched folder list has changed, update menu and notify Finder Sync extension
         DispatchQueue.global(qos: .background).async {
             while true {
-                // TODO use an OS filesystem monitor?
+                // TODO: use an OS filesystem monitor on ~/.config/git-annex/turtle-watch
                 self.updateListOfWatchedFolders()
                 sleep(2)
             }

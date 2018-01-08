@@ -23,8 +23,6 @@ class FinderSync: FIFinderSync {
 
     func updateWatchedFolders() {
         if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
-//            NSKeyedUnarchiver.setClass(WatchedFolder.self, forClassName: "git_annex_turtle.WatchedFolder")
-//            let newWatchedFolders = NSKeyedUnarchiver.unarchiveObject(with: decoded) as! Set<WatchedFolder>
             if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
                 if newWatchedFolders != watchedFolders {
                     watchedFolders = newWatchedFolders
@@ -86,30 +84,6 @@ class FinderSync: FIFinderSync {
                     }
                 }
                 
-                //                var statusUpdates :Int = 0
-                //                for key in allKeys {
-                //                    if key.starts(with: "gitannex.status.updated.") {
-                //                        // OK lets update the badge icon with the new updated status
-                //                        var path = key
-                //                        path.removeFirst("gitannex.status.updated.".count)
-                //
-                //                        if let status = self.defaults.string(forKey: key) {
-                //                            self.updateBadge(for: URL(fileURLWithPath: path), with: status)
-                //
-                //                            // remove this .new key, we have handled it
-                //                            self.defaults.removeObject(forKey: key)
-                //
-                //                            // replace with a standard key, that we can check for
-                //                            // when we receive a requestBadgeIdentifier from the OS
-                //                            // this would happen if the user closes and re-opens the
-                //                            // a finder window we already have data for
-                //                            self.defaults.set(status, forKey: "gitannex.status." + path)
-                //
-                //                            statusUpdates += 1
-                //                        }
-                //                    }
-                //                }
-                
                 // TODO wait on updates flag? instead of sleep / polling?
                 sleep(1)
                 
@@ -134,32 +108,6 @@ class FinderSync: FIFinderSync {
 //        }
     }
     
-//    private func updateBadge(for url: URL, with status: String) {
-//        var whichBadge :Int = 0
-//        if status == "absent" {
-//            whichBadge = 1
-//        } else if status == "present" {
-//            whichBadge = 2
-//        } else if status == "unknown" {
-//            whichBadge = 3
-//        } else if status == "fully-present-directory" {
-//            whichBadge = 4
-//        } else if status == "partially-present-directory" {
-//            whichBadge = 5
-//        } else {
-//            NSLog("Invalid status '%@'", status)
-//            // nothing, no icon
-//            // setBadgeIdentifier below will clear an icon if there was one
-//        }
-//
-//        NSLog("settings status to '%@' for '%@'", status, url.absoluteString)
-//        let badgeIdentifier = ["", "absent", "present", "unknown", "fully-present-directory", "partially-present-directory"][whichBadge]
-//        NSLog("settings badgeIdentifier to '%@' for '%@'", badgeIdentifier, url.absoluteString)
-//
-//        pathToURL.updateValue(url, forKey: url.absoluteString)
-//
-//        FIFinderSyncController.default().setBadgeIdentifier(badgeIdentifier, for: url)
-//    }
     private func updateBadge(for url: URL, with status: String) {
         FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
     }
