@@ -32,7 +32,7 @@ class GitAnnexQueries {
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
         var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
-        gitAnnexQueryQueue.sync {
+//        gitAnnexQueryQueue.sync {
             var output : [String] = []
             var error : [String] = []
             
@@ -40,7 +40,7 @@ class GitAnnexQueries {
              * the exception thrown if the directory is invalid */
             if !directoryExistsAtPath(workingDirectory) {
                 NSLog("Invalid working directory '%@'", workingDirectory)
-                return
+                return ret
             }
 
             let task = Process()
@@ -97,7 +97,7 @@ class GitAnnexQueries {
             let status = task.terminationStatus
             
             ret = (output, error, status)
-        }
+//        }
         
         return ret
     }
@@ -106,8 +106,8 @@ class GitAnnexQueries {
         if let path = PathUtils.path(for: url) {
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", cmd.cmdString, path)
             
-            NSLog("git annex %@ %@",cmd.cmdString,path)
             if status != 0 {
+                NSLog("git annex %@ %@",cmd.cmdString,path)
                 NSLog("status: %@", String(status))
                 NSLog("output: %@", output)
                 NSLog("error: %@", error)
@@ -124,8 +124,8 @@ class GitAnnexQueries {
         if let path = (url as NSURL).path {
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.cmdString, path)
             
-            NSLog("git %@ %@",cmd.cmdString,path)
             if status != 0 {
+                NSLog("git %@ %@",cmd.cmdString,path)
                 NSLog("status: %@", String(status))
                 NSLog("output: %@", output)
                 NSLog("error: %@", error)
@@ -146,7 +146,6 @@ class GitAnnexQueries {
         
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: "config", GitConfigs.AnnexUUID.name)
         
-        NSLog("git config %@",GitConfigs.AnnexUUID.name)
         if status == 0, output.count == 1 {
             for uuidString in output {
                 if let uuid = UUID(uuidString: uuidString) {
@@ -155,10 +154,13 @@ class GitAnnexQueries {
                 break
             }
         }
-        
-        NSLog("status: %@", String(status))
-        NSLog("output: %@", output)
-        NSLog("error: %@", error)
+
+        if status != 0 {
+            NSLog("git config %@",GitConfigs.AnnexUUID.name)
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
         return nil
     }
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> Status {

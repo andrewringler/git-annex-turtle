@@ -80,9 +80,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Periodically check if watched folder list has changed, update menu and notify Finder Sync extension
         DispatchQueue.global(qos: .background).async {
-            // TODO use an OS filesystem monitor?
-            self.updateListOfWatchedFolders()
-            sleep(2)
+            while true {
+                // TODO use an OS filesystem monitor?
+                self.updateListOfWatchedFolders()
+                sleep(2)
+            }
         }
         
         // Handle command requests coming from the (potentially multiple instances) of our Finder Sync extension
@@ -153,8 +155,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //                            }
 //                        }
                             if let path = PathUtils.path(for: url) {
-                                let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
-                                self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+                                // handle multiple git-annex queries concurrently
+                                DispatchQueue.global(qos: .userInitiated).async {
+                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
+                                    self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+                                }
                             } else {
                                 NSLog("unable to get path for URL in key %@", key)
                             }
