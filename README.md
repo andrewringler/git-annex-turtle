@@ -1,5 +1,28 @@
-# git-annex-mac
-*git-annex-mac* provides git-annex status updates on the Mac via integration with Finder and a Menubar icon (aka menubar extra). This app relies on the Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later.
+# git-annex-turtle
+*git-annex-turtle* provides Apple Finder integration, including badge icons, contextual menus and a Menubar icon (aka menubar extra) for [git-annex](http://git-annex.branchable.com/) on the Mac. It it a native Mac app written in Swift 4 with XCode 9.2.
+
+*git-annex-turtle* is open-source, licensed under [The MIT License](https://opensource.org/licenses/MIT).
+
+## Getting Started
+### Install
+Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) for macOS. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
+
+Download and install git-annex-turtle.
+
+### Usage
+Click the git-annex-turtle Menubar icon, then click `Watch a repository`, select a git-annex repository to watch.
+
+You are now all set. Open your git-annex repository in Apple Finder to see updated badge icons. Right click (control-click) on a file or folder to see git-annex specific context menus.
+
+### Requirements
+macOS or OS-X 10.10 (Yosemite) or later
+
+*git-annex-turtle* relies on the Apple Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later and all versions of macOS. The [Liferay Nativity](https://github.com/liferay/liferay-nativity) library could potentially be used to enable *git-annex-turtle* to run on older Mac OSs. 
+
+*git-annex-turtle* is released for the the Mac only; it is written in Swift with XCode so is probably not easily portable to Linux and Windows. You may, of course, adapt and use this app's user experience, design, workflow and icon sets when porting to other OSs. See git-annex [related software](http://git-annex.branchable.com/related_software/) for options already built for other OSs.
+
+## Name
+*git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and many other tools which have provided OS-level icons for source revisions control over the years.
 
 ## Build a Release
  * Open mac-experiments2/git-annex-turtle.xcodeproj in XCode 9.2
@@ -7,24 +30,16 @@
  * Select the Scheme 'git-annex-turtle' then build: Product > Build 
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
 
- 
-
-
 ## TODO
- * Get context menus working for get and drop
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * and context menu errors, where to display?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
- * on first launch if directory is already showing icons do not appear
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
  * Monitor filesystem for changes? https://github.com/eonil/FileSystemEvents, https://github.com/njdehoog/Witness
  
-## Notes
- * https://github.com/liferay/liferay-nativity could provide Finder integration for older OSes if needed.
-
-### Tutorials / Help
+## Internal: Tutorials, References, XCode & Swift Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial
  * https://www.raywenderlich.com/128039/command-line-programs-macos-tutorial commandline tutorial (XCode 8)
  * https://developer.apple.com/macos/human-interface-guidelines/system-capabilities/search-and-spotlight/ for Spotlight and Search support. It would be nice to add Quicklook support for non-present files and Spotlight support for symlinked files (which are ignored by Spotlight)
