@@ -12,9 +12,12 @@ import Foundation
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     
+    let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
+    let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
+    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
     let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
     
     var watchedFolders = Set<WatchedFolder>()
@@ -54,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
-            button.image = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
+            button.image = gitAnnexTurtleLogo
             button.action = #selector(printQuote(_:))
         }
 
@@ -87,7 +90,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
                                 if let url = self.defaults.url(forKey: key) {
                                     let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: command)
-                                    // TODO let user know for non zero exit codes
+                                    if !status.success {
+                                        // git-annex has very nice error message, use them as-is
+                                        self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                                    }
                                     
                                     // handled, delete the request
                                     self.defaults.removeObject(forKey: key)
@@ -102,8 +108,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
                                 if let url = self.defaults.url(forKey: key) {
                                     let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: command)
-                                    // TODO, what to do with status?
-                                    
+                                    if !status.success {
+                                        self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                                    }
+                                   
                                     // handled, delete the request
                                     self.defaults.removeObject(forKey: key)
                                 } else {
@@ -313,5 +321,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func nilAction(_ sender: AnyObject?) {}
+    
+    func dialogOK(title: String, message: String) {
+        DispatchQueue.main.async {
+            // https://stackoverflow.com/questions/29433487/create-an-nsalert-with-swift
+            let alert = NSAlert()
+            alert.messageText = title
+            alert.informativeText = message
+            alert.alertStyle = .warning
+            alert.icon = self.gitAnnexLogoSquareColor
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+        }
+    }
 }
 

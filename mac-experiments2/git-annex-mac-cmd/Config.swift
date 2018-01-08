@@ -129,6 +129,7 @@ enum GitAnnexJSON: String {
     case localAnnexKeys = "local annex keys"
     case annexedFilesInWorkingTree = "annexed files in working tree"
     case command = "command"
+    case note = "note"
 }
 
 class PathUtils {
