@@ -44,9 +44,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             
             // notify our Finder Sync extension of the change
-            let encodedData: Data = NSKeyedArchiver.archivedData(withRootObject: watchedFolders)
-            defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
-        }        
+//            let encodedData: Data = NSKeyedArchiver.archivedData(withRootObject: watchedFolders)
+            if let encodedData :Data = try? JSONEncoder().encode(watchedFolders) {
+                defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
+            } else {
+                NSLog("unable to encode watched folders")
+            }
+        }
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -95,10 +99,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleDbPrefix) }) {
                         // Is this a Git Annex Command?
                         for command in GitAnnexCommands.all {
-                            if key.starts(with: command.dbPrefixWithUUID(for: watchedFolder)) {
+                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
                                 if let url = self.defaults.url(forKey: key) {
                                     let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: command)
-                                    // TODO, what to do with status?
+                                    // TODO let user know for non zero exit codes
                                     
                                     // handled, delete the request
                                     self.defaults.removeObject(forKey: key)
@@ -110,7 +114,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         
                         // Is this a Git Command?
                         for command in GitCommands.all {
-                            if key.starts(with: command.dbPrefixWithUUID(for: watchedFolder)) {
+                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
                                 if let url = self.defaults.url(forKey: key) {
                                     let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: command)
                                     // TODO, what to do with status?
@@ -141,19 +145,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     // find all request keys for this watched folder
                     for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
                         if let url = self.defaults.url(forKey: key) {
-//                        DispatchQueue.global(qos: .userInitiated).async {
-//                            if url != nil {
-//                                if let path = (url! as NSURL).path {
-//                                    NSLog("handling badge request for %@", path)
-//                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url!, in: watchedFolder.pathString)
-//                                    self.defaults.set(status, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
-//                                } else {
-//                                    NSLog("unable to get path for URL in key %@", key)
-//                                }
-//                            } else {
-//                                NSLog("unable to get URL for key %@", key)
-//                            }
-//                        }
                             if let path = PathUtils.path(for: url) {
                                 // handle multiple git-annex queries concurrently
                                 DispatchQueue.global(qos: .userInitiated).async {
@@ -187,8 +178,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
             task.launch()
         }
-//
-//        // Periodically check for badge requests from our Finder Sync extension
+
+        // Periodically check if the state of a file/directory has changed since we last checked
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                let defaultsDict = self.defaults.dictionaryRepresentation()
+                let allKeys = defaultsDict.keys
+
+                // We only want to re-check files that are still in watched folders
+                for watchedFolder in self.watchedFolders {
+                    // find all existing keys for this watched folder
+                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder)) }) {
+                        var path = key
+                        path.removeFirst(GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder).count)
+                        if let oldStatus = Status.status(fromOptional: self.defaults.string(forKey: key)) {
+                            let url = PathUtils.url(for: path)
+                            // TODO handle multiple git-annex queries concurrently
+                            // NOTE if we do DispatchQueue async, we need to ensure
+                            // below that our sleep, sleeps long enough for all threads to complete!
+                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
+                            if oldStatus != newStatus {
+                                NSLog("status for '%@' updated from '%@' to '%@', notifying Finder Sync", path, oldStatus.rawValue, newStatus.rawValue)
+                                self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+                            }
+                        } else {
+                            NSLog("unable to get status for key '%@'", key)
+                        }
+                    }
+                }
+                sleep(2)
+            }
+        }
+        
 //        DispatchQueue.global(qos: .background).async {
 //            while true {
 //                // handle all direct requests first

@@ -29,11 +29,32 @@ func GitAnnexTurtleStatusDbPrefixNoPath(in watchedFolder: WatchedFolder) -> Stri
     return "gitannex.statussaved." + watchedFolder.uuid.uuidString + "."
 }
 
-struct GitAnnexCommand {
-    let cmdString :String, dbPrefix :String
+protocol Command {
+    var cmdString :String { get }
+    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String
+    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String
+}
+class GitAnnexCommand: Equatable, Hashable, Command {
+    let cmdString :String
+    private let dbPrefix :String
     
-    func dbPrefixWithUUID(for watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + "." + watchedFolder.uuid.uuidString + "."
+    init(cmdString :String, dbPrefix :String) {
+        self.cmdString = cmdString
+        self.dbPrefix = dbPrefix
+    }
+    
+    static func ==(lhs: GitAnnexCommand, rhs: GitAnnexCommand) -> Bool {
+        return lhs.cmdString == rhs.cmdString
+    }
+    var hashValue: Int {
+        return cmdString.hashValue
+    }
+
+    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String {
+        return dbPrefix + watchedFolder.uuid.uuidString + "."
+    }
+    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String {
+        return dbPrefix + watchedFolder.uuid.uuidString + "." + path
     }
 }
 struct GitAnnexCommands {
@@ -45,11 +66,26 @@ struct GitAnnexCommands {
     
     static let all = [Get, Add, Drop, Unlock, Lock]
 }
-struct GitCommand {
-    let cmdString :String, dbPrefix :String
+class GitCommand: Equatable, Hashable, Command {
+    let cmdString :String
+    private let dbPrefix :String
     
-    func dbPrefixWithUUID(for watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + "." + watchedFolder.uuid.uuidString + "."
+    init(cmdString :String, dbPrefix :String) {
+        self.cmdString = cmdString
+        self.dbPrefix = dbPrefix
+    }
+    static func ==(lhs: GitCommand, rhs: GitCommand) -> Bool {
+        return lhs.cmdString == rhs.cmdString
+    }
+    var hashValue: Int {
+        return cmdString.hashValue
+    }
+
+    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String {
+        return dbPrefix + watchedFolder.uuid.uuidString + "."
+    }
+    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String {
+        return dbPrefix + watchedFolder.uuid.uuidString + "." + path
     }
 }
 struct GitCommands {
@@ -77,6 +113,12 @@ enum Status: String {
             }
         }
         return unknown
+    }
+    static func status(fromOptional: String?) -> Status? {
+        if let fromExists = fromOptional {
+            return status(from: fromExists)
+        }
+        return nil
     }
 }
 enum GitAnnexJSON: String {

@@ -51,6 +51,7 @@ macOS or OS-X 10.10 (Yosemite) or later
   * http://www.atomicbird.com/blog/sharing-with-app-extensions
   * https://stackoverflow.com/questions/30156107/swift-share-sqlite-database-between-app-and-extension
   * http://dscoder.com/defaults.html
+* TODO, more fine grain control of how often we query git-annex, see The Dispatch queue https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1
 * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
 * https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex
  

@@ -7,9 +7,9 @@
 //
 
 import XCTest
-@testable import git_annex_mac
+@testable import git_annex_turtle
 
-class git_annex_macTests: XCTestCase {
+class git_annex_turtleTests: XCTestCase {
     
     override func setUp() {
         super.setUp()

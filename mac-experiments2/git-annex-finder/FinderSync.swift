@@ -23,16 +23,18 @@ class FinderSync: FIFinderSync {
 
     func updateWatchedFolders() {
         if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
-            NSKeyedUnarchiver.setClass(WatchedFolder.self, forClassName: "git_annex_turtle.WatchedFolder")
-            let newWatchedFolders = NSKeyedUnarchiver.unarchiveObject(with: decoded) as! Set<WatchedFolder>
-            if newWatchedFolders != watchedFolders {
-                watchedFolders = newWatchedFolders
-                FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
-
-                NSLog("Finder Sync is watching: ")
-                for watchedFolder in watchedFolders {
-                    NSLog(watchedFolder.pathString)
-                    NSLog(watchedFolder.uuid.uuidString)
+//            NSKeyedUnarchiver.setClass(WatchedFolder.self, forClassName: "git_annex_turtle.WatchedFolder")
+//            let newWatchedFolders = NSKeyedUnarchiver.unarchiveObject(with: decoded) as! Set<WatchedFolder>
+            if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
+                if newWatchedFolders != watchedFolders {
+                    watchedFolders = newWatchedFolders
+                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+                    
+                    NSLog("Finder Sync is watching: ")
+                    for watchedFolder in watchedFolders {
+                        NSLog(watchedFolder.pathString)
+                        NSLog(watchedFolder.uuid.uuidString)
+                    }
                 }
             }
         }
@@ -107,10 +109,8 @@ class FinderSync: FIFinderSync {
                 //                        }
                 //                    }
                 //                }
-                // TODO wait on updates flag? instead of sleep / polling?
                 
-                // sleep is causing the extension to not create badges on first load
-                // but getting rid of the sleep git 99%cpu
+                // TODO wait on updates flag? instead of sleep / polling?
                 sleep(1)
                 
                 self.updateWatchedFolders()
@@ -176,10 +176,10 @@ class FinderSync: FIFinderSync {
                     
                     // OK status is not available, lets request it
                     defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
-                } else {
-                    NSLog("Finder Sync could not find watched parent for url '%@'", url.absoluteString)
+                    return
                 }
             }
+            NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
         } else {
             NSLog("unable to get path for url '%@'", url.absoluteString)
         }
@@ -223,72 +223,42 @@ class FinderSync: FIFinderSync {
         menuItem.image = gitLogoOrange
         return menu
     }
-    
+
     @IBAction func gitAnnexGet(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex get: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj: URL in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitAnnexCommands.Get.dbPrefix + (obj as NSURL).path!)
-        }
+        commandRequest(with: GitAnnexCommands.Get, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexAdd(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitAnnexCommands.Add.dbPrefix + (obj as NSURL).path!)
-        }
+        commandRequest(with: GitAnnexCommands.Add, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexDrop(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex drop: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitAnnexCommands.Drop.dbPrefix + (obj as NSURL).path!)
-        }
+        commandRequest(with: GitAnnexCommands.Drop, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexLock(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex lock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitAnnexCommands.Lock.dbPrefix + (obj as NSURL).path!)
-        }
+        commandRequest(with: GitAnnexCommands.Lock, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexUnlock(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git annex unlock: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitAnnexCommands.Unlock.dbPrefix + (obj as NSURL).path!)
-        }
+        commandRequest(with: GitAnnexCommands.Unlock, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAdd(_ sender: AnyObject?) {
-        let target = FIFinderSyncController.default().targetedURL()
-        let items = FIFinderSyncController.default().selectedItemURLs()
-        
-        let item = sender as! NSMenuItem
-        NSLog("git add: ", item.title, ", target = ", (target! as NSURL).filePathURL!.absoluteString, ", items = ")
-        for obj in items! {
-            NSLog("    " + (obj as NSURL).filePathURL!.absoluteString)
-            defaults.set(obj, forKey: GitCommands.Add.dbPrefix + (obj as NSURL).path!)
+        commandRequest(with: GitCommands.Add, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+    }
+    
+    private func commandRequest(with command: Command, target: URL?, item: NSMenuItem?, items: [URL]?) {
+        if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
+            for obj: URL in items {
+                if let path = PathUtils.path(for: obj) {
+                    for watchedFolder in watchedFolders {
+                        if path.starts(with: watchedFolder.pathString) {
+                            let key = command.dbPrefixWithUUID(for: path, in: watchedFolder)
+                            NSLog("git annex %@ \"%@\"", command.cmdString, key)
+                            defaults.set(obj, forKey: command.dbPrefixWithUUID(for: path, in: watchedFolder))
+                            break
+                        }
+                    }
+                }
+            }
+        } else {
+            NSLog("invalid context menu item for command %@", command.cmdString)
         }
     }
 }
-
