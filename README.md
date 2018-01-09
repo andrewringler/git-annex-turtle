@@ -34,6 +34,7 @@ macOS or OS-X 10.10 (Yosemite) or later
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
  * gui for add/ remove watch
  * icons for present/absent num-copies 0…numcopies…9+
+ * pre-fetch files in observed folders for faster badge updates
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * show file info in context menu with description of icon meaning
