@@ -31,9 +31,12 @@ macOS or OS-X 10.10 (Yosemite) or later
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
 
 ## TODO
+ * replace hard-coded absolute paths to git-annex installation with more graceful solution  
+ * gui for add/ remove watch
+ * icons for present/absent num-copies 0…numcopies…9+
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
- * and context menu errors, where to display?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
+ * show file info in context menu with description of icon meaning
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
@@ -53,7 +56,7 @@ macOS or OS-X 10.10 (Yosemite) or later
   * http://dscoder.com/defaults.html
 * TODO, more fine grain control of how often we query git-annex, see The Dispatch queue https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1
 * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
-* https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex
+* https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex, also see https://git-scm.com/docs/git-ls-files for more details
  
 Check if our Finder Sync extension is running:
 
