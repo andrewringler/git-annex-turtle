@@ -15,6 +15,8 @@ class FinderSync: FIFinderSync {
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
+    let imgPresentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-present-not-numcopies"))
+    let imgAbsentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-absent-not-numcopies"))
     let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
     let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
     let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
@@ -46,7 +48,9 @@ class FinderSync: FIFinderSync {
         updateWatchedFolders()
         
         FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: Status.present.rawValue)
+        FIFinderSyncController.default().setBadgeImage(imgPresentNotNumCopies!, label: "Present Not Numcopies" , forBadgeIdentifier: Status.presentNotNumCopies.rawValue)
         FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: Status.absent.rawValue)
+        FIFinderSyncController.default().setBadgeImage(imgAbsentNotNumCopies!, label: "Absent Not Numcopies", forBadgeIdentifier: Status.absentNotNumCopies.rawValue)
         FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: Status.unknown.rawValue)
 //        FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
         FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: Status.partiallyPresentDirectory.rawValue)

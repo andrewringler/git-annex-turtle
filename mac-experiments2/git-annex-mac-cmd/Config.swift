@@ -101,11 +101,13 @@ struct GitConfigs {
 }
 enum Status: String {
     case present = "present"
+    case presentNotNumCopies = "present-not-numcopies"
     case absent = "absent"
+    case absentNotNumCopies = "absent-not-numcopies"
     case unknown = "unknown"
     case partiallyPresentDirectory = "partially-present-directory"
     
-    static let all = [present,absent,unknown,partiallyPresentDirectory]
+    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumCopies,absentNotNumCopies]
     static func status(from: String) -> Status {
         for status in all {
             if status.rawValue == from {
