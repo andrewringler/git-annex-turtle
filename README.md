@@ -33,7 +33,7 @@ macOS or OS-X 10.10 (Yosemite) or later
 ## TODO
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
  * gui for add/ remove watch
- * icons for present/absent num-copies 0…numcopies…9+
+ * icons for present/absent num-copies 0…numcopies…9+, it looks like git annex does not provide an easy way to figure out the numcopies settings for a specific file, since numcopies can be set on a per file-type basis I would need to parse gitattributes to figure out a particular file's numcopies setting, additionally, calling git annex whereis to count the number of copies for a file is only returning trusted copies, which is different than the number of copies that could would be used in a drop command, so do we really want to be showing this?  
  * pre-fetch files in observed folders for faster badge updates
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
