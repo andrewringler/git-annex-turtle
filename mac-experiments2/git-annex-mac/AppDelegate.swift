@@ -307,7 +307,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         watchingStringTruncated = "…" + watchingStringTruncated.suffix(40)
                     }
                     let watching = menu.addItem(withTitle: watchingStringTruncated, action: nil, keyEquivalent: "")
-                    watching.image = self.gitAnnexLogoNoArrowsColor
+//                    watching.image = self.gitAnnexLogoNoArrowsColor
                 }
             } else {
                 menu.addItem(NSMenuItem(title: "nothing", action: nil, keyEquivalent: ""))
