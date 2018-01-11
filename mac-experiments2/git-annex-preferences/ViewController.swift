@@ -12,10 +12,13 @@ class ViewController: NSViewController {
     var appDelegate :AppDelegate? = nil
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-logo"))
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
+        
+//        watchedFolderView.
     }
     
     override var representedObject: Any? {
@@ -23,7 +26,7 @@ class ViewController: NSViewController {
             // Update the view, if already loaded.
         }
     }
-    
+        
     // https://denbeke.be/blog/programming/swift-open-file-dialog-with-nsopenpanel/
     @IBAction func addWatchFolderAction(_ sender: Any) {
         let folderChooseDialog = NSOpenPanel();

@@ -23,8 +23,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var watchedFolders = Set<WatchedFolder>()
     var menuBarButton :NSStatusBarButton?
-    var preferencesWindow: NSWindow = NSWindow()
-
+    var preferencesViewController: ViewController? = nil
+    var preferencesWindow: NSWindow? = nil
+    
     private func updateListOfWatchedFolders() {
         // Re-read config, it might have changed
         let config = Config()
@@ -64,11 +65,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(printQuote(_:))
             menuBarButton = button
         }
-//        popover.contentViewController = ViewController.freshController()
-        let viewController = ViewController.freshController()
-        viewController.appDelegate = self
-        preferencesWindow.contentViewController = viewController
-
+        preferencesViewController = ViewController.freshController()
+        preferencesViewController?.appDelegate = self
+        
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
         let allKeys = defaults.dictionaryRepresentation().keys
@@ -304,13 +303,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func showPreferencesWindow(_ sender: Any?) {
-        guard let button = menuBarButton else {
-            fatalError("Unable to get menubar icon")
+        if preferencesWindow == nil {
+            preferencesWindow = NSWindow()
+            preferencesWindow?.title = "git-annex-turtle Preferences"
+            preferencesWindow?.isReleasedWhenClosed = false
+            preferencesWindow?.contentViewController = preferencesViewController
+            preferencesWindow?.styleMask.insert([.closable, .miniaturizable, .titled])
         }
-        preferencesWindow.makeKeyAndOrderFront(self)
-//        preferencesWindow.window.s
-//        popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
-        
+        preferencesWindow?.makeKeyAndOrderFront(self)
     }
     
     func constructMenu(watchedFolders :Set<WatchedFolder>) {
