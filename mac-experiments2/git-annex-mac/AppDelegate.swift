@@ -65,6 +65,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.action = #selector(printQuote(_:))
             menuBarButton = button
         }
+        
+        // Setup preferences view controller
         preferencesViewController = ViewController.freshController()
         preferencesViewController?.appDelegate = self
         
