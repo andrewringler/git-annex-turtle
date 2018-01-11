@@ -45,7 +45,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if newWatchedFolders != watchedFolders {
             watchedFolders = newWatchedFolders // atomically set the new array
             constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
-            
+            preferencesViewController?.reloadFileList()
+
             for watchedFolder in watchedFolders {
                 NSLog("Watching: %@ %@", watchedFolder.uuid.uuidString, watchedFolder.pathString)
             }
@@ -67,9 +68,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Setup preferences view controller
-        preferencesViewController = ViewController.freshController()
-        preferencesViewController?.appDelegate = self
-        
+        preferencesViewController = ViewController.freshController(appDelegate: self)
+//        preferencesViewController?.appDelegate = self
+//        preferencesViewController?.reloadFileList()
+
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
         let allKeys = defaults.dictionaryRepresentation().keys

@@ -7,7 +7,7 @@
 //
 import Foundation
 
-class WatchedFolder: Equatable, Hashable, Swift.Codable {
+class WatchedFolder: Equatable, Hashable, Comparable, Swift.Codable {
     let uuid: UUID
     let pathString: String
     
@@ -17,6 +17,9 @@ class WatchedFolder: Equatable, Hashable, Swift.Codable {
     }    
     static func ==(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
         return lhs.uuid == rhs.uuid
+    }
+    static func <(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
+        return lhs.uuid.uuidString < rhs.uuid.uuidString
     }
     var hashValue: Int {
         return uuid.hashValue

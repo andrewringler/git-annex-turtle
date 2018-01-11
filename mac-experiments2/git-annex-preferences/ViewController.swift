@@ -9,16 +9,25 @@
 import Cocoa
 
 class ViewController: NSViewController {
-    var appDelegate :AppDelegate? = nil
+    private var appDelegate :AppDelegate? = nil
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-logo"))
-
+    var observedFoldersList :[WatchedFolder]?
+    
+    @IBOutlet weak var watchedFolderView: NSScrollView!
+    @IBOutlet weak var observedFoldersView: NSTableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Do any additional setup after loading the view.
-        
-//        watchedFolderView.
+        observedFoldersView.delegate = self
+        observedFoldersView.dataSource = self
+    }
+
+    public func reloadFileList() {
+        DispatchQueue.main.async {
+            self.observedFoldersList = self.appDelegate?.watchedFolders.sorted()
+            self.observedFoldersView?.reloadData()
+        }
     }
     
     override var representedObject: Any? {
@@ -72,7 +81,7 @@ class ViewController: NSViewController {
 
 extension ViewController {
     // MARK: Storyboard instantiation
-    static func freshController() -> ViewController {
+    static func freshController(appDelegate: AppDelegate) -> ViewController {
         //1.
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         //2.
@@ -81,8 +90,50 @@ extension ViewController {
         guard let viewcontroller = storyboard.instantiateController(withIdentifier: identifier) as? ViewController else {
             fatalError("Why cant i find ViewController? - Check Main.storyboard")
         }
+        viewcontroller.appDelegate = appDelegate
         return viewcontroller
     }
+}
+
+// see https://www.raywenderlich.com/143828/macos-nstableview-tutorial
+extension ViewController: NSTableViewDataSource {
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        return observedFoldersList?.count ?? 0
+    }
+}
+
+extension ViewController: NSTableViewDelegate {
     
+    fileprivate enum CellIdentifiers {
+        static let PathCell = "PathCellID"
+        static let UUIDCell = "UUIDCellID"
+    }
     
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        
+        var image: NSImage?
+        var text: String = ""
+        var cellIdentifier: String = ""
+        
+        // 1
+        guard let item = observedFoldersList?[row] else {
+            return nil
+        }
+        
+        // 2
+        if tableColumn == tableView.tableColumns[0] {
+            text = item.pathString
+            cellIdentifier = CellIdentifiers.PathCell
+        } else if tableColumn == tableView.tableColumns[1] {
+            text = item.uuid.uuidString
+            cellIdentifier = CellIdentifiers.UUIDCell
+        }
+        
+        // 3
+        if let cell = tableView.makeView(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: cellIdentifier), owner: nil) as? NSTableCellView {
+            cell.textField?.stringValue = text
+            return cell
+        }
+        return nil
+    }
 }
