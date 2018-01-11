@@ -19,7 +19,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, Swift.Codable {
         return lhs.uuid == rhs.uuid
     }
     static func <(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
-        return lhs.uuid.uuidString < rhs.uuid.uuidString
+        return lhs.pathString < rhs.pathString
     }
     var hashValue: Int {
         return uuid.hashValue
