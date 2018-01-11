@@ -11,6 +11,7 @@ import Foundation
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
+//    let popover = NSPopover()
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
@@ -21,7 +22,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
     
     var watchedFolders = Set<WatchedFolder>()
-    
+    var menuBarButton :NSStatusBarButton?
+    var preferencesWindow: NSWindow = NSWindow()
+
     private func updateListOfWatchedFolders() {
         // Re-read config, it might have changed
         let config = Config()
@@ -59,7 +62,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
             button.action = #selector(printQuote(_:))
+            menuBarButton = button
         }
+//        popover.contentViewController = ViewController.freshController()
+        let viewController = ViewController.freshController()
+        viewController.appDelegate = self
+        preferencesWindow.contentViewController = viewController
 
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
@@ -295,6 +303,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print("\(quoteText) — \(quoteAuthor)")
     }
     
+    @objc func showPreferencesWindow(_ sender: Any?) {
+        guard let button = menuBarButton else {
+            fatalError("Unable to get menubar icon")
+        }
+        preferencesWindow.makeKeyAndOrderFront(self)
+//        preferencesWindow.window.s
+//        popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+        
+    }
+    
     func constructMenu(watchedFolders :Set<WatchedFolder>) {
         DispatchQueue.main.async {
             let menu = NSMenu()
@@ -312,6 +330,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 menu.addItem(NSMenuItem(title: "nothing", action: nil, keyEquivalent: ""))
             }
+            
+            menu.addItem(NSMenuItem(title: "Preferences…", action: #selector(self.showPreferencesWindow(_:)), keyEquivalent: ""))
             
             menu.addItem(NSMenuItem.separator())
             menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))

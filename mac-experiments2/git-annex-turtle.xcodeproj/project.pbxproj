@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		490733C92000081D00B422F9 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
@@ -25,6 +24,23 @@
 		49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		49EFD1CF2006CEF7005742DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1CE2006CEF7005742DB /* AppDelegate.swift */; };
+		49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1D02006CEF7005742DB /* ViewController.swift */; };
+		49EFD1D32006CEF7005742DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D22006CEF7005742DB /* Assets.xcassets */; };
+		49EFD1D62006CEF7005742DB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D42006CEF7005742DB /* Main.storyboard */; };
+		49EFD1E22006CEF7005742DB /* git_annex_preferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1E12006CEF7005742DB /* git_annex_preferencesTests.swift */; };
+		49EFD1ED2006CEF7005742DB /* git_annex_preferencesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1EC2006CEF7005742DB /* git_annex_preferencesUITests.swift */; };
+		49EFD1F82006D08A005742DB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1D02006CEF7005742DB /* ViewController.swift */; };
+		49EFD1F92006D2D0005742DB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D42006CEF7005742DB /* Main.storyboard */; };
+		49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
+		49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
+		49EFD1FE2007BF70005742DB /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
+		49EFD2002007BFB1005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		49EFD2012007BFC9005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		49EFD2022007BFCA005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		49EFD2032007BFCA005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		49EFD2042007BFD6005742DB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
+		49EFD2052007C45C005742DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +65,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 499B445F1DE544F00091E0E3;
 			remoteInfo = "git-annex-finder";
+		};
+		49EFD1DE2006CEF7005742DB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49EFD1CB2006CEF7005742DB;
+			remoteInfo = "git-annex-preferences";
+		};
+		49EFD1E92006CEF7005742DB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49EFD1CB2006CEF7005742DB;
+			remoteInfo = "git-annex-preferences";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -108,6 +138,19 @@
 		499B44741DE54A250091E0E3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D3AA4320016A1500A43A78 /* WatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFolder.swift; sourceTree = "<group>"; };
+		49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-preferences.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49EFD1CE2006CEF7005742DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		49EFD1D02006CEF7005742DB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		49EFD1D22006CEF7005742DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		49EFD1D52006CEF7005742DB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		49EFD1D72006CEF7005742DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49EFD1DD2006CEF7005742DB /* git-annex-preferencesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-preferencesTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49EFD1E12006CEF7005742DB /* git_annex_preferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_preferencesTests.swift; sourceTree = "<group>"; };
+		49EFD1E32006CEF7005742DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49EFD1E82006CEF7005742DB /* git-annex-preferencesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-preferencesUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49EFD1EC2006CEF7005742DB /* git_annex_preferencesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_preferencesUITests.swift; sourceTree = "<group>"; };
+		49EFD1EE2006CEF7005742DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49EFD1FF2007BFB1005742DB /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -147,6 +190,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49EFD1C92006CEF7005742DB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1DA2006CEF7005742DB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1E52006CEF7005742DB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -158,6 +222,9 @@
 				490BCB9F1DE5444D00734FF4 /* git-annex-macUITests */,
 				499B44611DE544F00091E0E3 /* git-annex-finder */,
 				499B44731DE54A250091E0E3 /* git-annex-mac-cmd */,
+				49EFD1CD2006CEF7005742DB /* git-annex-preferences */,
+				49EFD1E02006CEF7005742DB /* git-annex-preferencesTests */,
+				49EFD1EB2006CEF7005742DB /* git-annex-preferencesUITests */,
 				490BCB831DE5444C00734FF4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -170,6 +237,9 @@
 				490BCB9C1DE5444D00734FF4 /* git-annex-turtleUITests.xctest */,
 				499B44601DE544F00091E0E3 /* git-annex-finder.appex */,
 				499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */,
+				49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */,
+				49EFD1DD2006CEF7005742DB /* git-annex-preferencesTests.xctest */,
+				49EFD1E82006CEF7005742DB /* git-annex-preferencesUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -179,7 +249,6 @@
 			children = (
 				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
 				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
-				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
 				490BCB871DE5444C00734FF4 /* Assets.xcassets */,
 				490BCB891DE5444C00734FF4 /* MainMenu.xib */,
 				490BCB8C1DE5444C00734FF4 /* Info.plist */,
@@ -227,12 +296,44 @@
 			isa = PBXGroup;
 			children = (
 				4981FE0A1DE61774002E6CB3 /* Config.swift */,
+				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
 				49D3AA4320016A1500A43A78 /* WatchedFolder.swift */,
 				499B44741DE54A250091E0E3 /* main.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
 				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
+				49EFD1FF2007BFB1005742DB /* Constants.swift */,
 			);
 			path = "git-annex-mac-cmd";
+			sourceTree = "<group>";
+		};
+		49EFD1CD2006CEF7005742DB /* git-annex-preferences */ = {
+			isa = PBXGroup;
+			children = (
+				49EFD1CE2006CEF7005742DB /* AppDelegate.swift */,
+				49EFD1D02006CEF7005742DB /* ViewController.swift */,
+				49EFD1D22006CEF7005742DB /* Assets.xcassets */,
+				49EFD1D42006CEF7005742DB /* Main.storyboard */,
+				49EFD1D72006CEF7005742DB /* Info.plist */,
+			);
+			path = "git-annex-preferences";
+			sourceTree = "<group>";
+		};
+		49EFD1E02006CEF7005742DB /* git-annex-preferencesTests */ = {
+			isa = PBXGroup;
+			children = (
+				49EFD1E12006CEF7005742DB /* git_annex_preferencesTests.swift */,
+				49EFD1E32006CEF7005742DB /* Info.plist */,
+			);
+			path = "git-annex-preferencesTests";
+			sourceTree = "<group>";
+		};
+		49EFD1EB2006CEF7005742DB /* git-annex-preferencesUITests */ = {
+			isa = PBXGroup;
+			children = (
+				49EFD1EC2006CEF7005742DB /* git_annex_preferencesUITests.swift */,
+				49EFD1EE2006CEF7005742DB /* Info.plist */,
+			);
+			path = "git-annex-preferencesUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -328,13 +429,66 @@
 			productReference = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */;
 			productType = "com.apple.product-type.tool";
 		};
+		49EFD1CB2006CEF7005742DB /* git-annex-preferences */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49EFD1F52006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferences" */;
+			buildPhases = (
+				49EFD1C82006CEF7005742DB /* Sources */,
+				49EFD1C92006CEF7005742DB /* Frameworks */,
+				49EFD1CA2006CEF7005742DB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "git-annex-preferences";
+			productName = "git-annex-preferences";
+			productReference = 49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */;
+			productType = "com.apple.product-type.application";
+		};
+		49EFD1DC2006CEF7005742DB /* git-annex-preferencesTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49EFD1F62006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferencesTests" */;
+			buildPhases = (
+				49EFD1D92006CEF7005742DB /* Sources */,
+				49EFD1DA2006CEF7005742DB /* Frameworks */,
+				49EFD1DB2006CEF7005742DB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				49EFD1DF2006CEF7005742DB /* PBXTargetDependency */,
+			);
+			name = "git-annex-preferencesTests";
+			productName = "git-annex-preferencesTests";
+			productReference = 49EFD1DD2006CEF7005742DB /* git-annex-preferencesTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		49EFD1E72006CEF7005742DB /* git-annex-preferencesUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49EFD1F72006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferencesUITests" */;
+			buildPhases = (
+				49EFD1E42006CEF7005742DB /* Sources */,
+				49EFD1E52006CEF7005742DB /* Frameworks */,
+				49EFD1E62006CEF7005742DB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				49EFD1EA2006CEF7005742DB /* PBXTargetDependency */,
+			);
+			name = "git-annex-preferencesUITests";
+			productName = "git-annex-preferencesUITests";
+			productReference = 49EFD1E82006CEF7005742DB /* git-annex-preferencesUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		490BCB7A1DE5444C00734FF4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 0920;
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Andrew Ringler";
 				TargetAttributes = {
@@ -345,6 +499,9 @@
 						SystemCapabilities = {
 							com.apple.ApplicationGroups.Mac = {
 								enabled = 1;
+							};
+							com.apple.Sandbox = {
+								enabled = 0;
 							};
 						};
 					};
@@ -371,6 +528,29 @@
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0810;
 					};
+					49EFD1CB2006CEF7005742DB = {
+						CreatedOnToolsVersion = 9.2;
+						DevelopmentTeam = ASJ7K8YJ25;
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
+					};
+					49EFD1DC2006CEF7005742DB = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 49EFD1CB2006CEF7005742DB;
+					};
+					49EFD1E72006CEF7005742DB = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 49EFD1CB2006CEF7005742DB;
+					};
 				};
 			};
 			buildConfigurationList = 490BCB7D1DE5444C00734FF4 /* Build configuration list for PBXProject "git-annex-turtle" */;
@@ -391,6 +571,9 @@
 				490BCB9B1DE5444D00734FF4 /* git-annex-turtleUITests */,
 				499B445F1DE544F00091E0E3 /* git-annex-finder */,
 				499B44711DE54A250091E0E3 /* git-annex-turtle-cmd */,
+				49EFD1CB2006CEF7005742DB /* git-annex-preferences */,
+				49EFD1DC2006CEF7005742DB /* git-annex-preferencesTests */,
+				49EFD1E72006CEF7005742DB /* git-annex-preferencesUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -400,6 +583,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49EFD1F92006D2D0005742DB /* Main.storyboard in Resources */,
 				490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */,
 				490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */,
 			);
@@ -427,6 +611,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49EFD1CA2006CEF7005742DB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49EFD1D32006CEF7005742DB /* Assets.xcassets in Resources */,
+				49EFD2052007C45C005742DB /* Assets.xcassets in Resources */,
+				49EFD1D62006CEF7005742DB /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1DB2006CEF7005742DB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1E62006CEF7005742DB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -434,10 +642,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49EFD1F82006D08A005742DB /* ViewController.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
+				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -463,7 +673,7 @@
 			files = (
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */,
-				490733C92000081D00B422F9 /* Config.swift in Sources */,
+				49EFD2012007BFC9005742DB /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -473,9 +683,40 @@
 			files = (
 				49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
+				49EFD1FE2007BF70005742DB /* GitAnnexQueries.swift in Sources */,
 				4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */,
+				49EFD2022007BFCA005742DB /* Constants.swift in Sources */,
 				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1C82006CEF7005742DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49EFD2032007BFCA005742DB /* Constants.swift in Sources */,
+				49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */,
+				49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */,
+				49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */,
+				49EFD1CF2006CEF7005742DB /* AppDelegate.swift in Sources */,
+				49EFD2042007BFD6005742DB /* Config.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1D92006CEF7005742DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49EFD1E22006CEF7005742DB /* git_annex_preferencesTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49EFD1E42006CEF7005742DB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49EFD1ED2006CEF7005742DB /* git_annex_preferencesUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -497,6 +738,16 @@
 			target = 499B445F1DE544F00091E0E3 /* git-annex-finder */;
 			targetProxy = 499B44671DE544F00091E0E3 /* PBXContainerItemProxy */;
 		};
+		49EFD1DF2006CEF7005742DB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49EFD1CB2006CEF7005742DB /* git-annex-preferences */;
+			targetProxy = 49EFD1DE2006CEF7005742DB /* PBXContainerItemProxy */;
+		};
+		49EFD1EA2006CEF7005742DB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49EFD1CB2006CEF7005742DB /* git-annex-preferences */;
+			targetProxy = 49EFD1E92006CEF7005742DB /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -506,6 +757,14 @@
 				490BCB8A1DE5444C00734FF4 /* Base */,
 			);
 			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		49EFD1D42006CEF7005742DB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				49EFD1D52006CEF7005742DB /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -744,6 +1003,137 @@
 			};
 			name = Release;
 		};
+		49EFD1EF2006CEF7005742DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ASJ7K8YJ25;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferences/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferences";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		49EFD1F02006CEF7005742DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = ASJ7K8YJ25;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferences/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferences";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
+		49EFD1F12006CEF7005742DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferencesTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferencesTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-preferences.app/Contents/MacOS/git-annex-preferences";
+			};
+			name = Debug;
+		};
+		49EFD1F22006CEF7005742DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferencesTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferencesTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-preferences.app/Contents/MacOS/git-annex-preferences";
+			};
+			name = Release;
+		};
+		49EFD1F32006CEF7005742DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferencesUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferencesUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.0;
+				TEST_TARGET_NAME = "git-annex-preferences";
+			};
+			name = Debug;
+		};
+		49EFD1F42006CEF7005742DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-preferencesUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-preferencesUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+				TEST_TARGET_NAME = "git-annex-preferences";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -797,6 +1187,33 @@
 			buildConfigurations = (
 				499B44771DE54A250091E0E3 /* Debug */,
 				499B44781DE54A250091E0E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49EFD1F52006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferences" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49EFD1EF2006CEF7005742DB /* Debug */,
+				49EFD1F02006CEF7005742DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49EFD1F62006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferencesTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49EFD1F12006CEF7005742DB /* Debug */,
+				49EFD1F22006CEF7005742DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49EFD1F72006CEF7005742DB /* Build configuration list for PBXNativeTarget "git-annex-preferencesUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49EFD1F32006CEF7005742DB /* Debug */,
+				49EFD1F42006CEF7005742DB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
