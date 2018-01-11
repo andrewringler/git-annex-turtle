@@ -11,7 +11,6 @@ import Foundation
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
-//    let popover = NSPopover()
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
@@ -25,7 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var menuBarButton :NSStatusBarButton?
     var preferencesViewController: ViewController? = nil
     var preferencesWindow: NSWindow? = nil
-    
+
     private func updateListOfWatchedFolders() {
         // Re-read config, it might have changed
         let config = Config()
@@ -309,12 +308,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showPreferencesWindow(_ sender: Any?) {
         if preferencesWindow == nil {
             preferencesWindow = NSWindow()
+            preferencesWindow?.center()
             preferencesWindow?.title = "git-annex-turtle Preferences"
             preferencesWindow?.isReleasedWhenClosed = false
             preferencesWindow?.contentViewController = preferencesViewController
             preferencesWindow?.styleMask.insert([.closable, .miniaturizable, .titled])
         }
+        // show and bring to frong
+        // see https://stackoverflow.com/questions/1740412/how-to-bring-nswindow-to-front-and-to-the-current-space
+        preferencesWindow?.center()
+        preferencesWindow?.orderedIndex = 0
         preferencesWindow?.makeKeyAndOrderFront(self)
+        NSApp.activate(ignoringOtherApps: true)
     }
     
     func constructMenu(watchedFolders :Set<WatchedFolder>) {
