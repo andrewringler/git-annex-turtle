@@ -108,8 +108,10 @@ enum Status: String {
     // not-numcopies: this file has less than the desired numcopies setting
     case presentNotNumcopies = "present-not-numcopies"
     case absentNotNumcopies = "absent-not-numcopies"
+    case presentCalculatingNumcopies = "present-calculating-numcopies"
+    case absentCalculatingNumcopies = "absent-calculating-numcopies"
     
-    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies]
+    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies,presentCalculatingNumcopies,absentCalculatingNumcopies]
     static func status(from: String) -> Status {
         for status in all {
             if status.rawValue == from {

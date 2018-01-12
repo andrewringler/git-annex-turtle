@@ -217,7 +217,11 @@ class GitAnnexQueries {
                         if success != nil && (success as! Bool) == true
                             && localAnnexKeys != nil && annexedFilesInWorkingTree != nil
                             && (annexedFilesInWorkingTree as! Int) == (localAnnexKeys as! Int) {
-                            return Status.present
+                            // get number of copies
+                            if calculateLackingCopiesForDirs, let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: false) {
+                                return lackingCopies ? Status.presentNotNumcopies : Status.present
+                            }
+                            return Status.presentCalculatingNumcopies
                         }
                         
                         // a directory in the annex who is missing all
@@ -227,7 +231,10 @@ class GitAnnexQueries {
                             && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
                             && (localAnnexKeys as! Int) == 0
                         {
-                            return Status.absent
+                            if calculateLackingCopiesForDirs, let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: false ) {
+                                return lackingCopies ? Status.absentNotNumcopies : Status.absent
+                            }
+                            return Status.absentCalculatingNumcopies
                         }
                         
                         // a directory in the annex who is missing some
@@ -237,7 +244,11 @@ class GitAnnexQueries {
                             && (localAnnexKeys as! Int) < (annexedFilesInWorkingTree as! Int)
                             && (localAnnexKeys as! Int) > 0
                         {
-                            return Status.partiallyPresentDirectory
+                            // TODO different icons than absent?
+                            if calculateLackingCopiesForDirs, let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: true) {
+                                return lackingCopies ? Status.absentNotNumcopies : Status.absent
+                            }
+                            return Status.absentCalculatingNumcopies
                         }
                     }
                 } catch {
