@@ -165,7 +165,7 @@ class GitAnnexQueries {
         }
         return nil
     }
-    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String) -> Status {
+    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, calculateLackingCopiesForDirs: Bool) -> Status {
         if let path :String = (url as NSURL).path {
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
             
@@ -196,8 +196,8 @@ class GitAnnexQueries {
                         if success != nil && (success as! Bool) == true
                             && present != nil && (present as! Bool) == true {
                             // get number of copies
-                            if let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory) {
-                                return numberOfCopies >= GitAnnexHARDCODEDNumCopies ? Status.present : Status.presentNotNumcopies
+                            if let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: true) {
+                                return lackingCopies ? Status.presentNotNumcopies : Status.present
                             }
                             return Status.present
                         }
@@ -206,8 +206,8 @@ class GitAnnexQueries {
                         if success != nil && (success as! Bool) == true
                             && present != nil && (present as! Bool) == false {
                             // get number of copies
-                            if let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory) {
-                                return numberOfCopies >= GitAnnexHARDCODEDNumCopies ? Status.absent : Status.absentNotNumcopies
+                            if let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: true) {
+                                return lackingCopies ? Status.absentNotNumcopies : Status.absent
                             }
                             return Status.absent
                         }
@@ -251,41 +251,77 @@ class GitAnnexQueries {
         return Status.unknown
     }
     
-    class func gitAnnexNumberOfCopies(for url: URL, in workingDirectory: String) -> Int? {
+//    class func gitAnnexNumberOfCopies(for url: URL, in workingDirectory: String) -> Int? {
+//        if let path = PathUtils.path(for: url) {
+//            var isDirectory = ObjCBool(true)
+//            let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+//            if exists && isDirectory.boolValue {
+//                // TODO make meaningful queries on number of copies for directories?
+//                // skip directories
+//                return nil
+//            }
+//
+//            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "whereis", path)
+//
+//            // if command didnt return an error, parse the JSON
+//            // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
+//            if(status == 0){
+//                do {
+//                    let data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
+//                    let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+//
+//                    if let dictionary = json as? [String: Any] {
+//                        let success = dictionary[GitAnnexJSON.success.rawValue]
+//                        let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
+//
+//                        // return number of copies
+//                        if success != nil && whereis != nil {
+//                            return whereis?.count ?? nil
+//                        } else {
+//                            NSLog("issue getting data from JSON: '\(dictionary)'")
+//                        }
+//                    }
+//                } catch {
+//                    NSLog("unable to parse JSON: '\(output)' for url='\(url)' workingdir='\(workingDirectory)'")
+//                }
+//            } else {
+//                NSLog("gitAnnexNumberOfCopies")
+//                NSLog("status: %@", String(status))
+//                NSLog("output: %@", output)
+//                NSLog("error: %@", error)
+//                return nil
+//            }
+//        } else {
+//            NSLog("could not get path for URL \(url)")
+//        }
+//        return nil
+//    }
+    
+    /* git annex find --lackingcopies=1 --json
+     * returns a line for every file that is lacking 1 or more copies
+     * calling this on directories causes git-annex to query each child file recursively
+     * this can be slow, so pass skipDirs=true when this needs to happen quickly
+     */
+    class func gitAnnexLackingCopies(for url: URL, in workingDirectory: String, skipDirs: Bool) -> Bool? {
         if let path = PathUtils.path(for: url) {
-            var isDirectory = ObjCBool(true)
-            let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-            if exists && isDirectory.boolValue {
-                // TODO make meaningful queries on number of copies for directories?
-                // skip directories
-                return nil
+            if skipDirs {
+                var isDirectory = ObjCBool(true)
+                let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+                if exists && isDirectory.boolValue {
+                    return nil
+                }
             }
             
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "whereis", path)
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "--lackingcopies=1", "find", path)
             
-            // if command didnt return an error, parse the JSON
-            // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
+            // if command didnt return an error, count the lines returned
             if(status == 0){
-                do {
-                    let data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
-                    let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
-                    
-                    if let dictionary = json as? [String: Any] {
-                        let success = dictionary[GitAnnexJSON.success.rawValue]
-                        let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
-                        
-                        // return number of copies
-                        if success != nil && whereis != nil {
-                            return whereis?.count ?? nil
-                        } else {
-                            NSLog("issue getting data from JSON: '\(dictionary)'")
-                        }
-                    }
-                } catch {
-                    NSLog("unable to parse JSON: '\(output)' for url='\(url)' workingdir='\(workingDirectory)'")
+                if let firstLine = output.first {
+                    return !firstLine.isEmpty
                 }
+                return false
             } else {
-                NSLog("gitAnnexNumberOfCopies")
+                NSLog("gitAnnexLackingCopies")
                 NSLog("status: %@", String(status))
                 NSLog("output: %@", output)
                 NSLog("error: %@", error)

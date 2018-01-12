@@ -151,7 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             if let path = PathUtils.path(for: url) {
                                 // handle multiple git-annex queries concurrently
                                 DispatchQueue.global(qos: .userInitiated).async {
-                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
+                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                                     self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
                                 }
                             } else {
@@ -199,7 +199,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             // TODO handle multiple git-annex queries concurrently
                             // NOTE if we do DispatchQueue async, we need to ensure
                             // below that our sleep, sleeps long enough for all threads to complete!
-                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString)
+                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                             if oldStatus != newStatus {
                                 NSLog("status for '%@' updated from '%@' to '%@', notifying Finder Sync", path, oldStatus.rawValue, newStatus.rawValue)
                                 self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))

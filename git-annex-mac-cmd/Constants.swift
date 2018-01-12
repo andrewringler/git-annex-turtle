@@ -8,7 +8,6 @@
 
 import Foundation
 
-let GitAnnexHARDCODEDNumCopies = 2
 let GitAnnexTurtleDbPrefix = "gitannex."
 let GitAnnexTurtleWatchedFoldersDbPrefix = "gitannex.watched-folders"
 func GitAnnexTurtleRequestBadgeDbPrefixNoPath(in watchedFolder: WatchedFolder) -> String {
