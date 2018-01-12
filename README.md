@@ -21,6 +21,9 @@ macOS or OS-X 10.10 (Yosemite) or later
 
 *git-annex-turtle* is released for the the Mac only; it is written in Swift with XCode so is probably not easily portable to Linux and Windows. You may, of course, adapt and use this app's user experience, design, workflow and icon sets when porting to other OSs. See git-annex [related software](http://git-annex.branchable.com/related_software/) for options already built for other OSs.
 
+### Issues
+The Apple Finder Sync Extension only allows one app to register per folder, so other apps might be conflicting with *git-annex-turtle*. For example, Dropbox, registers his Finder Sync extension on your entire home folder (Users/yourname), regardless of where your actual Dropbox folder is located. Dropbox does this, apparently, so they can have “move to Dropbox” context menus on every single file. Launch `System Preferences > Extensions > Finder` to see what apps have Finder Sync extensions registered.
+
 ## Name
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and many other tools which have provided OS-level icons for source revisions control over the years.
 
