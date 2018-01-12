@@ -8,6 +8,7 @@
 
 import Foundation
 
+let GitAnnexHARDCODEDNumCopies = 2
 let GitAnnexTurtleDbPrefix = "gitannex."
 let GitAnnexTurtleWatchedFoldersDbPrefix = "gitannex.watched-folders"
 func GitAnnexTurtleRequestBadgeDbPrefixNoPath(in watchedFolder: WatchedFolder) -> String {
@@ -105,7 +106,11 @@ enum Status: String {
     case unknown = "unknown"
     case partiallyPresentDirectory = "partially-present-directory"
     
-    static let all = [present,absent,unknown,partiallyPresentDirectory]
+    // not-numcopies: this file has less than the desired numcopies setting
+    case presentNotNumcopies = "present-not-numcopies"
+    case absentNotNumcopies = "absent-not-numcopies"
+    
+    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies]
     static func status(from: String) -> Status {
         for status in all {
             if status.rawValue == from {
@@ -130,6 +135,7 @@ enum GitAnnexJSON: String {
     case annexedFilesInWorkingTree = "annexed files in working tree"
     case command = "command"
     case note = "note"
+    case whereis = "whereis"
 }
 
 class PathUtils {
