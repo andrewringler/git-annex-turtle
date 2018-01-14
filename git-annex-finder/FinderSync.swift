@@ -26,6 +26,10 @@ class FinderSync: FIFinderSync {
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     
+    func id() -> String {
+        return String(UInt(bitPattern: ObjectIdentifier(self)))
+    }
+    
     func updateWatchedFolders() {
         if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
             if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
@@ -104,6 +108,8 @@ class FinderSync: FIFinderSync {
     
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
+        NSLog("beginObservingDirectory for \(url) \(id())")
+
 //        if let path = (url as NSURL).path {
 //            let key = "gitannex.observing." + path
 //            defaults.set(url, forKey: key)
@@ -112,6 +118,8 @@ class FinderSync: FIFinderSync {
     
     // The user is no longer seeing the container's contents.
     override func endObservingDirectory(at url: URL) {
+        NSLog("endObservingDirectory for \(url) \(id())")
+
 //        if let path = (url as NSURL).path {
 //            let key = "gitannex.observing." + path
 //            defaults.removeObject(forKey: key)
@@ -119,27 +127,34 @@ class FinderSync: FIFinderSync {
     }
     
     private func updateBadge(for url: URL, with status: String) {
-        FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+        DispatchQueue.main.async {
+            NSLog("set badge to \(status) for \(url) \(self.id())")
+            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+        }
     }
     
     override func requestBadgeIdentifier(for url: URL) {
-        if let path = PathUtils.path(for: url) {
-            for watchedFolder in watchedFolders {
-                if path.starts(with: watchedFolder.pathString) {
-                    // do we already have the status cached?
-                    if let status = defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
-                        updateBadge(for: url, with: status)
+        NSLog("requestBadgeIdentifier for \(url) \(id())")
+        
+        DispatchQueue.global(qos: .background).async {
+            if let path = PathUtils.path(for: url) {
+                for watchedFolder in self.watchedFolders {
+                    if path.starts(with: watchedFolder.pathString) {
+                        // do we already have the status cached?
+                        if let status = self.defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
+                            self.updateBadge(for: url, with: status)
+                            return
+                        }
+                        
+                        // OK status is not available, lets request it
+                        self.defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
                         return
                     }
-                    
-                    // OK status is not available, lets request it
-                    defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
-                    return
                 }
+                NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
+            } else {
+                NSLog("unable to get path for url '%@'", url.absoluteString)
             }
-            NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
-        } else {
-            NSLog("unable to get path for url '%@'", url.absoluteString)
         }
     }
     

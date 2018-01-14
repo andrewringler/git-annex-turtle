@@ -175,6 +175,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // handle multiple git-annex queries concurrently
                                 DispatchQueue.global(qos: .userInitiated).async {
                                     let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                                    NSLog("Add to DB: handled request, updated status to \(status) for \(path)")
                                     self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
                                 }
                             } else {
@@ -215,7 +216,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             // below that our sleep, sleeps long enough for all threads to complete!
                             let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                             if oldStatus != newStatus {
-                                NSLog("status for '%@' updated from '%@' to '%@', notifying Finder Sync", path, oldStatus.rawValue, newStatus.rawValue)
+                                NSLog("Add to DB: periodic polling, changed status from \(oldStatus) to \(newStatus) for \(path)")
                                 self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
                             }
                         } else {
@@ -304,6 +305,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Launch/re-launch Finder Sync extension
         DispatchQueue.global(qos: .background).async {
             // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
+            NSLog("re-launching Finder Sync extension")
             let task = Process()
             task.launchPath = "/bin/bash"
             task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
