@@ -90,7 +90,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Handle command requests coming from the (potentially multiple instances) of our Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             while true {
                 for watchedFolder in self.watchedFolders {
                     let allKeys = self.defaults.dictionaryRepresentation().keys
@@ -134,9 +134,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 sleep(1)
             }
         }
-        
+
+//        // Periodically check for newly observed folders, pre-emptively calculate their file statuses
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            while true {
+//                let defaultsDict = self.defaults.dictionaryRepresentation()
+//                let allKeys = defaultsDict.keys
+//
+//                for watchedFolder in self.watchedFolders {
+//                    // find all begin observing notices for this watched folder
+//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleBeginObservingNoPath(in: watchedFolder)) }) {
+//                        if let observingURL = self.defaults.url(forKey: key) {
+//                            if let observingPath = PathUtils.path(for: observingURL) {
+//
+//                            }
+//                        }
+//                    }
+//                }
+//
+//
+//
+//                sleep(1)
+//            }
+//        }
+
         // Periodically check for badge requests from our Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             while true {
                 let defaultsDict = self.defaults.dictionaryRepresentation()
                 let allKeys = defaultsDict.keys
@@ -171,15 +194,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 sleep(1)
             }
-        }
-        
-        // Launch/re-launch Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
-            // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
-            let task = Process()
-            task.launchPath = "/bin/bash"
-            task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
-            task.launch()
         }
 
         // Periodically check if the state of a file/directory has changed since we last checked
@@ -285,6 +299,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //                }
 //            }
 //        }
+        
+        
+        // Launch/re-launch Finder Sync extension
+        DispatchQueue.global(qos: .background).async {
+            // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
+            let task = Process()
+            task.launchPath = "/bin/bash"
+            task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
+            task.launch()
+        }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {

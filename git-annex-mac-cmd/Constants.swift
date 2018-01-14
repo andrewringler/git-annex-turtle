@@ -28,6 +28,12 @@ func GitAnnexTurtleStatusDbPrefix(for path: String, in watchedFolder: WatchedFol
 func GitAnnexTurtleStatusDbPrefixNoPath(in watchedFolder: WatchedFolder) -> String {
     return "gitannex.statussaved." + watchedFolder.uuid.uuidString + "."
 }
+func GitAnnexTurtleBeginObserving(in watchedFolder: WatchedFolder, observed path: String) -> String {
+    return "gitannex.beginobserving." + watchedFolder.uuid.uuidString + "." + path
+}
+func GitAnnexTurtleBeginObservingNoPath(in watchedFolder: WatchedFolder) -> String {
+    return "gitannex.beginobserving." + watchedFolder.uuid.uuidString + "."
+}
 
 protocol Command {
     var cmdString :String { get }
