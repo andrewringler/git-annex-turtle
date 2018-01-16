@@ -34,6 +34,7 @@ The Apple Finder Sync Extension only allows one app to register per folder, so o
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
 
 ## TODO
+ * UserDefaults is not working too well. it appears that Finder Sync processes are receiving notifications of new keys, before the main App has actually written out the value for the key, perhaps even a single key/value store in UserDefaults is not atomic :(
  * gui for add/ remove watch
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
  * icons for present/absent num-copies 0…numcopies…9+, it looks like git annex does not provide an easy way to figure out the numcopies settings for a specific file, since numcopies can be set on a per file-type basis I would need to parse gitattributes to figure out a particular file's numcopies setting, additionally, calling git annex whereis to count the number of copies for a file is only returning trusted copies, which is different than the number of copies that could would be used in a drop command, so do we really want to be showing this?  
