@@ -149,8 +149,10 @@ class PathUtils {
     class func path(for url: URL) -> String? {
         return (url as NSURL).path
     }
+    
+    // instantiating URL directly doesn't work, it prepends the container path
+    // see https://stackoverflow.com/questions/27062454/converting-url-to-string-and-
     class func url(for stringPath: String) -> URL {
-        //        return (NSURL(string: stringPath)! as URL).absoluteString)
         return URL(fileURLWithPath: stringPath)
     }
 }

@@ -68,42 +68,42 @@ class FinderSync: FIFinderSync {
         // Poll for changes
         // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
         // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                let defaultsDict = self.defaults.dictionaryRepresentation()
-                let allKeys = defaultsDict.keys
-                
-                for watchedFolder in self.watchedFolders {
-                    // find all status update keys for this watched folder
-                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder)) }) {
-                        var path = key
-                        path.removeFirst(GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder).count)
-                        if let status = self.defaults.string(forKey: key) {
-                            // instantiating URL directly doesn't work, it prepends the container path
-                            // see https://stackoverflow.com/questions/27062454/converting-url-to-string-and-back-again
-                            let url = PathUtils.url(for: path)
-                            self.updateBadge(for: url, with: status)
-                            
-                            // remove this .updated key, we have handled it
-                            self.defaults.removeObject(forKey: key)
-                            
-                            // replace with a standard status key, that we can check for
-                            // when we receive a requestBadgeIdentifier from the OS
-                            // this would happen if the user closes and re-opens the
-                            // a finder window we already have data for
-                            self.defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
-                        } else {
-                            NSLog("could not find value for key %@", key)
-                        }
-                    }
-                }
-                
-                // TODO wait on updates flag? instead of sleep / polling?
-                sleep(1)
-                
-                self.updateWatchedFolders()
-            }
-        }
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+//                let defaultsDict = self.defaults.dictionaryRepresentation()
+//                let allKeys = defaultsDict.keys
+//
+//                for watchedFolder in self.watchedFolders {
+//                    // find all status update keys for this watched folder
+//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder)) }) {
+//                        var path = key
+//                        path.removeFirst(GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder).count)
+//                        if let status = self.defaults.string(forKey: key) {
+//                            // instantiating URL directly doesn't work, it prepends the container path
+//                            // see https://stackoverflow.com/questions/27062454/converting-url-to-string-and-back-again
+//                            let url = PathUtils.url(for: path)
+//                            self.updateBadge(for: url, with: status)
+//
+//                            // remove this .updated key, we have handled it
+//                            self.defaults.removeObject(forKey: key)
+//
+//                            // replace with a standard status key, that we can check for
+//                            // when we receive a requestBadgeIdentifier from the OS
+//                            // this would happen if the user closes and re-opens the
+//                            // a finder window we already have data for
+//                            self.defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
+//                        } else {
+//                            NSLog("could not find value for key %@", key)
+//                        }
+//                    }
+//                }
+//
+//                // TODO wait on updates flag? instead of sleep / polling?
+//                sleep(1)
+//
+//                self.updateWatchedFolders()
+//            }
+//        }
     }
     
     // The user is now seeing the container's contents.
@@ -148,6 +148,11 @@ class FinderSync: FIFinderSync {
                         
                         // OK status is not available, lets request it
                         self.defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
+
+                        // https://stackoverflow.com/a/43963368/8671834
+                        let waitOnKey = GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder)
+                        self.defaults.addObserver(self, forKeyPath: waitOnKey, options: [.initial, .new], context: nil)
+
                         return
                     }
                 }
@@ -156,6 +161,65 @@ class FinderSync: FIFinderSync {
                 NSLog("unable to get path for url '%@'", url.absoluteString)
             }
         }
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if let key = keyPath {
+            defaults.synchronize()
+            NSLog("observeValue, key='\(key)' object=\(object) change=\(change)")
+
+            
+            for watchedFolder in watchedFolders {
+                if key.contains(watchedFolder.uuid.uuidString) {
+                    let prefix = GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder)
+                    if key.contains(prefix) {
+                        var path = key
+                        path.removeFirst(prefix.count)
+                        if let status = defaults.string(forKey: key) {
+                            
+                            let url = PathUtils.url(for: path)
+                            updateBadge(for: url, with: status)
+
+                            // remove this .updated key, we have handled it
+                            defaults.removeObject(forKey: key)
+
+                            // replace with a standard status key, that we can check for
+                            // when we receive a requestBadgeIdentifier from the OS
+                            // this would happen if the user closes and re-opens the
+                            // a finder window we already have data for
+                            defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
+                        } else {
+                            NSLog("could not find status for key='\(key)' \(id())")
+                        }
+                    }
+                }
+            }
+        }
+//
+//        if let key = keyPath {
+//            var path = key
+//            path.removeFirst(GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder).count)
+//            if let status = self.defaults.string(forKey: key) {
+//
+//            }
+//
+//        }
+//back-again
+        //                            let url = PathUtils.url(for: path)
+        //                            self.updateBadge(for: url, with: status)
+        //
+        //                            // remove this .updated key, we have handled it
+        //                            self.defaults.removeObject(forKey: key)
+        //
+        //                            // replace with a standard status key, that we can check for
+        //                            // when we receive a requestBadgeIdentifier from the OS
+        //                            // this would happen if the user closes and re-opens the
+        //                            // a finder window we already have data for
+        //                            self.defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
+        //                        } else {
+        //                            NSLog("could not find value for key %@", key)
+        //                        }
+
     }
     
     override var toolbarItemName: String {
