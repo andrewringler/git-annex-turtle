@@ -170,6 +170,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check for badge requests from our Finder Sync extension
         DispatchQueue.global(qos: .userInitiated).async {
             while true {
+                NSLog("Checking for requests from Finder Sync extension")
+                
 //                let defaultsDict = self.defaults.dictionaryRepresentation()
 //                let allKeys = defaultsDict.keys
                 
@@ -203,6 +205,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     // wait for all asynchronous status updates to complete
                     updateStatusCompletionBarrier.wait()
 
+                    
                     // find all request keys for this watched folder
 //                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
 //                        if let url = self.defaults.url(forKey: key) {
@@ -235,33 +238,70 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check if the state of a file/directory has changed since we last checked
         DispatchQueue.global(qos: .background).async {
             while true {
-                let defaultsDict = self.defaults.dictionaryRepresentation()
-                let allKeys = defaultsDict.keys
-
-                // We only want to re-check files that are still in watched folders
+                NSLog("Checking for updates on disk")
+                
                 for watchedFolder in self.watchedFolders {
-                    // find all existing keys for this watched folder
-                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder)) }) {
-                        var path = key
-                        path.removeFirst(GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder).count)
-                        if let oldStatus = Status.status(fromOptional: self.defaults.string(forKey: key)) {
-                            let url = PathUtils.url(for: path)
-                            // TODO handle multiple git-annex queries concurrently
-                            // NOTE if we do DispatchQueue async, we need to ensure
-                            // below that our sleep, sleeps long enough for all threads to complete!
-                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                            if oldStatus != newStatus {
-                                NSLog("Add to DB: periodic polling, changed status from \(oldStatus) to \(newStatus) for \(path)")
-                                self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+                    let queries = Queries(data: self.data)
+                    let paths = queries.allPathsOlderThan(in: watchedFolder, secondsOld: 5)
+                    
+                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
+                    let updateStatusCompletionBarrier = DispatchGroup()
+                    for path in paths {
+                        // handle multiple git-annex queries concurrently
+                        let url = PathUtils.url(for: path)
+                        updateStatusCompletionBarrier.enter()
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                            
+                            // did the status change?
+                            let oldStatus = queries.statusForPath(path: path)
+                            if oldStatus == nil || oldStatus! != status {
+                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
                             }
-                        } else {
-                            NSLog("unable to get status for key '%@'", key)
+                            
+                            updateStatusCompletionBarrier.leave()
                         }
                     }
+                    
+                    // wait for all asynchronous status updates to complete
+                    updateStatusCompletionBarrier.wait()
                 }
-                sleep(2)
+                sleep(1)
             }
         }
+        
+
+//        // Periodically check if the state of a file/directory has changed since we last checked
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+//                let defaultsDict = self.defaults.dictionaryRepresentation()
+//                let allKeys = defaultsDict.keys
+//
+//                // We only want to re-check files that are still in watched folders
+//                for watchedFolder in self.watchedFolders {
+//                    // find all existing keys for this watched folder
+//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder)) }) {
+//                        var path = key
+//                        path.removeFirst(GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder).count)
+//                        if let oldStatus = Status.status(fromOptional: self.defaults.string(forKey: key)) {
+//                            let url = PathUtils.url(for: path)
+//                            // TODO handle multiple git-annex queries concurrently
+//                            // NOTE if we do DispatchQueue async, we need to ensure
+//                            // below that our sleep, sleeps long enough for all threads to complete!
+//                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+//                            if oldStatus != newStatus {
+//                                NSLog("Add to DB: periodic polling, changed status from \(oldStatus) to \(newStatus) for \(path)")
+//                                self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+//                            }
+//                        } else {
+//                            NSLog("unable to get status for key '%@'", key)
+//                        }
+//                    }
+//                }
+//                sleep(2)
+//            }
+//        }
         
 //        DispatchQueue.global(qos: .background).async {
 //            while true {

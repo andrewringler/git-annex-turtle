@@ -17,6 +17,7 @@ enum PathStatusAttributes: String {
     case pathString = "pathString"
     case modificationDate = "modificationDate"
 }
+let PathStatusAttributesAll = [PathStatusAttributes.watchedFolderUUIDString,PathStatusAttributes.statusString,PathStatusAttributes.pathString,PathStatusAttributes.modificationDate]
 
 //let appDelegate: DataEntrypoint? = nil
 
@@ -42,6 +43,7 @@ class Queries {
                 let pathStatuses = try managedContext.fetch(fetchRequest)
                 if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
                     pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
+                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
                     try managedContext.save()
                 } else {
                     NSLog("Error, more than one record for path='\(path)'")
@@ -93,7 +95,7 @@ class Queries {
                     
                     newPathRow.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
                     newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
-                    //                newPathRow.setValue(Date(), forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+                    newPathRow.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
                     newPathRow.setValue(Status.request.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
                     
                     try managedContext.save()
@@ -130,7 +132,7 @@ class Queries {
     
     func allPathsNotHandled(in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
-        // TODO
+        
         DispatchQueue.main.sync {
             let managedContext = data.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
@@ -145,6 +147,57 @@ class Queries {
                 }
             } catch let error as NSError {
                 NSLog("Could not fetch. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return paths
+    }
+    
+    func allPathsOlderThan(in watchedFolder: WatchedFolder, secondsOld: Double) -> [String] {
+        var paths: [String] = []
+        
+        DispatchQueue.main.sync {
+            let managedContext = data.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+            let olderThan: Double = (Date().timeIntervalSince1970 as Double) - secondsOld
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.modificationDate) <= \(olderThan)")
+            do {
+                let statuses = try managedContext.fetch(fetchRequest)
+                
+                for status in statuses {
+                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
+                        paths.append(pathString)
+                    }
+                }
+            } catch let error as NSError {
+                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return paths
+    }
+    
+    func allNonRequestStatuses(in watchedFolder: WatchedFolder) -> [(path: String, status: String)] {
+        var paths: [(path: String, status: String)] = []
+        
+        DispatchQueue.main.sync {
+            let managedContext = data.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) != '\(Status.request.rawValue)'")
+            do {
+                let statuses = try managedContext.fetch(fetchRequest)
+                
+                for status in statuses {
+                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String,
+                       let statusString = status.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String
+                        {
+                            paths.append((path: pathString, status: statusString))
+                    } else {
+                        NSLog("Could not retrieve path and status for entity '\(status)'")
+                    }
+                }
+            } catch let error as NSError {
+                NSLog("Could not fetch allNonRequestStatuses. \(error), \(error.userInfo)")
             }
         }
         

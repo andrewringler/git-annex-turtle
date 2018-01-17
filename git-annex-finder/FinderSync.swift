@@ -8,6 +8,7 @@
 
 import Cocoa
 import FinderSync
+import CoreData
 
 class FinderSync: FIFinderSync {
     let defaults: UserDefaults
@@ -67,6 +68,14 @@ class FinderSync: FIFinderSync {
 //        FIFinderSyncController.default().setBadgeImage(imgFullyPresentDirectory!, label: "Fully Present", forBadgeIdentifier: "fully-present-directory")
         FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: Status.partiallyPresentDirectory.rawValue)
         
+        // Get notified on Db changes
+        // see https://cocoacasts.com/how-to-observe-a-managed-object-context
+//        let managedObjectContext = data.persistentContainer.viewContext
+//        let notificationCenter = NotificationCenter.default
+//        notificationCenter.addObserver(self, selector: #selector(managedObjectContextObjectsDidChange), name: NSManagedObjectContextObjectsDidChangeNotification, object: managedObjectContext)
+//        notificationCenter.addObserver(self, selector: #selector(managedObjectContextWillSave), name: NSManagedObjectContextWillSaveNotification, object: managedObjectContext)
+//        notificationCenter.addObserver(self, selector: #selector(managedObjectContextDidSave), name: NSNotification.Name.NSManagedObjectContextDidSave, object: managedObjectContext)
+        
         // Poll for changes
         // https://stackoverflow.com/questions/36608645/call-function-when-if-value-in-nsuserdefaults-standarduserdefaults-changes
         // https://stackoverflow.com/questions/37805885/how-to-create-dispatch-queue-in-swift-3
@@ -106,7 +115,88 @@ class FinderSync: FIFinderSync {
 //                self.updateWatchedFolders()
 //            }
 //        }
+        
+        // TODO trigger this by observing a property on UserDefaults
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                NSLog("Checking for updates \(self.id())")
+                
+                let queries = Queries(data: self.data)
+                for watchedFolder in self.watchedFolders {
+                    let statuses: [(path: String, status: String)] = queries.allNonRequestStatuses(in: watchedFolder)
+                    for status in statuses {
+                        // TODO only update if changed?
+                        let url = PathUtils.url(for: status.path)
+                        self.updateBadge(for: url, with: status.status)
+                    }
+                }
+
+                sleep(5)
+            }
+        }
     }
+    
+//    private func handleDbChange(changedObjects: Set<NSManagedObject>) {
+//        for changed in changedObjects {
+//            if let entityName = changed.entity.name, entityName == PathStatusEntityName  {
+//                //                    NSLog("handling status update")
+//                /*                     if let statusString = firstStatus.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String {
+//                 ret = Status.status(from: statusString)
+//                 }
+//                 */
+//
+//                let committedValues = changed.committedValues(forKeys: nil)
+//                //PathStatusAttributesAll)
+//                if let statusString = committedValues[PathStatusAttributes.statusString.rawValue] as? String, statusString != Status.request.rawValue,
+//                    let watchedFolderUUIDString = committedValues[PathStatusAttributes.watchedFolderUUIDString.rawValue] as? String,
+//                    let pathString = committedValues[PathStatusAttributes.pathString.rawValue] as? String {
+//                    // are we still watching this path?
+//                    for watchedFolder in watchedFolders {
+//                        if watchedFolder.uuid.uuidString == watchedFolderUUIDString {
+//                            let url = PathUtils.url(for: pathString)
+//                            self.updateBadge(for: url, with: statusString)
+//                        }
+//                    }
+//                }
+////                else {
+////                    NSLog("invalid entity \(String(describing: changed as AnyObject))")
+////                }
+//            }
+//        }
+//    }
+    
+    // TODO move into Queries class
+    // TODO what thread is this on?
+//    @objc func managedObjectContextDidSave(notification: NSNotification) {
+//        NSLog("managedObjectContextDidSave")
+//        guard let userInfo = notification.userInfo else {
+//            NSLog("could not retrieve userInfo")
+//            return
+//        }
+//
+//        if let inserts = userInfo[NSInsertedObjectsKey] as? Set<NSManagedObject>, inserts.count > 0 {
+//            handleDbChange(changedObjects: inserts)
+//            NSLog("--- INSERTS ---")
+//            NSLog(String(describing: inserts as AnyObject))
+//            NSLog("+++++++++++++++")
+//        }
+//
+//        if let updates = userInfo[NSUpdatedObjectsKey] as? Set<NSManagedObject>, updates.count > 0 {
+//            NSLog("--- UPDATES ---")
+//            for update in updates {
+//                NSLog(String(describing: update.changedValues()  as AnyObject))
+//            }
+//            NSLog("+++++++++++++++")
+//            handleDbChange(changedObjects: updates)
+//        }
+//
+//        if let deletes = userInfo[NSDeletedObjectsKey] as? Set<NSManagedObject>, deletes.count > 0 {
+//            NSLog("--- DELETES ---")
+//            NSLog(String(describing: deletes as AnyObject))
+//            NSLog("+++++++++++++++")
+//            // ignore
+//        }
+//    }
     
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
