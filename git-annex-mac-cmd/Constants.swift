@@ -8,6 +8,8 @@
 
 import Foundation
 
+let groupID = "group.com.andrewringler.git-annex-mac.sharedgroup"
+
 let GitAnnexTurtleDbPrefix = "gitannex."
 let GitAnnexTurtleWatchedFoldersDbPrefix = "gitannex.watched-folders"
 func GitAnnexTurtleRequestBadgeDbPrefixNoPath(in watchedFolder: WatchedFolder) -> String {

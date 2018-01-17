@@ -170,46 +170,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check for badge requests from our Finder Sync extension
         DispatchQueue.global(qos: .userInitiated).async {
             while true {
-                let defaultsDict = self.defaults.dictionaryRepresentation()
-                let allKeys = defaultsDict.keys
+//                let defaultsDict = self.defaults.dictionaryRepresentation()
+//                let allKeys = defaultsDict.keys
                 
                 /* Handle all badge requests, these are the highest priority for a nice user experience
                  * since there are the whole point of this app
                  */
                 for watchedFolder in self.watchedFolders {
                     let queries = Queries(data: self.data)
-//                    NSLog("querying for paths not handled yet")
-                    var ret = queries.allStatusesNotHandled(in: watchedFolder)
-                    if ret.count > 0 {
-//                        NSLog("Paths not handled yet \(ret)")
-                        
+                    let paths = queries.allPathsNotHandled(in: watchedFolder)
+                    
+                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
+                    let updateStatusCompletionBarrier = DispatchGroup()
+                    for path in paths {
+                        // handle multiple git-annex queries concurrently
+                        let url = PathUtils.url(for: path)
+                        updateStatusCompletionBarrier.enter()
+                        DispatchQueue.global(qos: .userInitiated).async {
+                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                            
+                            // did the status change?
+                            let oldStatus = queries.statusForPath(path: path)
+                            if oldStatus == nil || oldStatus! != status {
+                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                            }
+                            
+                            updateStatusCompletionBarrier.leave()
+                        }
                     }
-//                    NSLog("done querying for paths not handled yet")
+                    
+                    // wait for all asynchronous status updates to complete
+                    updateStatusCompletionBarrier.wait()
 
                     // find all request keys for this watched folder
-                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
-                        if let url = self.defaults.url(forKey: key) {
-                            if let path = PathUtils.path(for: url) {
-                                // handle multiple git-annex queries concurrently
-                                DispatchQueue.global(qos: .userInitiated).async {
-                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                                    NSLog("Add to DB: handled request, updated status to \(status) for \(path)")
-                                    self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
-                                }
-                            } else {
-                                NSLog("unable to get path for URL in key %@", key)
-                            }
-                        } else {
-                            NSLog("unable to get URL for key %@", key)
-                        }
-                        
-
-                        /* OK, either we handled it, we are handling it, or there was some error
-                         * we couldn't handle. Either way, remove it from UserDefaults so we don't
-                         * try to deal with it again
-                         */
-                        self.defaults.removeObject(forKey: key)
-                    }
+//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
+//                        if let url = self.defaults.url(forKey: key) {
+//                            if let path = PathUtils.path(for: url) {
+//                                // handle multiple git-annex queries concurrently
+//                                DispatchQueue.global(qos: .userInitiated).async {
+//                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+//                                    NSLog("Add to DB: handled request, updated status to \(status) for \(path)")
+//                                    self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
+//                                }
+//                            } else {
+//                                NSLog("unable to get path for URL in key %@", key)
+//                            }
+//                        } else {
+//                            NSLog("unable to get URL for key %@", key)
+//                        }
+//
+//
+//                        /* OK, either we handled it, we are handling it, or there was some error
+//                         * we couldn't handle. Either way, remove it from UserDefaults so we don't
+//                         * try to deal with it again
+//                         */
+//                        self.defaults.removeObject(forKey: key)
+//                    }
                 }
                 sleep(1)
             }

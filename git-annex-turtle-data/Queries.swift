@@ -26,6 +26,45 @@ class Queries {
     init(data: DataEntrypoint) {
         self.data = data
     }
+
+    // NOTE all CoreData operations must happen on the main thread
+    // or a private context
+    // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
+
+    func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder: WatchedFolder) {
+        DispatchQueue.main.sync {
+            NSLog("updateStatus: to='\(status)' path='\(path)' in='\(watchedFolder.pathString)' ")
+            
+            do {
+                let managedContext = self.data.persistentContainer.viewContext
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
+                let pathStatuses = try managedContext.fetch(fetchRequest)
+                if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
+                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
+                    try managedContext.save()
+                } else {
+                    NSLog("Error, more than one record for path='\(path)'")
+                }
+                
+//                // insert updated status into Db
+//                if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: managedContext) {
+//                    let newPathRow = NSManagedObject(entity: entity, insertInto: managedContext)
+//
+//                    newPathRow.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
+//                    newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
+//                    //                newPathRow.setValue(Date(), forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+//                    newPathRow.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
+//
+//                    try managedContext.save()
+//                } else {
+//                    NSLog("Could not create entity for \(PathStatusEntityName)")
+//                }
+            } catch let error as NSError {
+                NSLog("Could not save updated status. \(error), \(error.userInfo)")
+            }
+        }
+    }
     
     func addRequest(for path: String, in watchedFolder: WatchedFolder) {
         // async, doesn't really matter when this gets done
@@ -34,6 +73,7 @@ class Queries {
             let managedContext = self.data.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
             
+            // TODO, group in transaction?
             do {
                 // already there?
                 fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
@@ -54,14 +94,14 @@ class Queries {
                     newPathRow.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
                     newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
                     //                newPathRow.setValue(Date(), forKeyPath: PathStatusAttributes.modificationDate.rawValue)
-                    newPathRow.setValue("request t", forKeyPath: PathStatusAttributes.statusString.rawValue)
+                    newPathRow.setValue(Status.request.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
                     
                     try managedContext.save()
                 } else {
                     NSLog("Could not create entity for \(PathStatusEntityName)")
                 }
             } catch let error as NSError {
-                NSLog("Could not save. \(error), \(error.userInfo)")
+                NSLog("Could not save request. \(error), \(error.userInfo)")
             }
         }
     }
@@ -88,21 +128,19 @@ class Queries {
         return ret
     }
     
-    func allStatusesNotHandled(in watchedFolder: WatchedFolder) -> [String] {
-        var ret: [String] = []
+    func allPathsNotHandled(in watchedFolder: WatchedFolder) -> [String] {
+        var paths: [String] = []
         // TODO
-        // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
-        // there are other options if we don't want to be on the main thread
         DispatchQueue.main.sync {
             let managedContext = data.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) == '\(Status.request.rawValue)'")
             do {
                 let statuses = try managedContext.fetch(fetchRequest)
                 
                 for status in statuses {
                     if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-                        ret.append(pathString)
+                        paths.append(pathString)
                     }
                 }
             } catch let error as NSError {
@@ -110,7 +148,7 @@ class Queries {
             }
         }
         
-        return ret
+        return paths
     }
     
     func allStatuses() -> [String] {

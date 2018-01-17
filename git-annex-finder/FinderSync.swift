@@ -141,26 +141,37 @@ class FinderSync: FIFinderSync {
         DispatchQueue.global(qos: .background).async {
             if let path = PathUtils.path(for: url) {
                 for watchedFolder in self.watchedFolders {
-                    
                     let queries = Queries(data: self.data)
-                    var ret = queries.addRequest(for: path, in: watchedFolder)
                     
-                    if path.starts(with: watchedFolder.pathString) {
-                        // do we already have the status cached?
-                        if let status = self.defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
-                            self.updateBadge(for: url, with: status)
-                            return
-                        }
-                        
-                        // OK status is not available, lets request it
-                        self.defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
-
-                        // https://stackoverflow.com/a/43963368/8671834
-                        let waitOnKey = GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder)
-                        self.defaults.addObserver(self, forKeyPath: waitOnKey, options: [.initial, .new], context: nil)
-
+                    // already have the status? then use it
+                    if let status = queries.statusForPath(path: path) {
+                        self.updateBadge(for: url, with: status.rawValue)
                         return
                     }
+                    
+                    // OK, we don't have the status in the Db, lets request it
+                    queries.addRequest(for: path, in: watchedFolder)
+                    return
+                    
+//                    // TODO, do we need to let anyone know we used it recently?
+//
+//
+//                    if path.starts(with: watchedFolder.pathString) {
+//                        // do we already have the status cached?
+//                        if let status = self.defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
+//                            self.updateBadge(for: url, with: status)
+//                            return
+//                        }
+//
+//                        // OK status is not available, lets request it
+//                        self.defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
+//
+//                        // https://stackoverflow.com/a/43963368/8671834
+//                        let waitOnKey = GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder)
+//                        self.defaults.addObserver(self, forKeyPath: waitOnKey, options: [.initial, .new], context: nil)
+//
+//                        return
+//                    }
                 }
                 NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
             } else {
