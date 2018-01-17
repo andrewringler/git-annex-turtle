@@ -19,7 +19,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
     let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
-    
+    let data = DataEntrypoint()
+
     var watchedFolders = Set<WatchedFolder>()
     var menuBarButton :NSStatusBarButton?
     var preferencesViewController: ViewController? = nil
@@ -80,6 +81,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        // Instantiate the database
+        // yes, the following lines are strange
+//        data.copyModel = true
+//        let queries = Queries(data: data)
+//        let _ = queries.allStatuses()
+//        data.copyModel = false
+//        data.moveDataStoreFromApplicationSandboxToSharedGroupContainer()
+
         // Periodically check if watched folder list has changed, update menu and notify Finder Sync extension
         DispatchQueue.global(qos: .background).async {
             while true {
@@ -168,6 +177,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  * since there are the whole point of this app
                  */
                 for watchedFolder in self.watchedFolders {
+                    let queries = Queries(data: self.data)
+//                    NSLog("querying for paths not handled yet")
+                    var ret = queries.allStatusesNotHandled(in: watchedFolder)
+                    if ret.count > 0 {
+//                        NSLog("Paths not handled yet \(ret)")
+                        
+                    }
+//                    NSLog("done querying for paths not handled yet")
+
                     // find all request keys for this watched folder
                     for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
                         if let url = self.defaults.url(forKey: key) {
@@ -322,6 +340,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e ignore -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
         task.launch()
+    }
+    
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        return data.applicationShouldTerminate(sender)
+    }
+    
+    func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
+        return data.windowWillReturnUndoManager(window: window)
     }
     
     @objc func printQuote(_ sender: Any?) {

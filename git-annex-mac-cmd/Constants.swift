@@ -117,7 +117,10 @@ enum Status: String {
     case presentCalculatingNumcopies = "present-calculating-numcopies"
     case absentCalculatingNumcopies = "absent-calculating-numcopies"
     
-    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies,presentCalculatingNumcopies,absentCalculatingNumcopies]
+    case request = "request"
+    
+    
+    static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies,presentCalculatingNumcopies,absentCalculatingNumcopies,request]
     static func status(from: String) -> Status {
         for status in all {
             if status.rawValue == from {

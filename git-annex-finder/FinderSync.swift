@@ -11,6 +11,8 @@ import FinderSync
 
 class FinderSync: FIFinderSync {
     let defaults: UserDefaults
+    let data = DataEntrypoint()
+
     var watchedFolders = Set<WatchedFolder>()
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
@@ -139,6 +141,10 @@ class FinderSync: FIFinderSync {
         DispatchQueue.global(qos: .background).async {
             if let path = PathUtils.path(for: url) {
                 for watchedFolder in self.watchedFolders {
+                    
+                    let queries = Queries(data: self.data)
+                    var ret = queries.addRequest(for: path, in: watchedFolder)
+                    
                     if path.starts(with: watchedFolder.pathString) {
                         // do we already have the status cached?
                         if let status = self.defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
@@ -297,5 +303,17 @@ class FinderSync: FIFinderSync {
         } else {
             NSLog("invalid context menu item for command %@", command.cmdString)
         }
+    }
+    
+    func applicationWillTerminate(_ aNotification: Notification) {
+        NSLog("quiting \(id())")
+    }
+    
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        return data.applicationShouldTerminate(sender)
+    }
+    
+    func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
+        return data.windowWillReturnUndoManager(window: window)
     }
 }
