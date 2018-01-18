@@ -1,0 +1,36 @@
+//
+//  WatchedFolderMonitor.swift
+//  git-annex-turtle
+//
+//  Created by Andrew Ringler on 1/18/18.
+//  Copyright © 2018 Andrew Ringler. All rights reserved.
+//
+
+import Foundation
+
+class WatchedFolderMonitor {
+    let watchedFolder: WatchedFolder
+    let fileMonitor: Witness
+    
+    init(watchedFolder: WatchedFolder, app: AppDelegate) {
+        self.watchedFolder = watchedFolder
+        let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
+        let checkForGitAnnexUpdatesDebounce = throttle1(delay: 0.25, queue: queue, action: app.checkForGitAnnexUpdates)
+        
+        fileMonitor = Witness(paths: [watchedFolder.pathString], flags: .FileEvents, latency: 0) { events in
+            for event in events {
+                if event.path.contains(".git/annex/misctmp") ||
+                    event.path.contains(".git/annex/mergedrefs") ||
+                    event.path.contains(".git/annex/tmp")
+                {
+                    // ignore
+                } else {
+                    // We received a filesystem event we care about
+                    //                        event.
+//                    NSLog("File System Event: \(event)")
+                    checkForGitAnnexUpdatesDebounce(watchedFolder)
+                }
+            }
+        }
+    }
+}

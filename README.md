@@ -51,7 +51,7 @@ List of UNIX-style folder paths for git-annex-turtle to watch. Update manually o
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
- * Monitor filesystem for changes? https://github.com/eonil/FileSystemEvents, https://github.com/njdehoog/Witness
+ * Monitor filesystem for changes? https://github.com/eonil/FileSystemEvents, https://github.com/njdehoog/Witness or https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man2/kqueue.2.html or https://developer.apple.com/library/content/documentation/Darwin/Conceptual/FSEvents_ProgGuide/TechnologyOverview/TechnologyOverview.html#//apple_ref/doc/uid/TP40005289-CH3-SW1
  
 ## Internal: Tutorials, References, XCode & Swift Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial

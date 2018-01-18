@@ -25,7 +25,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var menuBarButton :NSStatusBarButton?
     var preferencesViewController: ViewController? = nil
     var preferencesWindow: NSWindow? = nil
-
+    var fileSystemMonitors: [WatchedFolderMonitor] = []
+    
     private func updateListOfWatchedFolders() {
         // Re-read config, it might have changed
         let config = Config()
@@ -61,9 +62,52 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Save updated folder list to the database
             let queries = Queries(data: data)
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
+            
+            // Start monitoring the new list of folders
+            // TODO, we should only monitor the visible folders sent from Finder Sync
+            // in addition to the .git/annex folder for annex updates
+            // Monitoring the entire watched folder, is unnecessarily expensive
+            fileSystemMonitors = watchedFolders.map {
+                WatchedFolderMonitor(watchedFolder: $0, app: self)
+            }
         }
     }
     
+    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder) {
+//        let diceRoll = Int(arc4random_uniform(6))
+//        NSLog("+ Checking for updates in \(watchedFolder.pathString) \(diceRoll)")
+        let queries = Queries(data: self.data)
+        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
+        
+        // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
+        let updateStatusCompletionBarrier = DispatchGroup()
+        for path in paths {
+            //                        NSLog("Checking for updates in path '\(path)'")
+            // handle multiple git-annex queries concurrently
+            let url = PathUtils.url(for: path)
+            updateStatusCompletionBarrier.enter()
+            // TODO limit simultaneous git-annex requests
+            DispatchQueue.global(qos: .userInitiated).async {
+                let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                
+                // did the status change?
+                let oldStatus = queries.statusForPathBlocking(path: path)
+                if oldStatus == nil || oldStatus! != status {
+                    NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+                    queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                } else {
+                    //                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
+                }
+                
+                updateStatusCompletionBarrier.leave()
+            }
+        }
+        
+        // wait for all asynchronous status updates to complete
+        updateStatusCompletionBarrier.wait()
+//        NSLog("- Done for updates in \(watchedFolder.pathString) \(diceRoll)")
+    }
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
@@ -76,7 +120,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         preferencesViewController = ViewController.freshController(appDelegate: self)
 //        preferencesViewController?.appDelegate = self
 //        preferencesViewController?.reloadFileList()
-
+        
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
         let allKeys = defaults.dictionaryRepresentation().keys
@@ -184,6 +228,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  * since there are the whole point of this app
                  */
                 for watchedFolder in self.watchedFolders {
+                    
                     let queries = Queries(data: self.data)
                     let paths = queries.allPathsNotHandledBlocking(in: watchedFolder)
                     
@@ -241,44 +286,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Periodically check if the state of a file/directory has changed since we last checked
-        DispatchQueue.global(qos: .background).async {
-            while true {
-//                NSLog("Checking for updates on disk")
-                
-                for watchedFolder in self.watchedFolders {
-//                    NSLog("Checking for updates for watched folder '\(watchedFolder.pathString)'")
-                    let queries = Queries(data: self.data)
-                    let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
-                    
-                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
-                    let updateStatusCompletionBarrier = DispatchGroup()
-                    for path in paths {
-//                        NSLog("Checking for updates in path '\(path)'")
-                        // handle multiple git-annex queries concurrently
-                        let url = PathUtils.url(for: path)
-                        updateStatusCompletionBarrier.enter()
-                        DispatchQueue.global(qos: .userInitiated).sync {
-                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                            
-                            // did the status change?
-                            let oldStatus = queries.statusForPathBlocking(path: path)
-                            if oldStatus == nil || oldStatus! != status {
-                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
-                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-                            } else {
-//                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
-                            }
-                            
-                            updateStatusCompletionBarrier.leave()
-                        }
-                    }
-                    
-                    // wait for all asynchronous status updates to complete
-                    updateStatusCompletionBarrier.wait()
-                }
-                sleep(2)
-            }
-        }
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+////                NSLog("Checking for updates on disk")
+//
+//                for watchedFolder in self.watchedFolders {
+////                    NSLog("Checking for updates for watched folder '\(watchedFolder.pathString)'")
+//                    let queries = Queries(data: self.data)
+//                    let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
+//
+//                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
+//                    let updateStatusCompletionBarrier = DispatchGroup()
+//                    for path in paths {
+////                        NSLog("Checking for updates in path '\(path)'")
+//                        // handle multiple git-annex queries concurrently
+//                        let url = PathUtils.url(for: path)
+//                        updateStatusCompletionBarrier.enter()
+//                        DispatchQueue.global(qos: .userInitiated).sync {
+//                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+//
+//                            // did the status change?
+//                            let oldStatus = queries.statusForPathBlocking(path: path)
+//                            if oldStatus == nil || oldStatus! != status {
+//                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+//                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+//                            } else {
+////                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
+//                            }
+//
+//                            updateStatusCompletionBarrier.leave()
+//                        }
+//                    }
+//
+//                    // wait for all asynchronous status updates to complete
+//                    updateStatusCompletionBarrier.wait()
+//                }
+//                sleep(2)
+//            }
+//        }
         
 
 //        // Periodically check if the state of a file/directory has changed since we last checked
