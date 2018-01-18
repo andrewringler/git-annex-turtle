@@ -433,14 +433,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async {
             let menu = NSMenu()
             
-            menu.addItem(NSMenuItem(title: "git-annex-turtle is watching:", action: nil, keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: "git-annex-turtle is observing:", action: nil, keyEquivalent: ""))
             if watchedFolders.count > 0 {
                 for watching in watchedFolders {
                     var watchingStringTruncated = watching.pathString
                     if(watchingStringTruncated.count > 40){
                         watchingStringTruncated = "…" + watchingStringTruncated.suffix(40)
                     }
-                    let watching = menu.addItem(withTitle: watchingStringTruncated, action: nil, keyEquivalent: "")
+                    _ = menu.addItem(withTitle: watchingStringTruncated, action: nil, keyEquivalent: "")
 //                    watching.image = self.gitAnnexLogoNoArrowsColor
                 }
             } else {
