@@ -238,7 +238,7 @@ class FinderSync: FIFinderSync {
     
     private func updateBadge(for url: URL, with status: String) {
         DispatchQueue.main.async {
-            NSLog("set badge to \(status) for \(url) \(self.id())")
+            //NSLog("set badge to \(status) for \(url) \(self.id())")
             FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
         }
     }
