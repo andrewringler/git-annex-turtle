@@ -726,7 +726,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="addWatchFolderAction:" target="XfG-lQ-9wD" id="Aa1-hY-21Y"/>
+                                    <action selector="deleteSelectedWatchFolders:" target="XfG-lQ-9wD" id="Aa1-hY-21Y"/>
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jl5-ni-oBZ">
@@ -737,7 +737,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <action selector="deleteSelectedWatchFoldres:" target="XfG-lQ-9wD" id="8Tg-aP-Xg6"/>
+                                    <action selector="deleteSelectedWatchFolders:" target="XfG-lQ-9wD" id="8Tg-aP-Xg6"/>
                                 </connections>
                             </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="e11-zG-alg">

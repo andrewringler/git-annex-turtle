@@ -36,7 +36,7 @@ class ViewController: NSViewController {
         }
     }
     
-    @IBAction func deleteSelectedWatchFoldres(_ sender: Any) {
+    @IBAction func deleteSelectedWatchFolders(_ sender: Any) {
         for itemSelectedRowIndex in observedFoldersView.selectedRowIndexes {
             guard let item = observedFoldersList?[itemSelectedRowIndex] else {
                 continue
