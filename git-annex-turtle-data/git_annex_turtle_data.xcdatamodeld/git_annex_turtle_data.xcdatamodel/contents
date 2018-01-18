@@ -6,7 +6,12 @@
         <attribute name="statusString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="WatchedFolderEntity" representedClassName="WatchedFolderEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uuidString" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
         <element name="PathStatus" positionX="-63" positionY="-18" width="128" height="105"/>
+        <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>
     </elements>
 </model>

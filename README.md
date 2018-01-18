@@ -24,6 +24,14 @@ macOS 10.12 or later
 ### Issues
 The Apple Finder Sync Extension only allows one app to register per folder, so other apps might be conflicting with *git-annex-turtle*. For example, Dropbox, registers his Finder Sync extension on your entire home folder (Users/yourname), regardless of where your actual Dropbox folder is located. Dropbox does this, apparently, so they can have “move to Dropbox” context menus on every single file. Launch `System Preferences > Extensions > Finder` to see what apps have Finder Sync extensions registered.
 
+### Important Directories
+`~/Library/Group Containers/group.com.andrewringler.git-annex-mac.sharedgroup`
+App Group location for UserDefaults and sqlite database.
+
+ `~/.config/git-annex/turtle-watch`
+List of UNIX-style folder paths for git-annex-turtle to watch. Update manually or with the GUI. One folder per line.
+ 
+
 ## Name
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and many other tools which have provided OS-level icons for source revisions control over the years.
 

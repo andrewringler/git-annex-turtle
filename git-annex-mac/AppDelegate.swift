@@ -51,21 +51,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 NSLog("Watching: %@ %@", watchedFolder.uuid.uuidString, watchedFolder.pathString)
             }
             
-            // notify our Finder Sync extension of the change
-            if let encodedData :Data = try? JSONEncoder().encode(watchedFolders) {
-                defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
-            } else {
-                NSLog("unable to encode watched folders")
-            }
+//            // notify our Finder Sync extension of the change
+//            if let encodedData :Data = try? JSONEncoder().encode(watchedFolders) {
+//                defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
+//            } else {
+//                NSLog("unable to encode watched folders")
+//            }
+            
+            // Save updated folder list to the database
+            let queries = Queries(data: data)
+            queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
         }
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
-            button.action = #selector(printQuote(_:))
+//            button.action = #selector(printQuote(_:))
             menuBarButton = button
         }
+        constructMenu(watchedFolders: []) // generate an empty-ish menu, for now
         
         // Setup preferences view controller
         preferencesViewController = ViewController.freshController(appDelegate: self)
@@ -170,7 +175,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check for badge requests from our Finder Sync extension
         DispatchQueue.global(qos: .userInitiated).async {
             while true {
-                NSLog("Checking for requests from Finder Sync extension")
+                //NSLog("Checking for requests from Finder Sync extension")
                 
 //                let defaultsDict = self.defaults.dictionaryRepresentation()
 //                let allKeys = defaultsDict.keys
@@ -180,7 +185,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  */
                 for watchedFolder in self.watchedFolders {
                     let queries = Queries(data: self.data)
-                    let paths = queries.allPathsNotHandled(in: watchedFolder)
+                    let paths = queries.allPathsNotHandledBlocking(in: watchedFolder)
                     
                     // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
                     let updateStatusCompletionBarrier = DispatchGroup()
@@ -192,7 +197,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                             
                             // did the status change?
-                            let oldStatus = queries.statusForPath(path: path)
+                            let oldStatus = queries.statusForPathBlocking(path: path)
                             if oldStatus == nil || oldStatus! != status {
                                 NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
                                 queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
@@ -231,18 +236,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //                        self.defaults.removeObject(forKey: key)
 //                    }
                 }
-                sleep(1)
+                sleep(2)
             }
         }
 
         // Periodically check if the state of a file/directory has changed since we last checked
         DispatchQueue.global(qos: .background).async {
             while true {
-                NSLog("Checking for updates on disk")
+                //NSLog("Checking for updates on disk")
                 
                 for watchedFolder in self.watchedFolders {
                     let queries = Queries(data: self.data)
-                    let paths = queries.allPathsOlderThan(in: watchedFolder, secondsOld: 5)
+                    let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
                     
                     // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
                     let updateStatusCompletionBarrier = DispatchGroup()
@@ -254,7 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                             
                             // did the status change?
-                            let oldStatus = queries.statusForPath(path: path)
+                            let oldStatus = queries.statusForPathBlocking(path: path)
                             if oldStatus == nil || oldStatus! != status {
                                 NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
                                 queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
@@ -267,7 +272,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     // wait for all asynchronous status updates to complete
                     updateStatusCompletionBarrier.wait()
                 }
-                sleep(1)
+                sleep(2)
             }
         }
         
@@ -405,13 +410,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
         return data.windowWillReturnUndoManager(window: window)
-    }
-    
-    @objc func printQuote(_ sender: Any?) {
-        let quoteText = "Never put off until tomorrow what you can do the day after tomorrow."
-        let quoteAuthor = "Mark Twain"
-        
-        print("\(quoteText) — \(quoteAuthor)")
     }
     
     @objc func showPreferencesWindow(_ sender: Any?) {

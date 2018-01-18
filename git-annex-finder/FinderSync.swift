@@ -34,20 +34,33 @@ class FinderSync: FIFinderSync {
     }
     
     func updateWatchedFolders() {
-        if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
-            if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
-                if newWatchedFolders != watchedFolders {
-                    watchedFolders = newWatchedFolders
-                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
-                    
-                    NSLog("Finder Sync is watching: ")
-                    for watchedFolder in watchedFolders {
-                        NSLog(watchedFolder.pathString)
-                        NSLog(watchedFolder.uuid.uuidString)
-                    }
-                }
+        let queries = Queries(data: self.data)
+        let newWatchedFolders: Set<WatchedFolder> = queries.allWatchedFoldersBlocking()
+        if newWatchedFolders != watchedFolders {
+            watchedFolders = newWatchedFolders
+            FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+
+            NSLog("Finder Sync is watching: ")
+            for watchedFolder in watchedFolders {
+                NSLog(watchedFolder.pathString)
+                NSLog(watchedFolder.uuid.uuidString)
             }
         }
+        
+//        if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
+//            if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
+//                if newWatchedFolders != watchedFolders {
+//                    watchedFolders = newWatchedFolders
+//                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+//
+//                    NSLog("Finder Sync is watching: ")
+//                    for watchedFolder in watchedFolders {
+//                        NSLog(watchedFolder.pathString)
+//                        NSLog(watchedFolder.uuid.uuidString)
+//                    }
+//                }
+//            }
+//        }
     }
     
     override init() {
@@ -119,11 +132,12 @@ class FinderSync: FIFinderSync {
         // TODO trigger this by observing a property on UserDefaults
         DispatchQueue.global(qos: .background).async {
             while true {
-                NSLog("Checking for updates \(self.id())")
+//                NSLog("Checking for updates \(self.id())")
+                self.updateWatchedFolders()
                 
                 let queries = Queries(data: self.data)
                 for watchedFolder in self.watchedFolders {
-                    let statuses: [(path: String, status: String)] = queries.allNonRequestStatuses(in: watchedFolder)
+                    let statuses: [(path: String, status: String)] = queries.allNonRequestStatusesBlocking(in: watchedFolder)
                     for status in statuses {
                         // TODO only update if changed?
                         let url = PathUtils.url(for: status.path)
@@ -234,13 +248,13 @@ class FinderSync: FIFinderSync {
                     let queries = Queries(data: self.data)
                     
                     // already have the status? then use it
-                    if let status = queries.statusForPath(path: path) {
+                    if let status = queries.statusForPathBlocking(path: path) {
                         self.updateBadge(for: url, with: status.rawValue)
                         return
                     }
                     
                     // OK, we don't have the status in the Db, lets request it
-                    queries.addRequest(for: path, in: watchedFolder)
+                    queries.addRequestAsync(for: path, in: watchedFolder)
                     return
                     
 //                    // TODO, do we need to let anyone know we used it recently?
