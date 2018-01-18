@@ -243,19 +243,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Periodically check if the state of a file/directory has changed since we last checked
         DispatchQueue.global(qos: .background).async {
             while true {
-                //NSLog("Checking for updates on disk")
+//                NSLog("Checking for updates on disk")
                 
                 for watchedFolder in self.watchedFolders {
+//                    NSLog("Checking for updates for watched folder '\(watchedFolder.pathString)'")
                     let queries = Queries(data: self.data)
                     let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
                     
                     // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
                     let updateStatusCompletionBarrier = DispatchGroup()
                     for path in paths {
+//                        NSLog("Checking for updates in path '\(path)'")
                         // handle multiple git-annex queries concurrently
                         let url = PathUtils.url(for: path)
                         updateStatusCompletionBarrier.enter()
-                        DispatchQueue.global(qos: .userInitiated).async {
+                        DispatchQueue.global(qos: .userInitiated).sync {
                             let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                             
                             // did the status change?
@@ -263,6 +265,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             if oldStatus == nil || oldStatus! != status {
                                 NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
                                 queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                            } else {
+//                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
                             }
                             
                             updateStatusCompletionBarrier.leave()

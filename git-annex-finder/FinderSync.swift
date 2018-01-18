@@ -15,6 +15,7 @@ class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
 
     var watchedFolders = Set<WatchedFolder>()
+    let statusCache: StatusCache
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
@@ -65,7 +66,9 @@ class FinderSync: FIFinderSync {
     
     override init() {
         defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
+        statusCache = StatusCache(data: data)
         super.init()
+        
         
         // Set up the directory we are syncing
         updateWatchedFolders()
@@ -141,6 +144,7 @@ class FinderSync: FIFinderSync {
                     for status in statuses {
                         // TODO only update if changed?
                         let url = PathUtils.url(for: status.path)
+                        self.statusCache.put(statusString: status.status, for: status.path)
                         self.updateBadge(for: url, with: status.status)
                     }
                 }
@@ -239,16 +243,25 @@ class FinderSync: FIFinderSync {
         }
     }
     
+    private func watchedFolderParent(for path: String) -> WatchedFolder? {
+        for watchedFolder in self.watchedFolders {
+            if path.starts(with: watchedFolder.pathString) {
+                return watchedFolder
+            }
+        }
+        return nil
+    }
+    
     override func requestBadgeIdentifier(for url: URL) {
         NSLog("requestBadgeIdentifier for \(url) \(id())")
         
         DispatchQueue.global(qos: .background).async {
             if let path = PathUtils.path(for: url) {
-                for watchedFolder in self.watchedFolders {
+                if let watchedFolder = self.watchedFolderParent(for: path) {
                     let queries = Queries(data: self.data)
                     
                     // already have the status? then use it
-                    if let status = queries.statusForPathBlocking(path: path) {
+                    if let status = self.statusCache.get(for: path) {
                         self.updateBadge(for: url, with: status.rawValue)
                         return
                     }
@@ -256,7 +269,14 @@ class FinderSync: FIFinderSync {
                     // OK, we don't have the status in the Db, lets request it
                     queries.addRequestAsync(for: path, in: watchedFolder)
                     return
-                    
+                } else {
+                    NSLog("Finder Sync could not find watched parent for url= \(url)")
+                }
+            } else {
+                NSLog("Finder Sync could not find path for url= \(url)")
+            }
+        }
+    }
 //                    // TODO, do we need to let anyone know we used it recently?
 //
 //
@@ -276,13 +296,13 @@ class FinderSync: FIFinderSync {
 //
 //                        return
 //                    }
-                }
-                NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
-            } else {
-                NSLog("unable to get path for url '%@'", url.absoluteString)
-            }
-        }
-    }
+//                }
+//                NSLog("Finder Sync could not find watched parent for url '%@'", PathUtils.path(for: url) ?? "")
+//            } else {
+//                NSLog("unable to get path for url '%@'", url.absoluteString)
+//            }
+//        }}
+//    }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if let key = keyPath {
