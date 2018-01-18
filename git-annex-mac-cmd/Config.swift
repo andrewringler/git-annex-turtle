@@ -44,6 +44,20 @@ class Config {
         }
     }
     
+    func stopWatchingRepo(repo: String) {
+        let currentRepos = listWatchedRepos().filter { $0 != repo } // remove repo
+        let towrite = currentRepos.joined(separator: "\n")
+        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+        os.open()
+        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+        os.close()
+        if success == -1 {
+            print("Unable to remove repository '\(repo)' to configuration file at '\(configFile)'")
+            print(os.streamError!.localizedDescription)
+            exit(-1)
+        }
+    }
+    
     func listWatchedRepos() -> [String] {
         do {
             let data = try String(contentsOfFile: configFile, encoding: .utf8)

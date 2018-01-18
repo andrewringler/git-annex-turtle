@@ -1,5 +1,5 @@
 # git-annex-turtle
-*git-annex-turtle* provides Apple Finder integration, including badge icons, contextual menus and a Menubar icon (aka menubar extra) for [git-annex](http://git-annex.branchable.com/) on the Mac. It it a native Mac app written in Swift 4 with XCode 9.2.
+*git-annex-turtle* provides Apple Finder integration, including badge icons, contextual menus and a Menubar icon (aka menubar extra) for [git-annex](http://git-annex.branchable.com/) on the Mac. It it a native Mac app written in Swift 4 with XCode 9.2 and requires macOS 10.12 or later.
 
 *git-annex-turtle* is open-source, licensed under [The MIT License](https://opensource.org/licenses/MIT).
 
@@ -15,9 +15,9 @@ Click the git-annex-turtle Menubar icon, then click `Watch a repository`, select
 You are now all set. Open your git-annex repository in Apple Finder to see updated badge icons. Right click (control-click) on a file or folder to see git-annex specific context menus.
 
 ### Requirements
-macOS or OS-X 10.10 (Yosemite) or later
+macOS 10.12 or later
 
-*git-annex-turtle* relies on the Apple Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later and all versions of macOS. The [Liferay Nativity](https://github.com/liferay/liferay-nativity) library could potentially be used to enable *git-annex-turtle* to run on older Mac OSs. 
+*git-annex-turtle* relies on the Apple Finder Sync API so is only available on OS-X 10.10 (Yosemite) and later and all versions of macOS. The [Liferay Nativity](https://github.com/liferay/liferay-nativity) library could potentially be used to enable *git-annex-turtle* to run on older Mac OSs. I am also using CoreData which is only available on the mac for OS 10.12 and later.
 
 *git-annex-turtle* is released for the the Mac only; it is written in Swift with XCode so is probably not easily portable to Linux and Windows. You may, of course, adapt and use this app's user experience, design, workflow and icon sets when porting to other OSs. See git-annex [related software](http://git-annex.branchable.com/related_software/) for options already built for other OSs.
 
@@ -34,7 +34,7 @@ The Apple Finder Sync Extension only allows one app to register per folder, so o
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
 
 ## TODO
- * UserDefaults is not working too well. it appears that Finder Sync processes are receiving notifications of new keys, before the main App has actually written out the value for the key, perhaps even a single key/value store in UserDefaults is not atomic :(
+ * UserDefaults is not working too well. it appears that Finder Sync processes are receiving notifications of new keys, before the main App has actually written out the value for the key, perhaps even a single key/value store in UserDefaults is not atomic :(?
  * gui for add/ remove watch
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
  * icons for present/absent num-copies 0…numcopies…9+, it looks like git annex does not provide an easy way to figure out the numcopies settings for a specific file, since numcopies can be set on a per file-type basis I would need to parse gitattributes to figure out a particular file's numcopies setting, additionally, calling git annex whereis to count the number of copies for a file is only returning trusted copies, which is different than the number of copies that could would be used in a drop command, so do we really want to be showing this?  

@@ -35,7 +35,17 @@ class ViewController: NSViewController {
             // Update the view, if already loaded.
         }
     }
-        
+    
+    @IBAction func deleteSelectedWatchFoldres(_ sender: Any) {
+        for itemSelectedRowIndex in observedFoldersView.selectedRowIndexes {
+            guard let item = observedFoldersList?[itemSelectedRowIndex] else {
+                continue
+            }
+            NSLog("Stop watching '\(item.pathString)'")
+            Config().stopWatchingRepo(repo: item.pathString)
+        }
+    }
+    
     // https://denbeke.be/blog/programming/swift-open-file-dialog-with-nsopenpanel/
     @IBAction func addWatchFolderAction(_ sender: Any) {
         let folderChooseDialog = NSOpenPanel();
@@ -103,7 +113,6 @@ extension ViewController: NSTableViewDataSource {
 }
 
 extension ViewController: NSTableViewDelegate {
-    
     fileprivate enum CellIdentifiers {
         static let PathCell = "PathCellID"
         static let UUIDCell = "UUIDCellID"
@@ -111,7 +120,7 @@ extension ViewController: NSTableViewDelegate {
     
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         
-        var image: NSImage?
+//        var image: NSImage?
         var text: String = ""
         var cellIdentifier: String = ""
         
