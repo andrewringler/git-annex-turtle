@@ -105,6 +105,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateStatusCompletionBarrier.wait()
     }
 
+    private func updateStatusAsync(for path: String, in watchedFolder: WatchedFolder) {
+        // TODO
+        // add this back in later, when we have a better handle on the timing of all events
+        
+//        DispatchQueue.global(qos: .background).async {
+//            let url = PathUtils.url(for: path)
+//            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+//
+//            // did the status change?
+//            let queries = Queries(data: self.data)
+//            let oldStatus = queries.statusForPathBlocking(path: path)
+//            if oldStatus == nil || oldStatus! != status {
+//                NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
+//                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+//            }
+//        }
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
@@ -151,6 +169,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 if !status.success {
                                     // git-annex has very nice error message, use them as-is
                                     self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                                } else {
+                                    self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
                                 }
                             }
                             
@@ -159,6 +179,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                                 if !status.success {
                                     self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                                } else {
+                                    self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
                                 }
                             }
                             
