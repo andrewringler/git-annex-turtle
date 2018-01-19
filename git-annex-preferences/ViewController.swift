@@ -57,9 +57,9 @@ class ViewController: NSViewController {
         folderChooseDialog.canChooseDirectories    = true
         folderChooseDialog.canCreateDirectories    = false
         folderChooseDialog.allowsMultipleSelection = false
-//        folderChooseDialog.
+
         // TODO validate user has selected a git-annex directory
-        // in the dialog itself
+        // in the dialog itself, instead of waiting until selection
         // see https://stackoverflow.com/questions/5682666/restrict-access-to-certain-folders-using-nsopenpanel
         if (folderChooseDialog.runModal() == NSApplication.ModalResponse.OK) {
             if let chosenURL: URL = folderChooseDialog.url {

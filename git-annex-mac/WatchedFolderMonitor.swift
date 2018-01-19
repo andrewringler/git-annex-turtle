@@ -17,19 +17,21 @@ class WatchedFolderMonitor {
         let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
         let checkForGitAnnexUpdatesDebounce = throttle1(delay: 0.25, queue: queue, action: app.checkForGitAnnexUpdates)
         
-        fileMonitor = Witness(paths: [watchedFolder.pathString], flags: .FileEvents, latency: 0) { events in
+        fileMonitor = Witness(paths: [watchedFolder.pathString], flags: .FileEvents, latency: 0.1) { events in
+            var shouldUpdate = false
             for event in events {
                 if event.path.contains(".git/annex/misctmp") ||
                     event.path.contains(".git/annex/mergedrefs") ||
                     event.path.contains(".git/annex/tmp")
                 {
-                    // ignore
+                    // ignore, these can change just by read-only querying git-annex
                 } else {
-                    // We received a filesystem event we care about
-                    //                        event.
-//                    NSLog("File System Event: \(event)")
-                    checkForGitAnnexUpdatesDebounce(watchedFolder)
+                    shouldUpdate = true // there is at least one change event we care about
+                    continue
                 }
+            }
+            if shouldUpdate {
+                checkForGitAnnexUpdatesDebounce(watchedFolder)
             }
         }
     }

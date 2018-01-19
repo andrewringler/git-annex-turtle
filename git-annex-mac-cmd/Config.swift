@@ -10,12 +10,13 @@ import Foundation
 
 class Config {
     var configFile: String
+    let dataPath: String
     
     init() {
         // Create configuration file
         // at ~/.config/git-annex/turtle-watch
         // to store list of git-annex directories to watch
-        let dataPath = "\(NSHomeDirectory())/.config/git-annex/turtle-watch"
+        dataPath = "\(NSHomeDirectory())/.config/git-annex/turtle-watch"
         if (!FileManager.default.fileExists(atPath: dataPath)) {
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
             if success {

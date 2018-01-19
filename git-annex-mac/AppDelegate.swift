@@ -26,6 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferencesViewController: ViewController? = nil
     var preferencesWindow: NSWindow? = nil
     var fileSystemMonitors: [WatchedFolderMonitor] = []
+    var listenForWatchedFolderChanges: Witness? = nil
     
     private func updateListOfWatchedFolders() {
         // Re-read config, it might have changed
@@ -52,13 +53,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 NSLog("Watching: %@ %@", watchedFolder.uuid.uuidString, watchedFolder.pathString)
             }
             
-//            // notify our Finder Sync extension of the change
-//            if let encodedData :Data = try? JSONEncoder().encode(watchedFolders) {
-//                defaults.set(encodedData, forKey: GitAnnexTurtleWatchedFoldersDbPrefix)
-//            } else {
-//                NSLog("unable to encode watched folders")
-//            }
-            
             // Save updated folder list to the database
             let queries = Queries(data: data)
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
@@ -74,29 +68,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder) {
-//        let diceRoll = Int(arc4random_uniform(6))
-//        NSLog("+ Checking for updates in \(watchedFolder.pathString) \(diceRoll)")
         let queries = Queries(data: self.data)
         let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
         
         // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
         let updateStatusCompletionBarrier = DispatchGroup()
         for path in paths {
-            //                        NSLog("Checking for updates in path '\(path)'")
             // handle multiple git-annex queries concurrently
             let url = PathUtils.url(for: path)
             updateStatusCompletionBarrier.enter()
-            // TODO limit simultaneous git-annex requests
+            // TODO limit simultaneous git-annex requests?
             DispatchQueue.global(qos: .userInitiated).async {
                 let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
                 
                 // did the status change?
                 let oldStatus = queries.statusForPathBlocking(path: path)
                 if oldStatus == nil || oldStatus! != status {
-                    NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+                    NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)'")
                     queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-                } else {
-                    //                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
                 }
                 
                 updateStatusCompletionBarrier.leave()
@@ -105,21 +94,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // wait for all asynchronous status updates to complete
         updateStatusCompletionBarrier.wait()
-//        NSLog("- Done for updates in \(watchedFolder.pathString) \(diceRoll)")
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
-//            button.action = #selector(printQuote(_:))
             menuBarButton = button
         }
         constructMenu(watchedFolders: []) // generate an empty-ish menu, for now
         
         // Setup preferences view controller
         preferencesViewController = ViewController.freshController(appDelegate: self)
-//        preferencesViewController?.appDelegate = self
-//        preferencesViewController?.reloadFileList()
         
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
@@ -130,21 +115,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
-        // Instantiate the database
-        // yes, the following lines are strange
-//        data.copyModel = true
-//        let queries = Queries(data: data)
-//        let _ = queries.allStatuses()
-//        data.copyModel = false
-//        data.moveDataStoreFromApplicationSandboxToSharedGroupContainer()
-
         // Periodically check if watched folder list has changed, update menu and notify Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                // TODO: use an OS filesystem monitor on ~/.config/git-annex/turtle-watch
-                self.updateListOfWatchedFolders()
-                sleep(2)
-            }
+        let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
+        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0) { events in
+            updateListOfWatchedFoldersDebounce()
         }
         
         // Handle command requests coming from the (potentially multiple instances) of our Finder Sync extension
