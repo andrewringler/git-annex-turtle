@@ -29,6 +29,38 @@ let UpdatesEntityName = "UpdatesEntity"
 enum UpdatesEntityAttributes: String {
     case lastModified = "lastModified"
 }
+let CommandRequestsName = "CommandRequests"
+enum CommandRequestsAttributes: String {
+    case watchedFolderUUIDString = "watchedFolderUUIDString"
+    case commandString = "commandString"
+    case commandType = "commandType"
+    case pathString = "pathString"
+}
+struct GitOrGitAnnexCommand {
+    let commandType: CommandType
+    let commandString: CommandString
+    
+    public static func git(_ commandString: CommandString) -> GitOrGitAnnexCommand {
+        return GitOrGitAnnexCommand(commandType: CommandType.git, commandString: commandString)
+    }
+    public static func gitAnnex(_ commandString: CommandString) -> GitOrGitAnnexCommand{
+        return GitOrGitAnnexCommand(commandType: CommandType.gitAnnex, commandString: commandString)
+    }
+}
+
+struct CommandRequest {
+    let commandString: CommandString
+    let commandType: CommandType
+    let pathString: String
+    let watchedFolderUUIDString: String
+    
+    init(for path: String, in watchedFolderUUIDString: String, commandType: CommandType, commandString: CommandString) {
+        self.pathString = path
+        self.watchedFolderUUIDString = watchedFolderUUIDString
+        self.commandType = commandType
+        self.commandString = commandString
+    }
+}
 
 class Queries {
     let data: DataEntrypoint
@@ -436,5 +468,87 @@ class Queries {
                 fatalError("Failure to save private context: \(error)")
             }
         }
+    }
+    
+    func submitCommandRequest(for path: String, in watchedFolder: WatchedFolder, commandType: CommandType, commandString: CommandString) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                if let entity = NSEntityDescription.entity(forEntityName: CommandRequestsName, in: privateMOC) {
+                    let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                    
+                    newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: CommandRequestsAttributes.watchedFolderUUIDString.rawValue)
+                    newPathRow.setValue(commandString.rawValue, forKeyPath: CommandRequestsAttributes.commandString.rawValue)
+                    newPathRow.setValue(commandType.rawValue, forKeyPath: CommandRequestsAttributes.commandType.rawValue)
+                    newPathRow.setValue(path, forKeyPath: CommandRequestsAttributes.pathString.rawValue)
+
+                } else {
+                    NSLog("Could not create entity for \(PathStatusEntityName)")
+                }
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("Failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("Failure to save private context: \(error)")
+            }
+        }
+    }
+    
+    func fetchAndDeleteCommandRequestsBlocking() -> [(CommandRequest)] {
+        var ret: [(CommandRequest)] = []
+        
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: CommandRequestsName)
+            do {
+                let results = try privateMOC.fetch(fetchRequest)
+                for result in results {
+                    if let watchedFolderUUIDString = result.value(forKeyPath: "\(CommandRequestsAttributes.watchedFolderUUIDString.rawValue)") as? String,
+                        let commandStringRaw = result.value(forKeyPath: "\(CommandRequestsAttributes.commandString.rawValue)") as? String,
+                        let commandString = CommandString(rawValue: commandStringRaw),
+                        let commandTypeString = result.value(forKeyPath: "\(CommandRequestsAttributes.commandType.rawValue)") as? String,
+                        let commandType = CommandType(rawValue: commandTypeString),
+                        let pathString = result.value(forKeyPath: "\(CommandRequestsAttributes.pathString.rawValue)") as? String
+                    {
+                        ret.append(CommandRequest(for: pathString, in: watchedFolderUUIDString, commandType: commandType, commandString: commandString))
+                    } else {
+                        NSLog("Unable to parse results from fetch for command request '\(result)'")
+                    }
+                }
+                
+                // OK, presumably we will now handle these requests, delete all of these records
+                // TODO should put a timestamp on a request so it happens soon or not at all?
+                for result in results {
+                    privateMOC.delete(result)
+                }
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("Failure to save main context: \(error)")
+                    }
+                }
+            } catch let error as NSError {
+                NSLog("Could not fetch allWatchedFolders. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return ret
     }
 }

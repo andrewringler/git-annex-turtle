@@ -9,8 +9,8 @@
 import Foundation
 
 class GitAnnexQueries {
-    // TODO one queue per repository
-    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
+    // TODO one queue per repository?
+//    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
     // https://gist.github.com/brennanMKE/a0a2ee6aa5a2e2e66297c580c4df0d66
     private class func directoryExistsAtPath(_ path: String) -> Bool {
@@ -102,10 +102,10 @@ class GitAnnexQueries {
         return ret
     }
 
-    class func gitAnnexCommand(for url: URL, in workingDirectory: String, cmd: GitAnnexCommand) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    class func gitAnnexCommand(for url: URL, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.cmdString, path)
-            let commandRun = "git-annex " + cmd.cmdString + " \"" + path + "\""
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.rawValue, path)
+            let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
 
             if status != 0 {
                 NSLog(commandRun)
@@ -119,12 +119,12 @@ class GitAnnexQueries {
             NSLog("unable to get path from URL '%@'", url.absoluteString)
         }
         
-        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.cmdString + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
+        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.rawValue + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
     }
-    class func gitCommand(for url: URL, in workingDirectory: String, cmd: GitCommand) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    class func gitCommand(for url: URL, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.cmdString, path)
-            let commandRun = "git " + cmd.cmdString + "\"" + path + "\""
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.rawValue, path)
+            let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
             
             if status != 0 {
                 NSLog(commandRun)
@@ -137,7 +137,7 @@ class GitAnnexQueries {
             NSLog("unable to get path from URL '%@'", url.absoluteString)
         }
 
-        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.cmdString + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
+        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.rawValue + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
     }
     class func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?

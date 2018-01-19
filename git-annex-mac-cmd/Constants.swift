@@ -162,3 +162,18 @@ class PathUtils {
         return URL(fileURLWithPath: stringPath)
     }
 }
+
+enum CommandType: String {
+    case git
+    case gitAnnex
+    
+    public var isGitAnnex: Bool { return self == .gitAnnex }
+    public var isGit: Bool { return self == .git }
+}
+enum CommandString: String {
+    case get = "get"
+    case add = "add"
+    case drop = "drop"
+    case unlock = "unlock"
+    case lock = "lock"
+}

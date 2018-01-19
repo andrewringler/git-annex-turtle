@@ -462,40 +462,45 @@ class FinderSync: FIFinderSync {
     }
 
     @IBAction func gitAnnexGet(_ sender: AnyObject?) {
-        commandRequest(with: GitAnnexCommands.Get, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .gitAnnex(.get), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexAdd(_ sender: AnyObject?) {
-        commandRequest(with: GitAnnexCommands.Add, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .gitAnnex(.add), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexDrop(_ sender: AnyObject?) {
-        commandRequest(with: GitAnnexCommands.Drop, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .gitAnnex(.drop), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexLock(_ sender: AnyObject?) {
-        commandRequest(with: GitAnnexCommands.Lock, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .gitAnnex(.lock), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAnnexUnlock(_ sender: AnyObject?) {
-        commandRequest(with: GitAnnexCommands.Unlock, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .gitAnnex(.unlock), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     @IBAction func gitAdd(_ sender: AnyObject?) {
-        commandRequest(with: GitCommands.Add, target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+        commandRequest(with: .git(.add), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
     
-    private func commandRequest(with command: Command, target: URL?, item: NSMenuItem?, items: [URL]?) {
+    private func commandRequest(with command: GitOrGitAnnexCommand, target: URL?, item: NSMenuItem?, items: [URL]?) {
+        let queries = Queries(data: data)
+        
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
             for obj: URL in items {
                 if let path = PathUtils.path(for: obj) {
                     for watchedFolder in watchedFolders {
                         if path.starts(with: watchedFolder.pathString) {
-                            let key = command.dbPrefixWithUUID(for: path, in: watchedFolder)
-                            NSLog("git annex %@ \"%@\"", command.cmdString, key)
-                            defaults.set(obj, forKey: command.dbPrefixWithUUID(for: path, in: watchedFolder))
+                            NSLog("submitting command request \(command) for \(path)")
+                            queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
+                            
+//                            let key = command.dbPrefixWithUUID(for: path, in: watchedFolder)
+//                            NSLog("git annex %@ \"%@\"", command.cmdString, key)
+//                            defaults.set(obj, forKey: command.dbPrefixWithUUID(for: path, in: watchedFolder))
                             break
                         }
                     }
                 }
             }
         } else {
-            NSLog("invalid context menu item for command %@", command.cmdString)
+            NSLog("invalid context menu item for command \(command) and target \(target)")
         }
     }
     

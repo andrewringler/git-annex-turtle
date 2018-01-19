@@ -135,47 +135,78 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Handle command requests coming from the (potentially multiple instances) of our Finder Sync extension
-        DispatchQueue.global(qos: .userInitiated).async {
+        DispatchQueue.global(qos: .background).async {
             while true {
-                for watchedFolder in self.watchedFolders {
-                    let allKeys = self.defaults.dictionaryRepresentation().keys
-                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleDbPrefix) }) {
-                        // Is this a Git Annex Command?
-                        for command in GitAnnexCommands.all {
-                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
-                                if let url = self.defaults.url(forKey: key) {
-                                    let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: command)
-                                    if !status.success {
-                                        // git-annex has very nice error message, use them as-is
-                                        self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-                                    }
-                                    
-                                    // handled, delete the request
-                                    self.defaults.removeObject(forKey: key)
-                                } else {
-                                    NSLog("unable to retrieve url for key %@", key)
+                let queries = Queries(data: self.data)
+                let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
+                
+                for commandRequest in commandRequests {
+                    for watchedFolder in self.watchedFolders {
+                        if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
+                            let url = PathUtils.url(for: commandRequest.pathString)
+                            
+                            // Is this a Git Annex Command?
+                            if commandRequest.commandType.isGitAnnex {
+                                let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                                if !status.success {
+                                    // git-annex has very nice error message, use them as-is
+                                    self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
                                 }
                             }
-                        }
-                        
-                        // Is this a Git Command?
-                        for command in GitCommands.all {
-                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
-                                if let url = self.defaults.url(forKey: key) {
-                                    let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: command)
-                                    if !status.success {
-                                        self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-                                    }
-                                   
-                                    // handled, delete the request
-                                    self.defaults.removeObject(forKey: key)
-                                } else {
-                                    NSLog("unable to retrieve url for key %@", key)
+                            
+                            // Is this a Git Command?
+                            if commandRequest.commandType.isGit {
+                                let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                                if !status.success {
+                                    self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                                 }
                             }
+                            
+                            break
                         }
                     }
                 }
+                
+                
+//                for watchedFolder in self.watchedFolders {
+//                    let allKeys = self.defaults.dictionaryRepresentation().keys
+//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleDbPrefix) }) {
+//                        // Is this a Git Annex Command?
+//                        for command in GitAnnexCommands.all {
+//                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
+//                                if let url = self.defaults.url(forKey: key) {
+//                                    let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: command)
+//                                    if !status.success {
+//                                        // git-annex has very nice error message, use them as-is
+//                                        self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+//                                    }
+//
+//                                    // handled, delete the request
+//                                    self.defaults.removeObject(forKey: key)
+//                                } else {
+//                                    NSLog("unable to retrieve url for key %@", key)
+//                                }
+//                            }
+//                        }
+//
+//                        // Is this a Git Command?
+//                        for command in GitCommands.all {
+//                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
+//                                if let url = self.defaults.url(forKey: key) {
+//                                    let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: command)
+//                                    if !status.success {
+//                                        self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+//                                    }
+//
+//                                    // handled, delete the request
+//                                    self.defaults.removeObject(forKey: key)
+//                                } else {
+//                                    NSLog("unable to retrieve url for key %@", key)
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
                 sleep(1)
             }
         }
