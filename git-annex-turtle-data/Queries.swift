@@ -25,7 +25,10 @@ enum WatchedFolderEntityAttributes: String {
     case pathString = "pathString"
 }
 let WatchedFolderEntityAttributesAll = [WatchedFolderEntityAttributes.uuidString, WatchedFolderEntityAttributes.pathString]
-
+let UpdatesEntityName = "UpdatesEntity"
+enum UpdatesEntityAttributes: String {
+    case lastModified = "lastModified"
+}
 
 class Queries {
     let data: DataEntrypoint
@@ -56,10 +59,11 @@ class Queries {
                 if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
                     pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
                     pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
-                    try privateMOC.save()
                 } else {
                     NSLog("Error, more than one record for path='\(path)'")
                 }
+                
+                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
                 
                 try privateMOC.save()
                 moc.performAndWait {
@@ -320,6 +324,8 @@ class Queries {
             }
             
             do {
+                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+                
                 try privateMOC.save()
                 moc.performAndWait {
                     do {
@@ -363,5 +369,72 @@ class Queries {
         }
         
         return ret
+    }
+    
+    func timeOfMoreRecentUpdatesBlocking(lastHandled: Double) -> Double? {
+        var ret: Double? = nil
+        
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: UpdatesEntityName)
+            do {
+                let result = try privateMOC.fetch(fetchRequest)
+                if result.count == 1, let lastModified = result.first?.value(forKeyPath: "\(UpdatesEntityAttributes.lastModified.rawValue)") as? Double {
+                    if (lastModified-lastHandled) > 0.001 {
+                        ret = lastModified
+                    }
+                }
+            } catch let error as NSError {
+                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return ret
+    }
+    
+    private func changeLastModifedUpdatesStub(lastModified: Double, in privateMOC: NSManagedObjectContext) throws {
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: UpdatesEntityName)
+        let results = try privateMOC.fetch(fetchRequest)
+        if results.count > 0, let result = results.first  {
+            result.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
+        }else if results.count == 0 {
+            // Add new record
+            if let entity = NSEntityDescription.entity(forEntityName: UpdatesEntityName, in: privateMOC) {
+                let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                
+                newPathRow.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
+            } else {
+                NSLog("Could not create entity for \(PathStatusEntityName)")
+            }
+        } else {
+            NSLog("Error, invalid results from fetch '\(results)'")
+        }
+    }
+    
+    func changeLastModifedUpdatesSync(lastModified: Double) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                try changeLastModifedUpdatesStub(lastModified: lastModified, in: privateMOC)
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("Failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("Failure to save private context: \(error)")
+            }
+        }
     }
 }
