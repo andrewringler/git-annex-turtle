@@ -310,7 +310,7 @@ class FinderSync: FIFinderSync {
         }
         return nil
     }
-    
+
     override func requestBadgeIdentifier(for url: URL) {
         NSLog("requestBadgeIdentifier for \(url) \(id())")
         
