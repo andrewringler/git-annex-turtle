@@ -15,7 +15,7 @@ class WatchedFolderMonitor {
     init(watchedFolder: WatchedFolder, app: AppDelegate) {
         self.watchedFolder = watchedFolder
         let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
-        let checkForGitAnnexUpdatesDebounce = throttle1(delay: 0.25, queue: queue, action: app.checkForGitAnnexUpdates)
+        let checkForGitAnnexUpdatesDebounce = debounce1(delay: .milliseconds(120), queue: queue, action: app.checkForGitAnnexUpdates)
         
         fileMonitor = Witness(paths: [watchedFolder.pathString], flags: .FileEvents, latency: 0.1) { events in
             var shouldUpdate = false

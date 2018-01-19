@@ -36,7 +36,7 @@ List of UNIX-style folder paths for git-annex-turtle to watch. Update manually o
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and many other tools which have provided OS-level icons for source revisions control over the years.
 
 ## Build a Release
- * Open mac-experiments2/git-annex-turtle.xcodeproj in XCode 9.2
+ * Open git-annex-turtle.xcodeproj in XCode 9.2
  * Click on the git-annex-turtle scheme (to the right of the triangle play button top of screen), click Edit Scheme, Make sure Run > Build Configuration is set to Release
  * Select the Scheme 'git-annex-turtle' then build: Product > Build 
  * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
@@ -68,6 +68,7 @@ List of UNIX-style folder paths for git-annex-turtle to watch. Update manually o
   * http://dscoder.com/defaults.html
 * TODO, more fine grain control of how often we query git-annex, see The Dispatch queue https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1
 * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
+* Interprocess communication http://ddeville.me/2015/02/interprocess-communication-on-ios-with-berkeley-sockets
 * https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex, also see https://git-scm.com/docs/git-ls-files for more details
  
 Check if our Finder Sync extension is running:

@@ -15,6 +15,7 @@ class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
 
     var watchedFolders = Set<WatchedFolder>()
+    var watchAppGroup: Witness?
     let statusCache: StatusCache
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
@@ -37,6 +38,7 @@ class FinderSync: FIFinderSync {
     func updateWatchedFolders() {
         let queries = Queries(data: self.data)
         let newWatchedFolders: Set<WatchedFolder> = queries.allWatchedFoldersBlocking()
+        NSLog("New watched folders: '\(newWatchedFolders.map { $0.pathString })'")
         if newWatchedFolders != watchedFolders {
             watchedFolders = newWatchedFolders
             FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
@@ -47,31 +49,61 @@ class FinderSync: FIFinderSync {
                 NSLog(watchedFolder.uuid.uuidString)
             }
         }
-        
-//        if let decoded  = defaults.object(forKey: GitAnnexTurtleWatchedFoldersDbPrefix) as? Data {
-//            if let newWatchedFolders = try? JSONDecoder().decode(Set<WatchedFolder>.self, from: decoded) {
-//                if newWatchedFolders != watchedFolders {
-//                    watchedFolders = newWatchedFolders
-//                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
-//
-//                    NSLog("Finder Sync is watching: ")
-//                    for watchedFolder in watchedFolders {
-//                        NSLog(watchedFolder.pathString)
-//                        NSLog(watchedFolder.uuid.uuidString)
-//                    }
-//                }
-//            }
-//        }
+    }
+    
+    func handleDatabaseUpdates() {
+        NSLog("handleDatabaseUpdates \(self.id)")
+        updateWatchedFolders()
+
+        let queries = Queries(data: self.data)
+        for watchedFolder in self.watchedFolders {
+            let statuses: [(path: String, status: String)] = queries.allNonRequestStatusesBlocking(in: watchedFolder)
+            for status in statuses {
+                if let cachedStatus = statusCache.get(for: status.path), cachedStatus.rawValue == status.status {
+                    // OK, this value is identical to the one in our cache, ignore
+                } else {
+                    // updated value
+                    let url = PathUtils.url(for: status.path)
+                    statusCache.put(statusString: status.status, for: status.path)
+                    updateBadge(for: url, with: status.status)
+                }
+            }
+        }
     }
     
     override init() {
         defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
         statusCache = StatusCache(data: data)
+
         super.init()
-        
-        
+
         // Set up the directory we are syncing
         updateWatchedFolders()
+        
+        // Monitor File System for changes to the database on disk
+        // NOTE: I tried observing UserDefaults for changes, but Finder Sync
+        // seems to stop observing after the first observation
+        let queue = DispatchQueue.global(qos: .background)
+        let handleDatabaseUpdatesDebounce = debounce(delay: .milliseconds(300), queue: queue, action: handleDatabaseUpdates)
+        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+        watchAppGroup = Witness(paths: [PathUtils.path(for: sharedGroupContainer!)!], flags: .FileEvents, latency: 0.1) { events in
+            NSLog("Calling handleDatabaseUpdatesDebounce \(self.id)")
+            handleDatabaseUpdatesDebounce()
+        }
+        
+        // Listen for changes on watched folders
+//        defaults.set("listening", forKey: "\(GitAnnexTurtleDbPrefix)\(String(id()))")
+        
+        // https://stackoverflow.com/a/47856467/8671834
+//        observeFolderUpdatedNotificationOnUserDefaults = defaults.observe(\.watchedFolderUpdated, options: [.initial, .new], changeHandler: { (defaults, change) in
+//            // your change logic here
+//            NSLog("Finally, got userDfeaults updates on observer for \(self.id())")
+//        })
+//        observeFolderUpdatedNotificationOnUserDefaults
+        
+        
+        // doesn't work below!!
+//        defaults.addObserver(self, forKeyPath: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated, options: [.new, .initial], context: nil)
         
         FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: Status.present.rawValue)
         FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: Status.absent.rawValue)
@@ -133,25 +165,25 @@ class FinderSync: FIFinderSync {
 //        }
         
         // TODO trigger this by observing a property on UserDefaults
-        DispatchQueue.global(qos: .background).async {
-            while true {
-//                NSLog("Checking for updates \(self.id())")
-                self.updateWatchedFolders()
-                
-                let queries = Queries(data: self.data)
-                for watchedFolder in self.watchedFolders {
-                    let statuses: [(path: String, status: String)] = queries.allNonRequestStatusesBlocking(in: watchedFolder)
-                    for status in statuses {
-                        // TODO only update if changed?
-                        let url = PathUtils.url(for: status.path)
-                        self.statusCache.put(statusString: status.status, for: status.path)
-                        self.updateBadge(for: url, with: status.status)
-                    }
-                }
-
-                sleep(5)
-            }
-        }
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+////                NSLog("Checking for updates \(self.id())")
+////                self.updateWatchedFolders()
+//
+//                let queries = Queries(data: self.data)
+//                for watchedFolder in self.watchedFolders {
+//                    let statuses: [(path: String, status: String)] = queries.allNonRequestStatusesBlocking(in: watchedFolder)
+//                    for status in statuses {
+//                        // TODO only update if changed?
+//                        let url = PathUtils.url(for: status.path)
+//                        self.statusCache.put(statusString: status.status, for: status.path)
+//                        self.updateBadge(for: url, with: status.status)
+//                    }
+//                }
+//
+//                sleep(5)
+//            }
+//        }
     }
     
 //    private func handleDbChange(changedObjects: Set<NSManagedObject>) {
@@ -219,26 +251,15 @@ class FinderSync: FIFinderSync {
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
         NSLog("beginObservingDirectory for \(url) \(id())")
-
-//        if let path = (url as NSURL).path {
-//            let key = "gitannex.observing." + path
-//            defaults.set(url, forKey: key)
-//        }
     }
     
     // The user is no longer seeing the container's contents.
     override func endObservingDirectory(at url: URL) {
         NSLog("endObservingDirectory for \(url) \(id())")
-
-//        if let path = (url as NSURL).path {
-//            let key = "gitannex.observing." + path
-//            defaults.removeObject(forKey: key)
-//        }
     }
     
     private func updateBadge(for url: URL, with status: String) {
         DispatchQueue.main.async {
-            //NSLog("set badge to \(status) for \(url) \(self.id())")
             FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
         }
     }
@@ -255,40 +276,34 @@ class FinderSync: FIFinderSync {
     override func requestBadgeIdentifier(for url: URL) {
         NSLog("requestBadgeIdentifier for \(url) \(id())")
         
-        DispatchQueue.global(qos: .background).async {
-            if let path = PathUtils.path(for: url) {
-                if let watchedFolder = self.watchedFolderParent(for: path) {
-                    let queries = Queries(data: self.data)
-                    
-                    // already have the status? then use it
-                    if let status = self.statusCache.get(for: path) {
+        if let path = PathUtils.path(for: url) {
+            if let watchedFolder = self.watchedFolderParent(for: path) {
+                
+                // already have the status? then use it
+                if let status = self.statusCache.get(for: path) {
+                    self.updateBadge(for: url, with: status.rawValue)
+                    return
+                }
+
+                // OK, status is not in the cache, maybe it is in the Db?
+                DispatchQueue.global(qos: .background).async {
+                    if let status = self.statusCache.getAndCheckDb(for: path) {
                         self.updateBadge(for: url, with: status.rawValue)
                         return
                     }
                     
                     // OK, we don't have the status in the Db, lets request it
+                    let queries = Queries(data: self.data)
                     queries.addRequestAsync(for: path, in: watchedFolder)
-                    return
-                } else {
-                    NSLog("Finder Sync could not find watched parent for url= \(url)")
                 }
             } else {
-                NSLog("Finder Sync could not find path for url= \(url)")
+                NSLog("Finder Sync could not find watched parent for url= \(url)")
             }
+        } else {
+            NSLog("Finder Sync could not find path for url= \(url)")
         }
     }
-//                    // TODO, do we need to let anyone know we used it recently?
-//
-//
-//                    if path.starts(with: watchedFolder.pathString) {
-//                        // do we already have the status cached?
-//                        if let status = self.defaults.string(forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder)) {
-//                            self.updateBadge(for: url, with: status)
-//                            return
-//                        }
-//
-//                        // OK status is not available, lets request it
-//                        self.defaults.set(url, forKey: GitAnnexTurtleRequestBadgeDbPrefix(for: path, in: watchedFolder))
+
 //
 //                        // https://stackoverflow.com/a/43963368/8671834
 //                        let waitOnKey = GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder)
@@ -305,36 +320,42 @@ class FinderSync: FIFinderSync {
 //    }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        
+        NSLog("Received update on UserDefaults \(keyPath) for object \(object) \(id())")
+        
         if let key = keyPath {
-            defaults.synchronize()
-            NSLog("observeValue, key='\(key)' object=\(object) change=\(change)")
+            if key == GitAnnexTurtleUserDefaultsWatchedFoldersUpdated {
+                NSLog("Finder Sync got notice to update list of watched folders \(id())")
+                updateWatchedFolders()
+            }
+//            NSLog("observeValue, key='\(key)' object=\(object) change=\(change)")
 
             
-            for watchedFolder in watchedFolders {
-                if key.contains(watchedFolder.uuid.uuidString) {
-                    let prefix = GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder)
-                    if key.contains(prefix) {
-                        var path = key
-                        path.removeFirst(prefix.count)
-                        if let status = defaults.string(forKey: key) {
-                            
-                            let url = PathUtils.url(for: path)
-                            updateBadge(for: url, with: status)
-
-                            // remove this .updated key, we have handled it
-                            defaults.removeObject(forKey: key)
-
-                            // replace with a standard status key, that we can check for
-                            // when we receive a requestBadgeIdentifier from the OS
-                            // this would happen if the user closes and re-opens the
-                            // a finder window we already have data for
-                            defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
-                        } else {
-                            NSLog("could not find status for key='\(key)' \(id())")
-                        }
-                    }
-                }
-            }
+//            for watchedFolder in watchedFolders {
+//                if key.contains(watchedFolder.uuid.uuidString) {
+//                    let prefix = GitAnnexTurtleStatusUpdatedDbPrefixNoPath(in: watchedFolder)
+//                    if key.contains(prefix) {
+//                        var path = key
+//                        path.removeFirst(prefix.count)
+//                        if let status = defaults.string(forKey: key) {
+//
+//                            let url = PathUtils.url(for: path)
+//                            updateBadge(for: url, with: status)
+//
+//                            // remove this .updated key, we have handled it
+//                            defaults.removeObject(forKey: key)
+//
+//                            // replace with a standard status key, that we can check for
+//                            // when we receive a requestBadgeIdentifier from the OS
+//                            // this would happen if the user closes and re-opens the
+//                            // a finder window we already have data for
+//                            defaults.set(status, forKey: GitAnnexTurtleStatusDbPrefix(for: path, in: watchedFolder))
+//                        } else {
+//                            NSLog("could not find status for key='\(key)' \(id())")
+//                        }
+//                    }
+//                }
+//            }
         }
 //
 //        if let key = keyPath {
@@ -451,4 +472,8 @@ class FinderSync: FIFinderSync {
     func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
         return data.windowWillReturnUndoManager(window: window)
     }
+    
+//    deinit {
+//        observeFolderUpdatedNotificationOnUserDefaults?.invalidate()
+//    }
 }

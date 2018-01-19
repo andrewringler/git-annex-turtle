@@ -23,6 +23,14 @@ class StatusCache {
         if let status = pathStringToStatusStringCache.object(forKey: path as NSString) as String? {
             return Status.status(from: status)
         }
+        return nil // no where to be found
+    }
+    
+    func getAndCheckDb(for path: String) -> Status? {
+        // In cache? Return it
+        if let status = pathStringToStatusStringCache.object(forKey: path as NSString) as String? {
+            return Status.status(from: status)
+        }
         // Cache miss, In db? Add to cache and return it
         let queries = Queries(data: data)
         if let status = queries.statusForPathBlocking(path: path) {

@@ -11,6 +11,7 @@ import Foundation
 let groupID = "group.com.andrewringler.git-annex-mac.sharedgroup"
 
 let GitAnnexTurtleDbPrefix = "gitannex."
+let GitAnnexTurtleUserDefaultsWatchedFoldersUpdated = "gitannex.watched-folders-updated"
 let GitAnnexTurtleWatchedFoldersDbPrefix = "gitannex.watched-folders"
 func GitAnnexTurtleRequestBadgeDbPrefixNoPath(in watchedFolder: WatchedFolder) -> String {
     return "gitannex.requestbadge." + watchedFolder.uuid.uuidString + "."

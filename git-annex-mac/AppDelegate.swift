@@ -57,6 +57,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let queries = Queries(data: data)
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
             
+            // Notify Finder Sync extension of the change
+            /* value should be unique, to trigger an update from listeners */
+            let newVal = Date().timeIntervalSince1970 as Double
+            NSLog("Sending update to Finder Sync, it should get it \(newVal)")
+            defaults.removeObject(forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
+            defaults.set(newVal, forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
+            
             // Start monitoring the new list of folders
             // TODO, we should only monitor the visible folders sent from Finder Sync
             // in addition to the .git/annex folder for annex updates
@@ -101,11 +108,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.image = gitAnnexTurtleLogo
             menuBarButton = button
         }
-        constructMenu(watchedFolders: []) // generate an empty-ish menu, for now
+        constructMenu(watchedFolders: []) // generate an empty menu
         
         // Setup preferences view controller
         preferencesViewController = ViewController.freshController(appDelegate: self)
         
+        // Actually check our configs to see if we have some folders
+        // also triggers an update to the preferences window
+        updateListOfWatchedFolders()
+
         // THIS IS USEFUL FOR TESTING
         // delete all of our keys
         let allKeys = defaults.dictionaryRepresentation().keys

@@ -42,6 +42,7 @@ class Queries {
     func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder: 
         WatchedFolder) {
         let moc = data.persistentContainer.viewContext
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -225,7 +226,7 @@ class Queries {
     
     func allStatusesBlocking() -> [String] {
         var ret: [String] = []
-        
+
         let moc = data.persistentContainer.viewContext
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
@@ -233,7 +234,7 @@ class Queries {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
-                
+
                 for status in statuses {
                     if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
                         ret.append(pathString)
@@ -243,7 +244,7 @@ class Queries {
                 NSLog("Could not fetch. \(error), \(error.userInfo)")
             }
         }
-        
+
         return ret
     }
     
@@ -324,6 +325,8 @@ class Queries {
         var ret: Set<WatchedFolder> = Set()
         
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {

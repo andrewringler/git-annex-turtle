@@ -24,5 +24,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, Swift.Codable {
     var hashValue: Int {
         return uuid.hashValue
     }
+    
+    public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString)" }
 }
 
