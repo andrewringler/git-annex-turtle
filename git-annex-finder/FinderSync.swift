@@ -10,6 +10,12 @@ import Cocoa
 import FinderSync
 import CoreData
 
+extension UserDefaults {
+    @objc dynamic var watchedFolderUpdated: Double {
+        return double(forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
+    }
+}
+
 class FinderSync: FIFinderSync {
     let defaults: UserDefaults
     let data = DataEntrypoint()
@@ -17,6 +23,7 @@ class FinderSync: FIFinderSync {
     var watchedFolders = Set<WatchedFolder>()
     var watchAppGroup: Witness?
     let statusCache: StatusCache
+    var observeFolderUpdatedNotificationOnUserDefaults: NSKeyValueObservation?
     
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
@@ -38,10 +45,17 @@ class FinderSync: FIFinderSync {
     func updateWatchedFolders() {
         let queries = Queries(data: self.data)
         let newWatchedFolders: Set<WatchedFolder> = queries.allWatchedFoldersBlocking()
-        NSLog("New watched folders: '\(newWatchedFolders.map { $0.pathString })'")
+//        NSLog("New watched folders: '\(newWatchedFolders.map { $0.pathString })'")
         if newWatchedFolders != watchedFolders {
             watchedFolders = newWatchedFolders
-            FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+            
+            if (Thread.isMainThread) {
+                FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+            } else {
+                DispatchQueue.main.sync {
+                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
+                }
+            }
 
             NSLog("Finder Sync is watching: ")
             for watchedFolder in watchedFolders {
@@ -52,16 +66,18 @@ class FinderSync: FIFinderSync {
     }
     
     func handleDatabaseUpdates() {
-        NSLog("handleDatabaseUpdates \(self.id)")
+//        NSLog("handleDatabaseUpdates \(self.id)")
         updateWatchedFolders()
 
         let queries = Queries(data: self.data)
         for watchedFolder in self.watchedFolders {
             let statuses: [(path: String, status: String)] = queries.allNonRequestStatusesBlocking(in: watchedFolder)
+//            NSLog("found \(statuses.count) statuses \(self.id)")
             for status in statuses {
                 if let cachedStatus = statusCache.get(for: status.path), cachedStatus.rawValue == status.status {
                     // OK, this value is identical to the one in our cache, ignore
                 } else {
+//                    NSLog("found a new status \(status.status) \(self.id)")
                     // updated value
                     let url = PathUtils.url(for: status.path)
                     statusCache.put(statusString: status.status, for: status.path)
@@ -80,21 +96,34 @@ class FinderSync: FIFinderSync {
         // Set up the directory we are syncing
         updateWatchedFolders()
         
+        // NOTE:
+        // I tried using File System API monitors on the sqlite database
+        // and I tried using observe on UserDefaults
+        // none worked reliably, perhaps Finder Sync Extensions are designed to ignore/miss notifications?
+        // or perhaps the Finder Sync extension is going into a background mode and not waking up?
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.handleDatabaseUpdates()
+                sleep(1)
+            }
+        }
+        
         // Monitor File System for changes to the database on disk
         // NOTE: I tried observing UserDefaults for changes, but Finder Sync
         // seems to stop observing after the first observation
-        let queue = DispatchQueue.global(qos: .background)
-        let handleDatabaseUpdatesDebounce = debounce(delay: .milliseconds(300), queue: queue, action: handleDatabaseUpdates)
-        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-        watchAppGroup = Witness(paths: [PathUtils.path(for: sharedGroupContainer!)!], flags: .FileEvents, latency: 0.1) { events in
-            NSLog("Calling handleDatabaseUpdatesDebounce \(self.id)")
-            handleDatabaseUpdatesDebounce()
-        }
+//        let queue = DispatchQueue.global(qos: .background)
+//        let handleDatabaseUpdatesDebounce = debounce(delay: .milliseconds(300), queue: queue, action: handleDatabaseUpdates)
+//        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+//        watchAppGroup = Witness(paths: [PathUtils.path(for: sharedGroupContainer!)!], flags: .FileEvents, latency: 0.1) { events in
+//            NSLog("Calling handleDatabaseUpdatesDebounce \(self.id)")
+//            handleDatabaseUpdatesDebounce()
+//        }
         
         // Listen for changes on watched folders
 //        defaults.set("listening", forKey: "\(GitAnnexTurtleDbPrefix)\(String(id()))")
         
         // https://stackoverflow.com/a/47856467/8671834
+//        defaults.observe
 //        observeFolderUpdatedNotificationOnUserDefaults = defaults.observe(\.watchedFolderUpdated, options: [.initial, .new], changeHandler: { (defaults, change) in
 //            // your change logic here
 //            NSLog("Finally, got userDfeaults updates on observer for \(self.id())")
@@ -259,8 +288,12 @@ class FinderSync: FIFinderSync {
     }
     
     private func updateBadge(for url: URL, with status: String) {
-        DispatchQueue.main.async {
+        if (Thread.isMainThread) {
             FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+        } else {
+            DispatchQueue.main.async {
+                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+            }
         }
     }
     
@@ -473,7 +506,7 @@ class FinderSync: FIFinderSync {
         return data.windowWillReturnUndoManager(window: window)
     }
     
-//    deinit {
-//        observeFolderUpdatedNotificationOnUserDefaults?.invalidate()
-//    }
+    deinit {
+        observeFolderUpdatedNotificationOnUserDefaults?.invalidate()
+    }
 }

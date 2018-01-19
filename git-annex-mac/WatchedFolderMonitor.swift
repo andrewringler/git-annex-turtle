@@ -31,6 +31,7 @@ class WatchedFolderMonitor {
                 }
             }
             if shouldUpdate {
+                NSLog("Calling checkForGitAnnexUpdatesDebounce \(watchedFolder.pathString)")
                 checkForGitAnnexUpdatesDebounce(watchedFolder)
             }
         }

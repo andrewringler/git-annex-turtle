@@ -42,6 +42,7 @@ class Queries {
     func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder: 
         WatchedFolder) {
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
 
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
@@ -76,6 +77,8 @@ class Queries {
     
     func addRequestAsync(for path: String, in watchedFolder: WatchedFolder) {
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.perform {
@@ -148,6 +151,8 @@ class Queries {
         var paths: [String] = []
         
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -173,6 +178,8 @@ class Queries {
         var paths: [String] = []
         
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -199,6 +206,8 @@ class Queries {
         var paths: [(path: String, status: String)] = []
         
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -228,6 +237,8 @@ class Queries {
         var ret: [String] = []
 
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -250,6 +261,8 @@ class Queries {
     
     func updateWatchedFoldersBlocking(to newListOfWatchedFolders: [WatchedFolder]) {
         let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {

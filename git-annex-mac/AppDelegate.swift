@@ -63,6 +63,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSLog("Sending update to Finder Sync, it should get it \(newVal)")
             defaults.removeObject(forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
             defaults.set(newVal, forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
+            defaults.synchronize()
             
             // Start monitoring the new list of folders
             // TODO, we should only monitor the visible folders sent from Finder Sync
@@ -75,8 +76,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder) {
+        NSLog("Checking for updates on disk, git-annex \(watchedFolder.pathString)")
         let queries = Queries(data: self.data)
-        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
+        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 0)
         
         // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
         let updateStatusCompletionBarrier = DispatchGroup()
@@ -91,7 +93,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // did the status change?
                 let oldStatus = queries.statusForPathBlocking(path: path)
                 if oldStatus == nil || oldStatus! != status {
-                    NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)'")
+                    NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
                     queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
                 }
                 
