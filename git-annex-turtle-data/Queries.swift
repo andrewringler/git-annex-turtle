@@ -619,6 +619,8 @@ class Queries {
         moc.stalenessInterval = 0
         
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
+        privateMOC.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         privateMOC.parent = moc
         privateMOC.perform {
             do {

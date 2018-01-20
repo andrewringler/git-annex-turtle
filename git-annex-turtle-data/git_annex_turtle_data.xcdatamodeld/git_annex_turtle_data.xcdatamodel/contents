@@ -18,6 +18,11 @@
     <entity name="VisibleFoldersEntity" representedClassName="VisibleFoldersEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderParentUUIDString" optional="YES" attributeType="String" syncable="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="pathString"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
     </entity>
     <entity name="WatchedFolderEntity" representedClassName="WatchedFolderEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
