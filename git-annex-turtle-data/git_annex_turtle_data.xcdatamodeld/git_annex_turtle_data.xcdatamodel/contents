@@ -15,14 +15,19 @@
     <entity name="UpdatesEntity" representedClassName="UpdatesEntity" syncable="YES" codeGenerationType="class">
         <attribute name="lastModified" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
     </entity>
+    <entity name="VisibleFoldersEntity" representedClassName="VisibleFoldersEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="watchedFolderParentUUIDString" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="WatchedFolderEntity" representedClassName="WatchedFolderEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="uuidString" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
-        <element name="PathStatus" positionX="-63" positionY="-18" width="128" height="105"/>
-        <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>
-        <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
         <element name="CommandRequests" positionX="-45" positionY="27" width="128" height="105"/>
+        <element name="PathStatus" positionX="-63" positionY="-18" width="128" height="105"/>
+        <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
+        <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>
+        <element name="VisibleFoldersEntity" positionX="-54" positionY="36" width="128" height="75"/>
     </elements>
 </model>

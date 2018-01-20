@@ -26,14 +26,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferencesWindow: NSWindow? = nil
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
-    
+    var visibleFolders: VisibleFolders? = nil
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
             menuBarButton = button
         }
         constructMenu(watchedFolders: []) // generate an empty menu stub
-        
+        visibleFolders = VisibleFolders(data: data, app: self)
+
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: self)
         
@@ -73,6 +75,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             while true {
                 self.handleBadgeRequests()
                 sleep(1)
+            }
+        }
+        
+        //
+        // Visible Folder Updates
+        //
+        // update our list of visible folders
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.visibleFolders?.updateListOfVisibleFolders()
+                sleep(1)
+            }
+        }
+        
+        //
+        // Git Annex Directory Scanning
+        //
+        // scan our visible directories for file that we should re-calculate git-annex status for
+        // this will catch files if we miss File System API updates, since they are not guaranteed
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                for watchedFolder in self.watchedFolders {
+                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 5)
+                }
+                sleep(5)
             }
         }
         
@@ -128,29 +157,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder) {
-        NSLog("Checking for updates on disk, git-annex \(watchedFolder.pathString)")
+    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {
+//        NSLog("Checking for updates on disk, git-annex \(watchedFolder.pathString)")
         let queries = Queries(data: self.data)
-        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 0)
+        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
         
         // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
         let updateStatusCompletionBarrier = DispatchGroup()
         for path in paths {
-            // handle multiple git-annex queries concurrently
-            let url = PathUtils.url(for: path)
-            updateStatusCompletionBarrier.enter()
-            // TODO limit simultaneous git-annex requests?
-            DispatchQueue.global(qos: .userInitiated).async {
-                let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+            // ignore non-visible paths
+            if let visible = visibleFolders?.isVisible(path: path), visible {
+//                NSLog("Checking for updates on \(path)")
                 
-                // did the status change?
-                let oldStatus = queries.statusForPathBlocking(path: path)
-                if oldStatus == nil || oldStatus! != status {
-                    NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
-                    queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                // handle multiple git-annex queries concurrently
+                let url = PathUtils.url(for: path)
+                updateStatusCompletionBarrier.enter()
+                // TODO limit simultaneous git-annex requests?
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                    
+                    // did the status change?
+                    let oldStatus = queries.statusForPathBlocking(path: path)
+                    if oldStatus == nil || oldStatus! != status {
+                        NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
+                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                    }
+                    
+                    updateStatusCompletionBarrier.leave()
                 }
-                
-                updateStatusCompletionBarrier.leave()
             }
         }
         
@@ -316,6 +350,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             alert.addButton(withTitle: "OK")
             alert.runModal()
         }
+    }
+    
+    func watchedFolderFrom(uuid: String) -> WatchedFolder? {
+        for watchedFolder in watchedFolders {
+            if watchedFolder.uuid.uuidString == uuid {
+                return watchedFolder
+            }
+        }
+        return nil
     }
 }
 

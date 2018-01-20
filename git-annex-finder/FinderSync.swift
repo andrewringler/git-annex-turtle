@@ -125,11 +125,27 @@ class FinderSync: FIFinderSync {
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
         NSLog("beginObservingDirectory for \(url) \(id())")
+        if let path = PathUtils.path(for: url) {
+            for watchedFolder in watchedFolders {
+                if path.starts(with: watchedFolder.pathString) {
+                    Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder)
+                    return
+                }
+            }
+        } else {
+            NSLog("beginObservingDirectory: error, could not generate path for URL '\(url)'")
+        }
+        NSLog("beginObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
     }
     
     // The user is no longer seeing the container's contents.
     override func endObservingDirectory(at url: URL) {
         NSLog("endObservingDirectory for \(url) \(id())")
+        if let path = PathUtils.path(for: url) {
+            Queries(data: data).removeVisibleFolderAsync(for: path)
+        } else {
+            NSLog("endObservingDirectory could not generate path string for url '\(url)'")
+        }
     }
     
     private func updateBadge(for url: URL, with status: String) {

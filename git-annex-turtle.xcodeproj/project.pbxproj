@@ -34,6 +34,8 @@
 		49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		49E13FBF2013AD4B00EE3DBE /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */; };
 		49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626D200E70B5002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
@@ -191,6 +193,8 @@
 		499B44741DE54A250091E0E3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D3AA4320016A1500A43A78 /* WatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFolder.swift; sourceTree = "<group>"; };
+		49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolder.swift; sourceTree = "<group>"; };
+		49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolders.swift; sourceTree = "<group>"; };
 		49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-preferences.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49EFD1CE2006CEF7005742DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		49EFD1D02006CEF7005742DB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -396,6 +400,8 @@
 				4981FE0A1DE61774002E6CB3 /* Config.swift */,
 				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
 				49D3AA4320016A1500A43A78 /* WatchedFolder.swift */,
+				49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */,
+				49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */,
 				499B44741DE54A250091E0E3 /* main.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
 				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
@@ -885,8 +891,10 @@
 				497D1FCB20114BF200106566 /* debounce-throttle.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
+				49E13FBF2013AD4B00EE3DBE /* VisibleFolder.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
+				49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */,
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
 				49EF626F200E75D5002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,

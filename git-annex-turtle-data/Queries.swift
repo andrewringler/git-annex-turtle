@@ -62,6 +62,13 @@ struct CommandRequest {
     }
 }
 
+let VisibleFoldersEntityName = "VisibleFoldersEntity"
+enum VisibleFoldersEntityAttributes: String {
+    case pathString = "pathString"
+    case watchedFolderParentUUIDString = "watchedFolderParentUUIDString"
+}
+
+
 class Queries {
     let data: DataEntrypoint
     
@@ -550,5 +557,92 @@ class Queries {
         }
         
         return ret
+    }
+
+    func removeVisibleFolderAsync(for path: String) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.perform {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.pathString.rawValue) == '\(path)'")
+                let results = try privateMOC.fetch(fetchRequest)
+                for result in results {
+                    privateMOC.delete(result)
+                }
+                
+                try privateMOC.save()
+                moc.perform {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("removeVisibleFolderAsync: failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("removeVisibleFolderAsync: failure to save private context: \(error)")
+            }
+        }
+    }
+    
+    func getVisibleFoldersBlocking() -> [(path: String, watchedFolderParentUUID: String)] {
+        var ret: [(path: String, watchedFolderParentUUID: String)] = []
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
+                let results = try privateMOC.fetch(fetchRequest)
+                for result in results {
+                    if let watchedFolderParentUUID = result.value(forKeyPath: VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) as? String,
+                        let path = result.value(forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue) as? String
+                    {
+                        ret.append((path: path, watchedFolderParentUUID: watchedFolderParentUUID))
+                    }
+                }
+            } catch {
+                fatalError("getVisibleFoldersBlocking: failure in fetch: \(error)")
+            }
+        }
+        
+        return ret
+    }
+    
+    func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.perform {
+            do {
+                if let entity = NSEntityDescription.entity(forEntityName: VisibleFoldersEntityName, in: privateMOC) {
+                    let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                    
+                    newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue)
+                    newPathRow.setValue(path, forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue)
+                    
+                } else {
+                    NSLog("addVisibleFolderAsync: could not create entity for \(VisibleFoldersEntityName)")
+                }
+                
+                try privateMOC.save()
+                moc.perform {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("addVisibleFolderAsync: failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("addVisibleFolderAsync: failure to save private context: \(error)")
+            }
+        }
     }
 }
