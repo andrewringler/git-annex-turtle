@@ -18,7 +18,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
-    let defaults = UserDefaults(suiteName: "group.com.andrewringler.git-annex-mac.sharedgroup")!
     let data = DataEntrypoint()
 
     var watchedFolders = Set<WatchedFolder>()
@@ -28,7 +27,71 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     
-    private func updateListOfWatchedFolders() {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        if let button = statusItem.button {
+            button.image = gitAnnexTurtleLogo
+            menuBarButton = button
+        }
+        constructMenu(watchedFolders: []) // generate an empty menu stub
+        
+        // Menubar Icon > Preferences menu
+        preferencesViewController = ViewController.freshController(appDelegate: self)
+        
+        // Read in list of watched folders from Config (or create)
+        // also populates menu with correct folders (if any)
+        updateListOfWatchedFoldersAndSetupFileSystemWatches()
+        
+        //
+        // Watch List Config File Updates: ~/.config/git-annex/turtle-watch
+        //
+        // in addition to changing the watched folders via the Menubar GUI, users may
+        // edit the config file directly. We will attach a file system monitor to detect this
+        //
+        let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFoldersAndSetupFileSystemWatches)
+        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0) { events in
+            updateListOfWatchedFoldersDebounce()
+        }
+        
+        //
+        // Command Requests
+        //
+        // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.handleCommandRequests()
+                sleep(1)
+            }
+        }
+        
+        //
+        // Badge Icon Requests
+        //
+        // handle requests for updated badge icons from our Finder Sync extension
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.handleBadgeRequests()
+                sleep(1)
+            }
+        }
+        
+        //
+        // Finder Sync Extension
+        //
+        // launch or re-launch our Finder Sync extension
+        //
+        DispatchQueue.global(qos: .background).async {
+            // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
+            NSLog("re-launching Finder Sync extension")
+            let task = Process()
+            task.launchPath = "/bin/bash"
+            task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
+            task.launch()
+        }
+    }
+    
+    private func updateListOfWatchedFoldersAndSetupFileSystemWatches() {
         // Re-read config, it might have changed
         let config = Config()
         
@@ -49,21 +112,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
             preferencesViewController?.reloadFileList()
 
-            for watchedFolder in watchedFolders {
-                NSLog("Watching: %@ %@", watchedFolder.uuid.uuidString, watchedFolder.pathString)
-            }
-            
+            NSLog("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
+
             // Save updated folder list to the database
             let queries = Queries(data: data)
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
-            
-            // Notify Finder Sync extension of the change
-            /* value should be unique, to trigger an update from listeners */
-            let newVal = Date().timeIntervalSince1970 as Double
-            NSLog("Sending update to Finder Sync, it should get it \(newVal)")
-            defaults.removeObject(forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
-            defaults.set(newVal, forKey: GitAnnexTurtleUserDefaultsWatchedFoldersUpdated)
-            defaults.synchronize()
             
             // Start monitoring the new list of folders
             // TODO, we should only monitor the visible folders sent from Finder Sync
@@ -123,370 +176,75 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //        }
     }
     
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        if let button = statusItem.button {
-            button.image = gitAnnexTurtleLogo
-            menuBarButton = button
-        }
-        constructMenu(watchedFolders: []) // generate an empty menu
+    private func handleCommandRequests() {
+        let queries = Queries(data: self.data)
+        let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
         
-        // Setup preferences view controller
-        preferencesViewController = ViewController.freshController(appDelegate: self)
-        
-        // Actually check our configs to see if we have some folders
-        // also triggers an update to the preferences window
-        updateListOfWatchedFolders()
-
-        // THIS IS USEFUL FOR TESTING
-        // delete all of our keys
-        let allKeys = defaults.dictionaryRepresentation().keys
-        for key in allKeys {
-            if key.starts(with: GitAnnexTurtleDbPrefix) {
-                defaults.removeObject(forKey: key)
-            }
-        }
-        
-        // Periodically check if watched folder list has changed, update menu and notify Finder Sync extension
-        let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
-        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0) { events in
-            updateListOfWatchedFoldersDebounce()
-        }
-        
-        // Handle command requests coming from the (potentially multiple instances) of our Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                let queries = Queries(data: self.data)
-                let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
-                
-                for commandRequest in commandRequests {
-                    for watchedFolder in self.watchedFolders {
-                        if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
-                            let url = PathUtils.url(for: commandRequest.pathString)
-                            
-                            // Is this a Git Annex Command?
-                            if commandRequest.commandType.isGitAnnex {
-                                let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                                if !status.success {
-                                    // git-annex has very nice error message, use them as-is
-                                    self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-                                } else {
-                                    self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
-                                }
-                            }
-                            
-                            // Is this a Git Command?
-                            if commandRequest.commandType.isGit {
-                                let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                                if !status.success {
-                                    self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-                                } else {
-                                    self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
-                                }
-                            }
-                            
-                            break
-                        }
-                    }
-                }
-                
-                
-//                for watchedFolder in self.watchedFolders {
-//                    let allKeys = self.defaults.dictionaryRepresentation().keys
-//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleDbPrefix) }) {
-//                        // Is this a Git Annex Command?
-//                        for command in GitAnnexCommands.all {
-//                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
-//                                if let url = self.defaults.url(forKey: key) {
-//                                    let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: command)
-//                                    if !status.success {
-//                                        // git-annex has very nice error message, use them as-is
-//                                        self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-//                                    }
-//
-//                                    // handled, delete the request
-//                                    self.defaults.removeObject(forKey: key)
-//                                } else {
-//                                    NSLog("unable to retrieve url for key %@", key)
-//                                }
-//                            }
-//                        }
-//
-//                        // Is this a Git Command?
-//                        for command in GitCommands.all {
-//                            if key.starts(with: command.dbPrefixWithUUID(in: watchedFolder)) {
-//                                if let url = self.defaults.url(forKey: key) {
-//                                    let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: command)
-//                                    if !status.success {
-//                                        self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-//                                    }
-//
-//                                    // handled, delete the request
-//                                    self.defaults.removeObject(forKey: key)
-//                                } else {
-//                                    NSLog("unable to retrieve url for key %@", key)
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-                sleep(1)
-            }
-        }
-
-//        // Periodically check for newly observed folders, pre-emptively calculate their file statuses
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            while true {
-//                let defaultsDict = self.defaults.dictionaryRepresentation()
-//                let allKeys = defaultsDict.keys
-//
-//                for watchedFolder in self.watchedFolders {
-//                    // find all begin observing notices for this watched folder
-//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleBeginObservingNoPath(in: watchedFolder)) }) {
-//                        if let observingURL = self.defaults.url(forKey: key) {
-//                            if let observingPath = PathUtils.path(for: observingURL) {
-//
-//                            }
-//                        }
-//                    }
-//                }
-//
-//
-//
-//                sleep(1)
-//            }
-//        }
-
-        // Periodically check for badge requests from our Finder Sync extension
-        DispatchQueue.global(qos: .userInitiated).async {
-            while true {
-                //NSLog("Checking for requests from Finder Sync extension")
-                
-//                let defaultsDict = self.defaults.dictionaryRepresentation()
-//                let allKeys = defaultsDict.keys
-                
-                /* Handle all badge requests, these are the highest priority for a nice user experience
-                 * since there are the whole point of this app
-                 */
-                for watchedFolder in self.watchedFolders {
+        for commandRequest in commandRequests {
+            for watchedFolder in self.watchedFolders {
+                if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
+                    let url = PathUtils.url(for: commandRequest.pathString)
                     
-                    let queries = Queries(data: self.data)
-                    let paths = queries.allPathsNotHandledBlocking(in: watchedFolder)
-                    
-                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
-                    let updateStatusCompletionBarrier = DispatchGroup()
-                    for path in paths {
-                        // handle multiple git-annex queries concurrently
-                        let url = PathUtils.url(for: path)
-                        updateStatusCompletionBarrier.enter()
-                        DispatchQueue.global(qos: .userInitiated).async {
-                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                            
-                            // did the status change?
-                            let oldStatus = queries.statusForPathBlocking(path: path)
-                            if oldStatus == nil || oldStatus! != status {
-                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
-                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-                            }
-                            
-                            updateStatusCompletionBarrier.leave()
+                    // Is this a Git Annex Command?
+                    if commandRequest.commandType.isGitAnnex {
+                        let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        if !status.success {
+                            // git-annex has very nice error message, use them as-is
+                            self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                        } else {
+                            self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
                         }
                     }
                     
-                    // wait for all asynchronous status updates to complete
-                    updateStatusCompletionBarrier.wait()
-
+                    // Is this a Git Command?
+                    if commandRequest.commandType.isGit {
+                        let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        if !status.success {
+                            self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                        } else {
+                            self.updateStatusAsync(for: commandRequest.pathString, in: watchedFolder)
+                        }
+                    }
                     
-                    // find all request keys for this watched folder
-//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleRequestBadgeDbPrefixNoPath(in: watchedFolder)) }) {
-//                        if let url = self.defaults.url(forKey: key) {
-//                            if let path = PathUtils.path(for: url) {
-//                                // handle multiple git-annex queries concurrently
-//                                DispatchQueue.global(qos: .userInitiated).async {
-//                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-//                                    NSLog("Add to DB: handled request, updated status to \(status) for \(path)")
-//                                    self.defaults.set(status.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
-//                                }
-//                            } else {
-//                                NSLog("unable to get path for URL in key %@", key)
-//                            }
-//                        } else {
-//                            NSLog("unable to get URL for key %@", key)
-//                        }
-//
-//
-//                        /* OK, either we handled it, we are handling it, or there was some error
-//                         * we couldn't handle. Either way, remove it from UserDefaults so we don't
-//                         * try to deal with it again
-//                         */
-//                        self.defaults.removeObject(forKey: key)
-//                    }
+                    break
                 }
-                sleep(2)
             }
         }
-
-        // Periodically check if the state of a file/directory has changed since we last checked
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-////                NSLog("Checking for updates on disk")
-//
-//                for watchedFolder in self.watchedFolders {
-////                    NSLog("Checking for updates for watched folder '\(watchedFolder.pathString)'")
-//                    let queries = Queries(data: self.data)
-//                    let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: 5)
-//
-//                    // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
-//                    let updateStatusCompletionBarrier = DispatchGroup()
-//                    for path in paths {
-////                        NSLog("Checking for updates in path '\(path)'")
-//                        // handle multiple git-annex queries concurrently
-//                        let url = PathUtils.url(for: path)
-//                        updateStatusCompletionBarrier.enter()
-//                        DispatchQueue.global(qos: .userInitiated).sync {
-//                            let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-//
-//                            // did the status change?
-//                            let oldStatus = queries.statusForPathBlocking(path: path)
-//                            if oldStatus == nil || oldStatus! != status {
-//                                NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
-//                                queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-//                            } else {
-////                                NSLog("Status unchanged for '\(path)' oldStatus='\(oldStatus)' newStatus='\(status)'")
-//                            }
-//
-//                            updateStatusCompletionBarrier.leave()
-//                        }
-//                    }
-//
-//                    // wait for all asynchronous status updates to complete
-//                    updateStatusCompletionBarrier.wait()
-//                }
-//                sleep(2)
-//            }
-//        }
-        
-
-//        // Periodically check if the state of a file/directory has changed since we last checked
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                let defaultsDict = self.defaults.dictionaryRepresentation()
-//                let allKeys = defaultsDict.keys
-//
-//                // We only want to re-check files that are still in watched folders
-//                for watchedFolder in self.watchedFolders {
-//                    // find all existing keys for this watched folder
-//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder)) }) {
-//                        var path = key
-//                        path.removeFirst(GitAnnexTurtleStatusDbPrefixNoPath(in: watchedFolder).count)
-//                        if let oldStatus = Status.status(fromOptional: self.defaults.string(forKey: key)) {
-//                            let url = PathUtils.url(for: path)
-//                            // TODO handle multiple git-annex queries concurrently
-//                            // NOTE if we do DispatchQueue async, we need to ensure
-//                            // below that our sleep, sleeps long enough for all threads to complete!
-//                            let newStatus = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-//                            if oldStatus != newStatus {
-//                                NSLog("Add to DB: periodic polling, changed status from \(oldStatus) to \(newStatus) for \(path)")
-//                                self.defaults.set(newStatus.rawValue, forKey: GitAnnexTurtleStatusUpdatedDbPrefix(for: path, in: watchedFolder))
-//                            }
-//                        } else {
-//                            NSLog("unable to get status for key '%@'", key)
-//                        }
-//                    }
-//                }
-//                sleep(2)
-//            }
-//        }
-        
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                // handle all direct requests first
-//                var numberOfDirectRequest :Int = 0
-//                repeat {
-//                    let allKeys = self.defaults.dictionaryRepresentation().keys
-//                    numberOfDirectRequest = 0
-//                    for key in allKeys.filter({ $0.starts(with: GitAnnexTurtleDbPrefix) }) {
-//                        if key.starts(with: GitAnnexTurtleRequestBadgeDbPrefix) {
-//                            // OK Finder Sync requested this URL, is it still in view?
-//                            var path = key
-//                            path.removeFirst("gitannex.requestbadge.".count)
-//                            let url = URL(fileURLWithPath: path)
-//                            var parentURL = url
-//                            parentURL.deleteLastPathComponent() // containing folder
-//                            if let parentPath = (parentURL as NSURL).path {
-//                                let observingKey = "gitannex.observing." + parentPath
-//                                if defaults.string(forKey: observingKey) != nil {
-//                                    // OK we are still observing this directory
-//                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: (myFolderURL as NSURL).path!)
-//                                    // Add updated status
-//                                    defaults.set(status, forKey: "gitannex.status.updated." + path)
-//
-//                                    // Remove the request we have handled it
-//                                    defaults.removeObject(forKey: key)
-//                                    numberOfDirectRequest += 1
-//                                }
-//                            }
-//                        }
-//                    }
-//                } while numberOfDirectRequest > 0
-//                // keep looking for direct requests until we haven't found any new ones
-//
-//                // OK there are no new direct requests for badges
-//                // lets give our CPU a break
-//                sleep(1)
-//
-//                // OK maybe file state has changed via OS commands
-//                // git or git annex commands since we last checked
-//                // lets periodically poll all files in observed folders
-//                // IE all files that are in Finder windows that are visible to a user
-//                let allKeys = defaults.dictionaryRepresentation().keys
-//                for key in allKeys {
-//                    if key.starts(with: "gitannex.observing.") {
-//                        if let observingURL :URL = defaults.url(forKey: key) {
-//                            if let filesToCheck: [String] = try? FileManager.default.contentsOfDirectory(atPath: (observingURL as NSURL).path!) {
-//                                // TODO PERFORMANCE
-//                                // we can actually pass git-annex a whole list of files
-//                                // which would probably be quicker than launching
-//                                // separate processes to run the bash commands in
-//                                for file in filesToCheck {
-//                                    let fullPath = observingURL.appendingPathComponent(file)
-//                                    let status = GitAnnexQueries.gitAnnexPathInfo(for: fullPath, in: (myFolderURL as NSURL).path!)
-//
-//                                    //is there already an old status for this
-//                                    //that is equivalent?
-//                                    if let oldStatus = defaults.string(forKey: "gitannex.status." + (fullPath as NSURL).path!) {
-//                                        if oldStatus != status {
-//                                            // OK, we have a new status, lets
-//                                            // let Finder Sync extension know
-//                                            defaults.set(status, forKey: "gitannex.status.updated." + (fullPath as NSURL).path!)
-//                                        }
-//                                    } else {
-//                                        defaults.set(status, forKey: "gitannex.status.updated." + (fullPath as NSURL).path!)
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        
-        
-        // Launch/re-launch Finder Sync extension
-        DispatchQueue.global(qos: .background).async {
-            // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
-            NSLog("re-launching Finder Sync extension")
-            let task = Process()
-            task.launchPath = "/bin/bash"
-            task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
-            task.launch()
+    }
+    
+    private func handleBadgeRequests() {
+        for watchedFolder in self.watchedFolders {
+            let queries = Queries(data: self.data)
+            let paths = queries.allPathsNotHandledBlocking(in: watchedFolder)
+            
+            // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
+            let updateStatusCompletionBarrier = DispatchGroup()
+            for path in paths {
+                // handle multiple git-annex queries concurrently
+                let url = PathUtils.url(for: path)
+                updateStatusCompletionBarrier.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
+                    
+                    // did the status change?
+                    let oldStatus = queries.statusForPathBlocking(path: path)
+                    if oldStatus == nil || oldStatus! != status {
+                        NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
+                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                    }
+                    
+                    updateStatusCompletionBarrier.leave()
+                }
+            }
+            
+            updateStatusCompletionBarrier.wait() // wait for all queries to complete
         }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
-        NSLog("quiting")
+        NSLog("quiting…")
         
-        // stop Finder Sync extension
+        // Stop our Finder Sync extensions
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e ignore -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]

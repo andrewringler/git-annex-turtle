@@ -161,6 +161,13 @@ class PathUtils {
     class func url(for stringPath: String) -> URL {
         return URL(fileURLWithPath: stringPath)
     }
+    
+    /*
+     // Get file contents in folder
+     // FileManager.default.contentsOfDirectory(atPath: (observingURL as NSURL).path!) {
+     //                                for file in filesToCheck {
+     //                                    let fullPath = observingURL.appendingPathComponent(file)
+ */
 }
 
 enum CommandType: String {

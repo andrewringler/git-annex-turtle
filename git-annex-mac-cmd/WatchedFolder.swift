@@ -14,7 +14,10 @@ class WatchedFolder: Equatable, Hashable, Comparable, Swift.Codable {
     init(uuid: UUID, pathString: String) {
         self.uuid = uuid
         self.pathString = pathString
-    }    
+    }
+    static func pretty<T>(_ watchedFolders: T) -> String where T: Sequence, T.Iterator.Element : WatchedFolder {
+        return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString)>" }.joined(separator: ",")
+    }
     static func ==(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
         return lhs.uuid == rhs.uuid
     }
