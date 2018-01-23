@@ -17,7 +17,8 @@ class FinderSync: FIFinderSync {
     let statusCache: StatusCache
     var lastHandledDatabaseChangesDateSinceEpochAsDouble: Double = 0
     
-    let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
+//    let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
+    let imgPresent = NSImage(named:NSImage.Name(rawValue: "Solid4Green12x12"))
     let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
     let imgPresentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-present-not-numcopies"))
     let imgAbsentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-absent-not-numcopies"))

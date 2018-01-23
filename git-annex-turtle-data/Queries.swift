@@ -617,10 +617,10 @@ class Queries {
     func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        
+        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
-        privateMOC.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         privateMOC.parent = moc
         privateMOC.perform {
             do {

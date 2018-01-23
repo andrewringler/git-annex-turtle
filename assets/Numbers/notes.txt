@@ -1,0 +1,11 @@
+Fonts that look nice small:
+
+Bitter, Regular
+designed on a pixel grid, looks great at tiny sizes
+
+Lato, Regular
+Roboto, Regular
+
+Tauri, pretty good as small sizes, but gets a bit blurry at tiny sizes (10pt) on dark backgrounds, only one weight available
+
+Alegreya Sans SC ??
