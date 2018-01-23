@@ -12,44 +12,20 @@ import CoreData
 
 class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
-
+    
     var watchedFolders = Set<WatchedFolder>()
     let statusCache: StatusCache
     var lastHandledDatabaseChangesDateSinceEpochAsDouble: Double = 0
     
-//    let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
-    let imgPresent = NSImage(named:NSImage.Name(rawValue: "Solid4Green12x12"))
-    let imgAbsent = NSImage(named:NSImage.Name(rawValue: "git-annex-absent"))
-    let imgPresentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-present-not-numcopies"))
-    let imgAbsentNotNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-absent-not-numcopies"))
-    let imgPresentCalculatingNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-present-calculating-numcopies"))
-    let imgAbsentCalculatingNumCopies = NSImage(named:NSImage.Name(rawValue: "git-annex-absent-calculating-numcopies"))
-
-    let imgUnknown = NSImage(named:NSImage.Name(rawValue: "git-annex-unknown"))
-    let imgFullyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-fully-present-directory"))
-    let imgPartiallyPresentDirectory = NSImage(named:NSImage.Name(rawValue: "git-annex-partially-present-directory"))
+    let badgeIcons: BadgeIcons
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     
     override init() {
         statusCache = StatusCache(data: data)
+        badgeIcons = BadgeIcons(finderSyncController: FIFinderSyncController.default())
         
         super.init()
-        
-        //
-        // Badge Icons
-        //
-        // setup our badge icons
-        //
-        FIFinderSyncController.default().setBadgeImage(imgPresent!, label: "Present" , forBadgeIdentifier: Status.present.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgAbsent!, label: "Absent", forBadgeIdentifier: Status.absent.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgPresentNotNumCopies!, label: "Present Not Numcopies" , forBadgeIdentifier: Status.presentNotNumcopies.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgAbsentNotNumCopies!, label: "Absent Not Numcopies", forBadgeIdentifier: Status.absentNotNumcopies.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgPresentCalculatingNumCopies!, label: "Present Counting Copies…" , forBadgeIdentifier: Status.presentCalculatingNumcopies.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgAbsentCalculatingNumCopies!, label: "Absent Counting Copies…", forBadgeIdentifier: Status.absentCalculatingNumcopies.rawValue)
-        
-        FIFinderSyncController.default().setBadgeImage(imgUnknown!, label: "Unknown", forBadgeIdentifier: Status.unknown.rawValue)
-        FIFinderSyncController.default().setBadgeImage(imgPartiallyPresentDirectory!, label: "Partially Present", forBadgeIdentifier: Status.partiallyPresentDirectory.rawValue)
         
         //
         // Watched Folders
@@ -150,11 +126,15 @@ class FinderSync: FIFinderSync {
     }
     
     private func updateBadge(for url: URL, with status: String) {
+        let badgeName: String = badgeIcons.badgeIconForNotTracked()
+        
         if (Thread.isMainThread) {
-            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+//            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+            FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
         } else {
             DispatchQueue.main.async {
-                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+//                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+                FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
             }
         }
     }
