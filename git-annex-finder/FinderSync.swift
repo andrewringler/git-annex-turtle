@@ -126,15 +126,18 @@ class FinderSync: FIFinderSync {
     }
     
     private func updateBadge(for url: URL, with status: String) {
-        let badgeName: String = badgeIcons.badgeIconForNotTracked()
-        
-        if (Thread.isMainThread) {
-//            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
-            FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
-        } else {
-            DispatchQueue.main.async {
-//                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+//        let badgeName: String = badgeIcons.badgeIconForNotTracked()
+        if let s = Status(rawValue: status) {
+            let badgeName: String = badgeIcons.badgeIconFor(optionalPresent: s.presentStatus(), optionalNumberOfCopies: nil, optionalEnoughCopies: s.enoughCopies())
+            
+            if (Thread.isMainThread) {
+                //            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
                 FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
+            } else {
+                DispatchQueue.main.async {
+                    //                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
+                    FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
+                }
             }
         }
     }
@@ -169,9 +172,6 @@ class FinderSync: FIFinderSync {
                     
                     // OK, we don't have the status in the Db, lets request it
                     let queries = Queries(data: self.data)
-                    queries.addRequestAsync(for: path, in: watchedFolder)
-                    
-                    // request V2
                     queries.addRequestV2Async(for: path, in: watchedFolder)
                 }
             } else {

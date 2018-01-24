@@ -9,16 +9,6 @@
 import Cocoa
 import FinderSync
 
-enum Present: String {
-    case present = "present"
-    case absent = "absent"
-    case partialPresent = "partialPresent"
-}
-enum EnoughCopies {
-    case enough
-    case lacking
-}
-
 class BadgeIcons {
     // still calculating number of copies and presentness
     private let unknownStateInGitAnnex = NSImage(named:NSImage.Name(rawValue: "Clear12x12"))!

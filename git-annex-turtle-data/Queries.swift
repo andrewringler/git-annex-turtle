@@ -12,12 +12,17 @@ import CoreData
 
 let PathStatusEntityName = "PathStatus"
 enum PathStatusAttributes: String {
+    case statusString = "statusString" // DEPRECATED
+    
     case watchedFolderUUIDString = "watchedFolderUUIDString"
-    case statusString = "statusString"
     case pathString = "pathString"
     case modificationDate = "modificationDate"
+    case enoughCopiesStatus = "enoughCopiesStatus"
+    case isGitAnnexTracked = "isGitAnnexTracked"
+    case numberOfCopies = "numberOfCopies"
+    case presentStatus = "presentStatus"
 }
-let PathStatusAttributesAll = [PathStatusAttributes.watchedFolderUUIDString,PathStatusAttributes.statusString,PathStatusAttributes.pathString,PathStatusAttributes.modificationDate]
+let UNKNOWN_COPIES = -1
 
 let PathRequestEntityName = "PathRequestEntity"
 enum PathRequestEntityAttributes: String {
@@ -84,7 +89,7 @@ class Queries {
     }
     
     // NOTE all CoreData operations must happen on the main thread
-    // or in a private context
+    // or in a private context, then merged back into the main context (from any thread)
     // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
     // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/Concurrency.html
     
@@ -125,50 +130,63 @@ class Queries {
         }
     }
     
-    func addRequestAsync(for path: String, in watchedFolder: WatchedFolder) {
+    func updateStatusForPathV2Blocking(to status: Status, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, in watchedFolder:
+        WatchedFolder) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
+        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
-        privateMOC.perform {
-            NSLog("addRequest: path='\(path)' in='\(watchedFolder.pathString)' in Finder Sync")
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+        privateMOC.performAndWait {
+            NSLog("updateStatusForPathV2Blocking: to='\(status)' path='\(path)' in='\(watchedFolder.pathString)' ")
             
             do {
-                // already there?
+                // insert or update
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
                 fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
-                let status = try privateMOC.fetch(fetchRequest)
-                if status.count > 0 {
-                    // path already here, nothing to do
-                    return
+                let pathStatuses = try privateMOC.fetch(fetchRequest)
+                var entry: NSManagedObject? = nil
+                if pathStatuses.count > 0 {
+                    entry = pathStatuses.first!
+                } else {
+                    // No path status entry yet, this is our first update for this path
+                    if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: privateMOC) {
+                        entry = NSManagedObject(entity: entity, insertInto: privateMOC)
+                    } else {
+                        NSLog("updateStatusForPathV2Blocking: Could not create entity for \(PathStatusEntityName)")
+                        return
+                    }
                 }
-            } catch let error as NSError {
-                NSLog("Could not fetch. \(error), \(error.userInfo)")
-            }
-            
-            // insert request into Db
-            if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: privateMOC) {
-                let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
                 
-                newPathRow.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
-                newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
-                newPathRow.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
-                newPathRow.setValue(Status.request.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
-            } else {
-                NSLog("Could not create entity for \(PathStatusEntityName)")
-            }
-            do {
+                if let pathStatus = entry {
+                    // DEPRECATED
+                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
+                    
+                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+                    
+                    pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
+                    pathStatus.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
+                    pathStatus.setValue(enoughCopies?.rawValue, forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue)
+                    pathStatus.setValue(numberOfCopies ?? UNKNOWN_COPIES, forKeyPath: PathStatusAttributes.numberOfCopies.rawValue)
+                    pathStatus.setValue(presentStatus?.rawValue, forKeyPath: PathStatusAttributes.presentStatus.rawValue)
+                    pathStatus.setValue(isGitAnnexTracked, forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
+                } else {
+                    NSLog("updateStatusForPathV2Blocking: Could not create/update entity for \(PathStatusEntityName)")
+                }
+                
+                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+                
                 try privateMOC.save()
-                moc.perform {
+                moc.performAndWait {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("Failure to save context: \(error)")
+                        fatalError("updateStatusForPathV2Blocking: Failure to save main context: \(error)")
                     }
                 }
             } catch {
-                fatalError("Failure to save context: \(error)")
+                fatalError("updateStatusForPathV2Blocking: Failure to save private context: \(error)")
             }
         }
     }
@@ -227,33 +245,6 @@ class Queries {
         }
         
         return ret
-    }
-    
-    func allPathsNotHandledBlocking(in watchedFolder: WatchedFolder) -> [String] {
-        var paths: [String] = []
-        
-        let moc = data.persistentContainer.viewContext
-        moc.stalenessInterval = 0
-
-        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        privateMOC.parent = moc
-        privateMOC.performAndWait {
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) == '\(Status.request.rawValue)'")
-            do {
-                let statuses = try privateMOC.fetch(fetchRequest)
-                
-                for status in statuses {
-                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-                        paths.append(pathString)
-                    }
-                }
-            } catch let error as NSError {
-                NSLog("Could not fetch. \(error), \(error.userInfo)")
-            }
-        }
-        
-        return paths
     }
     
     func allPathsNotHandledV2Blocking(in watchedFolder: WatchedFolder) -> [String] {

@@ -180,7 +180,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let oldStatus = queries.statusForPathBlocking(path: path)
                     if oldStatus == nil || oldStatus! != status {
                         NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
-                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+//                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                        queries.updateStatusForPathV2Blocking(to: status, presentStatus: status.presentStatus(), enoughCopies: status.enoughCopies(), numberOfCopies: nil, isGitAnnexTracked: status.isGitAnnexTracked(), for: path, in: watchedFolder)
+
                     }
                     
                     updateStatusCompletionBarrier.leave()
@@ -247,6 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func handleBadgeRequests() {
+        // TODO handle watchedFolders in separate threads for performance
         for watchedFolder in self.watchedFolders {
             let queries = Queries(data: self.data)
             let paths = queries.allPathsNotHandledV2Blocking(in: watchedFolder)
@@ -263,8 +266,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     // did the status change?
                     let oldStatus = queries.statusForPathBlocking(path: path)
                     if oldStatus == nil || oldStatus! != status {
-                        NSLog("old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)', updating in Db")
-                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                        NSLog("old status='\(oldStatus?.rawValue ?? "n/a")' != newStatus='\(status)', updating in Db")
+//                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
+                        queries.updateStatusForPathV2Blocking(to: status, presentStatus: status.presentStatus(), enoughCopies: status.enoughCopies(), numberOfCopies: nil, isGitAnnexTracked: status.isGitAnnexTracked(), for: path, in: watchedFolder)
                     }
                     
                     updateStatusCompletionBarrier.leave()

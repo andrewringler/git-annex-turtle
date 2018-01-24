@@ -108,6 +108,16 @@ struct GitConfig {
 struct GitConfigs {
     static let AnnexUUID = GitConfig(name: "annex.uuid")
 }
+
+enum Present: String {
+    case present = "present"
+    case absent = "absent"
+    case partialPresent = "partialPresent"
+}
+enum EnoughCopies: String {
+    case enough = "enough"
+    case lacking = "lacking"
+}
 enum Status: String {
     case present = "present"
     case absent = "absent"
@@ -122,6 +132,36 @@ enum Status: String {
     
     case request = "request"
     
+    public func presentStatus() -> Present? {
+        switch self {
+        case .present,.presentNotNumcopies,.presentCalculatingNumcopies:
+            return .present
+        case .absent,.absentCalculatingNumcopies,.absentNotNumcopies:
+            return .absent
+        case .partiallyPresentDirectory:
+            return .partialPresent
+        case .unknown,.request:
+            return nil
+        }
+    }
+    public func isGitAnnexTracked() -> Bool {
+        switch self {
+        case .unknown,.request:
+            return false
+        default:
+            return true
+        }
+    }
+    public func enoughCopies() -> EnoughCopies? {
+        switch self {
+        case .present,.absent:
+            return .enough
+        case .presentNotNumcopies,.absentNotNumcopies:
+            return .lacking
+        case .presentCalculatingNumcopies,.absentCalculatingNumcopies,.unknown,.partiallyPresentDirectory,.request:
+            return nil
+        }
+    }
     
     static let all = [present,absent,unknown,partiallyPresentDirectory,presentNotNumcopies,absentNotNumcopies,presentCalculatingNumcopies,absentCalculatingNumcopies,request]
     static func status(from: String) -> Status {
