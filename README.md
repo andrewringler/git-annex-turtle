@@ -54,6 +54,29 @@ List of UNIX-style folder paths for git-annex-turtle to watch. Update manually o
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
  * Monitor filesystem for changes? https://github.com/eonil/FileSystemEvents, https://github.com/njdehoog/Witness or https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man2/kqueue.2.html or https://developer.apple.com/library/content/documentation/Darwin/Conceptual/FSEvents_ProgGuide/TechnologyOverview/TechnologyOverview.html#//apple_ref/doc/uid/TP40005289-CH3-SW1
  
+## Querying git-annex
+git-annex-turtle needs to keep informed of the state of files in git-annex repositories. Some file state is slow to query, other state very fast to query. Some state will get quicker to query as Joey adds [caching databases](https://git-annex.branchable.com/design/caching_database/), but given the current, various queries relevant to git-annex-turtle are documented below:
+
+### present
+`git annex info --json --fast <path>` will quickly return whether a file is present or not. For a directory this will return local annexed file count vs working tree fill count, which is a good measure of how “present” a directory is. For large directories this can be quite slow.
+
+### copies
+`git annex whereis --json --fast <path>` will quickly return the number of copies of a file and which remotes they are in. For directories git-annex returns this information for each file recursively. For large directories this can be quite slow.
+
+### enough copies
+The number of copies of a file is a good metric for the “health” of that file. Another useful metric of health is comparing the number of copies of a file to the user specified [numcopies setting](https://git-annex.branchable.com/git-annex-numcopies/) setting. This can be global, or on a per file-type basis.
+
+One way to do that is to use the `find` command with git-annex matching options. The following will return no `stdout` if a file has enough copies, given the user's copy setting:
+
+`git-annex --json --fast --lackingcopies=1 find <path>`
+
+For directories this will recursively check for each file. For large directories this can be quite slow. For git-annex-turtle we could mark a directory as “lacking copies” if any file contained within is lacking copies. With the find command, git-annex, incrementally returns results as it finds them. Since we only care if there is at least one result, we could save time stopping the search as soon as we find one result. 
+
+Alternatively, (to querying lackingcopies) we could count the copies for a given file then compare that to the numcopies setting. Since numcopies can be set on a per file basis, we would also have to manually parse the .gitattributes file. This doesn't seem too future proof, since more complicated expressions for calculating desired numcopies on a per file basis could be added at any time (by Joey).
+
+### caching
+For files, all of the questions we want to ask of git-annex are quite speedy. For directories they can get quite slow. We could cache these results, then update the cache as the counts change. We can detect changes in the counts by added a git hook at `git/hooks/post-update-annex`. We would then parse the latest commit `git show git-annex`, and update counts for all files mentioned.
+ 
 ## Internal: Tutorials, References, XCode & Swift Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial
  * https://www.raywenderlich.com/128039/command-line-programs-macos-tutorial commandline tutorial (XCode 8)
