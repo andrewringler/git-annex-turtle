@@ -13,7 +13,7 @@ The main application, `git-annex-turtle`, periodically monitors the `PathRequest
 ## TODO
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
- * icons for present/absent num-copies 0…numcopies…9+, it looks like git annex does not provide an easy way to figure out the numcopies settings for a specific file, since numcopies can be set on a per file-type basis I would need to parse gitattributes to figure out a particular file's numcopies setting, additionally, calling git annex whereis to count the number of copies for a file is only returning trusted copies, which is different than the number of copies that could would be used in a drop command, so do we really want to be showing this?  
+ * icons for present/absent on directories, numcopies and lacking copies on directories
  * pre-fetch files in observed folders for faster badge updates
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
@@ -21,7 +21,6 @@ The main application, `git-annex-turtle`, periodically monitors the `PathRequest
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
- * Monitor filesystem for changes? https://github.com/eonil/FileSystemEvents, https://github.com/njdehoog/Witness or https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man2/kqueue.2.html or https://developer.apple.com/library/content/documentation/Darwin/Conceptual/FSEvents_ProgGuide/TechnologyOverview/TechnologyOverview.html#//apple_ref/doc/uid/TP40005289-CH3-SW1
  
 ## Querying git-annex
 git-annex-turtle needs to keep informed of the state of files in git-annex repositories. Some file state is slow to query, other state very fast to query. Some state will get quicker to query as Joey adds [caching databases](https://git-annex.branchable.com/design/caching_database/), but given the current, various queries relevant to git-annex-turtle are documented below:
@@ -45,6 +44,8 @@ Alternatively, (to querying lackingcopies) we could count the copies for a given
 
 ### caching
 For files, all of the questions we want to ask of git-annex are quite speedy. For directories they can get quite slow. We could cache these results, then update the cache as the counts change. We can detect changes in the counts by added a git hook at `git/hooks/post-update-annex`. We would then parse the latest commit `git show git-annex`, and update counts for all files mentioned.
+ 
+Also see https://git-annex.branchable.com/forum/_Does_git_annex_find___40____38___friends__41___batch_queries_to_the_location_log__63__/ for some related thoughts on pulling git-annex information directly from the branch
  
 ## Internal: Tutorials, References, XCode & Swift Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial
