@@ -174,15 +174,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 updateStatusCompletionBarrier.enter()
                 // TODO limit simultaneous git-annex requests?
                 DispatchQueue.global(qos: .userInitiated).async {
-                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                    
-                    // did the status change?
-                    let oldStatus = queries.statusForPathBlocking(path: path)
-                    if oldStatus == nil || oldStatus! != status {
-                        NSLog("updating in Db old status='\(oldStatus!.rawValue)' != newStatus='\(status.rawValue)' for \(path)")
-//                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-                        queries.updateStatusForPathV2Blocking(to: status, presentStatus: status.presentStatus(), enoughCopies: status.enoughCopies(), numberOfCopies: nil, isGitAnnexTracked: status.isGitAnnexTracked(), for: path, in: watchedFolder)
-
+                    if let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false, in: watchedFolder) {
+                        // did the status change?
+                        let oldStatus = queries.statusForPathV2Blocking(path: path)
+                        if oldStatus == nil || oldStatus! != status {
+                            NSLog("updating in Db old status='\(oldStatus)' != newStatus='\(status)' for \(path)")
+                            queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: path, in: watchedFolder)
+                        }
+                    } else {
+                        NSLog("unable to get status for \(path)")
                     }
                     
                     updateStatusCompletionBarrier.leave()
@@ -261,15 +261,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let url = PathUtils.url(for: path)
                 updateStatusCompletionBarrier.enter()
                 DispatchQueue.global(qos: .userInitiated).async {
-                    let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false)
-                    
-                    // did the status change?
-                    let oldStatus = queries.statusForPathBlocking(path: path)
-                    if oldStatus == nil || oldStatus! != status {
-                        NSLog("old status='\(oldStatus?.rawValue ?? "n/a")' != newStatus='\(status)', updating in Db")
-//                        queries.updateStatusForPathBlocking(to: status, for: path, in: watchedFolder)
-                        queries.updateStatusForPathV2Blocking(to: status, presentStatus: status.presentStatus(), enoughCopies: status.enoughCopies(), numberOfCopies: nil, isGitAnnexTracked: status.isGitAnnexTracked(), for: path, in: watchedFolder)
-                    }
+                    if let status = GitAnnexQueries.gitAnnexPathInfo(for: url, in: watchedFolder.pathString, calculateLackingCopiesForDirs: false, in: watchedFolder) {
+                        // did the status change?
+                        let oldStatus = queries.statusForPathV2Blocking(path: path)
+                        if oldStatus == nil || oldStatus! != status {
+                            NSLog("updating in Db old status='\(oldStatus)' != newStatus='\(status)' for \(path)")
+                            queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: path, in: watchedFolder)
+                        }
+                    } else {
+                        NSLog("unable to get status for \(path)")
+                    }                    
                     
                     updateStatusCompletionBarrier.leave()
                 }

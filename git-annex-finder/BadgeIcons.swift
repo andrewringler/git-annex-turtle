@@ -120,6 +120,10 @@ class BadgeIcons {
         return notTracked.name()!.rawValue
     }
     
+    public func badgeIconFor(status: PathStatus) -> String {
+        return badgeIconFor(optionalPresent: status.presentStatus, optionalNumberOfCopies: status.numberOfCopies, optionalEnoughCopies: status.enoughCopies)
+    }
+    
     public func badgeIconFor(optionalPresent: Present?, optionalNumberOfCopies: UInt8?, optionalEnoughCopies: EnoughCopies?) -> String {
         // still calculating…
         if optionalPresent == nil, optionalNumberOfCopies == nil {

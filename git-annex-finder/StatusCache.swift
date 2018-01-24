@@ -10,30 +10,30 @@ import Foundation
 
 class StatusCache {
     // NSCache is thread safe
-    private let pathStringToStatusStringCache = NSCache<NSString, NSString>()
+    private let pathStringToPathStatusCache = NSCache<NSString, PathStatus>()
     let data: DataEntrypoint
     
     init(data: DataEntrypoint) {
         self.data = data
-        pathStringToStatusStringCache.countLimit = 1000
+        pathStringToPathStatusCache.countLimit = 1000
     }
     
-    func get(for path: String) -> Status? {
+    func get(for path: String) -> PathStatus? {
         // In cache? Return it
-        if let status = pathStringToStatusStringCache.object(forKey: path as NSString) as String? {
-            return Status.status(from: status)
+        if let status = pathStringToPathStatusCache.object(forKey: path as NSString) as PathStatus? {
+            return status
         }
         return nil // no where to be found
     }
     
-    func getAndCheckDb(for path: String) -> Status? {
+    func getAndCheckDb(for path: String) -> PathStatus? {
         // In cache? Return it
-        if let status = pathStringToStatusStringCache.object(forKey: path as NSString) as String? {
-            return Status.status(from: status)
+        if let status = pathStringToPathStatusCache.object(forKey: path as NSString) as PathStatus? {
+            return status
         }
         // Cache miss, In db? Add to cache and return it
         let queries = Queries(data: data)
-        if let status = queries.statusForPathBlocking(path: path) {
+        if let status = queries.statusForPathV2Blocking(path: path) {
             put(status: status, for: path)
             return status
         }
@@ -41,11 +41,7 @@ class StatusCache {
         return nil // no where to be found
     }
     
-    func put(status: Status, for path: String) {
-        pathStringToStatusStringCache.setObject(status.rawValue as NSString, forKey: path as NSString)
-    }
-    
-    func put(statusString: String, for path: String) {
-        pathStringToStatusStringCache.setObject(statusString as NSString, forKey: path as NSString)
+    func put(status: PathStatus, for path: String) {
+        pathStringToPathStatusCache.setObject(status, forKey: path as NSString)
     }
 }

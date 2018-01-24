@@ -10,7 +10,7 @@
 import Cocoa
 import CoreData
 
-let PathStatusEntityName = "PathStatus"
+let PathStatusEntityName = "PathStatusEntity"
 enum PathStatusAttributes: String {
     case statusString = "statusString" // DEPRECATED
     
@@ -22,7 +22,6 @@ enum PathStatusAttributes: String {
     case numberOfCopies = "numberOfCopies"
     case presentStatus = "presentStatus"
 }
-let UNKNOWN_COPIES = -1
 
 let PathRequestEntityName = "PathRequestEntity"
 enum PathRequestEntityAttributes: String {
@@ -41,7 +40,7 @@ let UpdatesEntityName = "UpdatesEntity"
 enum UpdatesEntityAttributes: String {
     case lastModified = "lastModified"
 }
-let CommandRequestsName = "CommandRequests"
+let CommandRequestsName = "CommandRequestsEntity"
 enum CommandRequestsAttributes: String {
     case watchedFolderUUIDString = "watchedFolderUUIDString"
     case commandString = "commandString"
@@ -168,7 +167,7 @@ class Queries {
                     pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
                     pathStatus.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
                     pathStatus.setValue(enoughCopies?.rawValue, forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue)
-                    pathStatus.setValue(numberOfCopies ?? UNKNOWN_COPIES, forKeyPath: PathStatusAttributes.numberOfCopies.rawValue)
+                    pathStatus.setValue(numberOfCopiesAsDouble(from: numberOfCopies), forKeyPath: PathStatusAttributes.numberOfCopies.rawValue)
                     pathStatus.setValue(presentStatus?.rawValue, forKeyPath: PathStatusAttributes.presentStatus.rawValue)
                     pathStatus.setValue(isGitAnnexTracked, forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
                 } else {
@@ -221,6 +220,34 @@ class Queries {
                 fatalError("addRequestV2Async: Failure to save context: \(error)")
             }
         }
+    }
+    
+    func statusForPathV2Blocking(path: String) -> PathStatus? {
+        var ret: PathStatus?
+        
+        let moc = data.persistentContainer.viewContext
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
+            do {
+                let statuses = try privateMOC.fetch(fetchRequest)
+                if let firstStatus = statuses.first {
+                    if let watchedFolderUUIDString = firstStatus.value(forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue) as? String,
+                        let enoughCopies = EnoughCopies(rawValue: firstStatus.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH"),
+                        let numberOfCopies = numberOfCopiesAsUInt8(firstStatus.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double),
+                        let presentStatus = Present(rawValue: firstStatus.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH"),
+                        let isGitAnnexTracked = firstStatus.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? Bool {
+                        ret = PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString)
+                    }
+                }
+            } catch {
+                fatalError("Failure fetch statuses: \(error)")
+            }
+        }
+        
+        return ret
     }
     
     func statusForPathBlocking(path: String) -> Status? {
@@ -311,6 +338,34 @@ class Queries {
                 }
             } catch let error as NSError {
                 NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return paths
+    }
+
+    func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
+        var paths: [PathStatus] = []
+        
+        let moc = data.persistentContainer.viewContext
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            do {
+                let statuses = try privateMOC.fetch(fetchRequest)
+                for status in statuses {
+                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
+                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH"),
+                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double),
+                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH"),
+                        let isGitAnnexTracked = status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? Bool {
+                        paths.append(PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                    }
+                }
+            } catch {
+                fatalError("Failure fetch statuses: \(error)")
             }
         }
         
@@ -718,5 +773,22 @@ class Queries {
                 fatalError("addVisibleFolderAsync: failure to save private context: \(error)")
             }
         }
+    }
+    
+    private func numberOfCopiesAsUInt8(_ num: Double?) -> UInt8? {
+        if let numVal: Double = num {
+            if numVal < 0 {
+                return nil
+            }
+            return UInt8(truncating: NSNumber(value: numVal))
+        }
+        return nil
+    }
+    
+    private func numberOfCopiesAsDouble(from valueOptional: UInt8?) -> Double {
+        if let value = valueOptional {
+            return Double(value)
+        }
+        return UNKNOWN_COPIES
     }
 }

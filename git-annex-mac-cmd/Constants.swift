@@ -109,6 +109,7 @@ struct GitConfigs {
     static let AnnexUUID = GitConfig(name: "annex.uuid")
 }
 
+let UNKNOWN_COPIES: Double = -1.0
 enum Present: String {
     case present = "present"
     case absent = "absent"
