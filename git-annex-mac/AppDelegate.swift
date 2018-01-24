@@ -249,7 +249,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleBadgeRequests() {
         for watchedFolder in self.watchedFolders {
             let queries = Queries(data: self.data)
-            let paths = queries.allPathsNotHandledBlocking(in: watchedFolder)
+            let paths = queries.allPathsNotHandledV2Blocking(in: watchedFolder)
             
             // see https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
             let updateStatusCompletionBarrier = DispatchGroup()

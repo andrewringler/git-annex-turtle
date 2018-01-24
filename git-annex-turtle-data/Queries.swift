@@ -19,6 +19,13 @@ enum PathStatusAttributes: String {
 }
 let PathStatusAttributesAll = [PathStatusAttributes.watchedFolderUUIDString,PathStatusAttributes.statusString,PathStatusAttributes.pathString,PathStatusAttributes.modificationDate]
 
+let PathRequestEntityName = "PathRequestEntity"
+enum PathRequestEntityAttributes: String {
+    case watchedFolderUUIDString = "watchedFolderUUIDString"
+    case pathString = "pathString"
+}
+
+
 let WatchedFolderEntityName = "WatchedFolderEntity"
 enum WatchedFolderEntityAttributes: String {
     case uuidString = "uuidString"
@@ -166,6 +173,38 @@ class Queries {
         }
     }
     
+    func addRequestV2Async(for path: String, in watchedFolder: WatchedFolder) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.perform {
+            NSLog("addRequestV2Async: path='\(path)' in='\(watchedFolder.pathString)' in Finder Sync")
+            if let entity = NSEntityDescription.entity(forEntityName: PathRequestEntityName, in: privateMOC) {
+                let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                
+                newPathRow.setValue(path, forKeyPath: PathRequestEntityAttributes.pathString.rawValue)
+                newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathRequestEntityAttributes.watchedFolderUUIDString.rawValue)
+            } else {
+                NSLog("addRequestV2Async: Could not create entity for \(PathRequestEntityName)")
+            }
+            do {
+                try privateMOC.save()
+                moc.perform {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("addRequestV2Async: Failure to save context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("addRequestV2Async: Failure to save context: \(error)")
+            }
+        }
+    }
+    
     func statusForPathBlocking(path: String) -> Status? {
         var ret: Status?
         
@@ -211,6 +250,48 @@ class Queries {
                 }
             } catch let error as NSError {
                 NSLog("Could not fetch. \(error), \(error.userInfo)")
+            }
+        }
+        
+        return paths
+    }
+    
+    func allPathsNotHandledV2Blocking(in watchedFolder: WatchedFolder) -> [String] {
+        var paths: [String] = []
+        
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathRequestEntityName)
+            fetchRequest.predicate = NSPredicate(format: "\(PathRequestEntityAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            do {
+                let results = try privateMOC.fetch(fetchRequest)
+                
+                for result in results {
+                    if let pathString = result.value(forKeyPath: "\(PathRequestEntityAttributes.pathString.rawValue)") as? String {
+                        paths.append(pathString)
+                    }
+                }
+                
+                // OK, presumably we will now handle these requests, delete all of them
+                // TODO, wait to delete them until they are actually handled properly?
+                for result in results {
+                    privateMOC.delete(result)
+                }
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("allPathsNotHandledV2Blocking: Failure to save main context: \(error)")
+                    }
+                }
+            } catch let error as NSError {
+                NSLog("allPathsNotHandledV2Blocking: Could not fetch or save private from private context. \(error), \(error.userInfo)")
             }
         }
         

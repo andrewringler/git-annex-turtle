@@ -170,6 +170,9 @@ class FinderSync: FIFinderSync {
                     // OK, we don't have the status in the Db, lets request it
                     let queries = Queries(data: self.data)
                     queries.addRequestAsync(for: path, in: watchedFolder)
+                    
+                    // request V2
+                    queries.addRequestV2Async(for: path, in: watchedFolder)
                 }
             } else {
                 NSLog("Finder Sync could not find watched parent for url= \(url)")
