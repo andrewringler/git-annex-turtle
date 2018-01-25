@@ -116,27 +116,24 @@ class BadgeIcons {
         finderSyncController.setBadgeImage(absentMoreThan4CopyLacking, label: "Absent More Than 4 Copies and Lacking" , forBadgeIdentifier: absentMoreThan4CopyLacking.name()!.rawValue)
     }
     
-    public func badgeIconForNotTracked() -> String {
-        return notTracked.name()!.rawValue
-    }
-    
     public func badgeIconFor(status: PathStatus) -> String {
-        return badgeIconFor(optionalPresent: status.presentStatus, optionalNumberOfCopies: status.numberOfCopies, optionalEnoughCopies: status.enoughCopies)
-    }
-    
-    public func badgeIconFor(optionalPresent: Present?, optionalNumberOfCopies: UInt8?, optionalEnoughCopies: EnoughCopies?) -> String {
+        // not tracked by git-annex
+        if status.isGitAnnexTracked == false {
+            return notTracked.name()!.rawValue
+        }
+        
         // still calculating…
-        if optionalPresent == nil, optionalNumberOfCopies == nil {
+        if status.presentStatus == nil, status.numberOfCopies == nil {
             return unknownStateInGitAnnex.name()!.rawValue
         }
         
         // no copies
-        if let copies = optionalNumberOfCopies, copies == 0 {
+        if let copies = status.numberOfCopies, copies == 0 {
             return zeroCopies.name()!.rawValue
         }
         
         // unknown copies
-        if optionalNumberOfCopies == nil, let present = optionalPresent {
+        if status.numberOfCopies == nil, let present = status.presentStatus {
             switch present {
             case .present:
                 return presentUnknownCopies.name()!.rawValue
@@ -148,7 +145,7 @@ class BadgeIcons {
         }
         
         // known copies and present status
-        if let copies = optionalNumberOfCopies, let present = optionalPresent, let enoughCopies = optionalEnoughCopies  {
+        if let copies = status.numberOfCopies, let present = status.presentStatus, let enoughCopies = status.enoughCopies  {
             switch present {
             case .present:
                 switch enoughCopies {
@@ -198,7 +195,7 @@ class BadgeIcons {
             }
         }
         
-        NSLog("could not find badge icon for \(optionalPresent) \(optionalNumberOfCopies) \(optionalEnoughCopies), returning unknown state icon")
+        NSLog("could not find badge icon for \(status), returning unknown state icon")
         return unknownStateInGitAnnex.name()!.rawValue
     }
 }
