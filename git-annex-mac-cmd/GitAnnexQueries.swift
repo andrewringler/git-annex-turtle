@@ -261,37 +261,49 @@ class GitAnnexQueries {
         }
         return (error: true, pathStatus: nil)
     }
-    
+
+    /* For a file: returns its number of copies
+     * For a directory: returns the number of copies of the file with the least copies
+     * contained within the directory
+     */
     class func gitAnnexNumberOfCopies(for url: URL, in workingDirectory: String) -> UInt8? {
         if let path = PathUtils.path(for: url) {
-            var isDirectory = ObjCBool(true)
-            let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-            if exists && isDirectory.boolValue {
-                // TODO make meaningful queries on number of copies for directories?
-                // skip directories
-                return nil
-            }
-
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "whereis", path)
 
             // if command didnt return an error, parse the JSON
             // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
             if(status == 0){
                 do {
-                    let data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
-                    let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
-
-                    if let dictionary = json as? [String: Any] {
-                        let success = dictionary[GitAnnexJSON.success.rawValue]
-                        let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
-
-                        // return number of copies
-                        if success != nil && whereis != nil, let whereisval = whereis {
-                            return UInt8(whereisval.count)
+                    var leastCopies: Int? = nil
+                    
+                    /* git-annex returns 1-line of valid JSON for each file contained within a folder */
+                    for outputLine in output {
+                        if let data: Data = (outputLine as NSString).data(using: String.Encoding.utf8.rawValue) {
+                            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                            
+                            if let dictionary = json as? [String: Any] {
+                                let success = dictionary[GitAnnexJSON.success.rawValue]
+                                let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
+                                
+                                // calculate number of copies, for this file
+                                if success != nil && whereis != nil, let whereisval = whereis {
+                                    let numberOfCopies = whereisval.count
+                                    if leastCopies == nil || numberOfCopies < leastCopies! {
+                                        leastCopies = numberOfCopies
+                                    }
+                                } else {
+                                    NSLog("issue getting data from JSON: '\(dictionary)'")
+                                }
+                            }
                         } else {
-                            NSLog("issue getting data from JSON: '\(dictionary)'")
+                            NSLog("could not get output as string \(outputLine)")
                         }
                     }
+                    
+                    if let leastCopiesVal = leastCopies {
+                        return UInt8(leastCopiesVal)
+                    }
+                    return nil
                 } catch {
                     NSLog("unable to parse JSON: '\(output)' for url='\(url)' workingdir='\(workingDirectory)'")
                 }
