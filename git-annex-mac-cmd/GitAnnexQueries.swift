@@ -165,8 +165,20 @@ class GitAnnexQueries {
         }
         return nil
     }
-    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, calculateLackingCopiesForDirs: Bool, in watchedFolder: WatchedFolder) -> PathStatus? {
+    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         if let path :String = PathUtils.path(for: url) {
+            if directoryExistsAtPath(path) {
+                // Directory
+                if includeDirs == false {
+                    return (error: false, pathStatus: nil) // skip
+                }
+            } else {
+                // File
+                if includeFiles == false {
+                    return (error: false, pathStatus: nil) // skip
+                }
+            }
+            
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
             
             if status != 0 {
@@ -201,38 +213,40 @@ class GitAnnexQueries {
                                 // (we have a file if the present attribute exists in the json)
                                 //
                                 let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory)
-                                let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: true)
+                                let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory)
                                 let presentStatus = presentVal ? Present.present : Present.absent
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                return PathStatus(isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString)
+                                return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
                             } else {
                                 //
                                 // FOLDER tracked by git-annex
                                 //
                                 // (we have a folder if the present attribute is missing from the JSON)
                                 //
-                                var numberOfCopies: UInt8?
-                                var lackingCopies: Bool?
-                                if calculateLackingCopiesForDirs {
-                                    numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory)
-                                    lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory, skipDirs: false)
-                                }
+                                let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory)
+                                let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory)
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
-
+                                
+                                NSLog("Figuring out status for folder: '\(path)'")
+                                
                                 if let annexedFilesInWorkingTreeVal = annexedFilesInWorkingTree as? Int,
                                     let localAnnexKeysVal = localAnnexKeys as? Int {
                                     if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
                                         // all files are present
-                                        return PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString)
+                                        NSLog("ALL FILES ARE PRESENT for '\(path)', Finder Sync should see this")
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
                                     } else if localAnnexKeysVal == 0 {
                                         // no files are present
-                                        return PathStatus(isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString)
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
                                     } else {
                                         // some files are present
-                                        return PathStatus(isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString)
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
                                     }
                                 }
+                                
+                                NSLog("ERROR: could not figure out a status for folder: '\(path)' '\(dictionary)'")
+
                             }
                         }
                     }
@@ -240,12 +254,12 @@ class GitAnnexQueries {
                     NSLog("unable to parse JSON: '", output, "'")
                 }
             }
-            return PathStatus(isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString)
+            return (error: false, pathStatus: PathStatus(isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
 
         } else {
             NSLog("could not get path for URL '%@'", url.absoluteString)
         }
-        return nil
+        return (error: true, pathStatus: nil)
     }
     
     class func gitAnnexNumberOfCopies(for url: URL, in workingDirectory: String) -> UInt8? {
@@ -297,18 +311,10 @@ class GitAnnexQueries {
     /* git annex find --lackingcopies=1 --json
      * returns a line for every file that is lacking 1 or more copies
      * calling this on directories causes git-annex to query each child file recursively
-     * this can be slow, so pass skipDirs=true when this needs to happen quickly
+     * this can be slow, guard when you call this on directories
      */
-    class func gitAnnexLackingCopies(for url: URL, in workingDirectory: String, skipDirs: Bool) -> Bool? {
+    class func gitAnnexLackingCopies(for url: URL, in workingDirectory: String) -> Bool? {
         if let path = PathUtils.path(for: url) {
-            if skipDirs {
-                var isDirectory = ObjCBool(true)
-                let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-                if exists && isDirectory.boolValue {
-                    return nil
-                }
-            }
-            
             let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "--lackingcopies=1", "find", path)
             
             // if command didnt return an error, count the lines returned

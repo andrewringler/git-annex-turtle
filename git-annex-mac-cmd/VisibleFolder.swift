@@ -8,7 +8,7 @@
 
 import Foundation
 
-class VisibleFolder: Equatable, Hashable, Comparable {
+class VisibleFolder: Equatable, Hashable, Comparable, CustomStringConvertible {
     let parent: WatchedFolder
     let path: String
     

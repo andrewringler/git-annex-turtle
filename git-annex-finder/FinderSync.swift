@@ -87,9 +87,11 @@ class FinderSync: FIFinderSync {
                 for status in statuses {
                     if let cachedStatus = statusCache.get(for: status.path), cachedStatus == status {
                         // OK, this value is identical to the one in our cache, ignore
+                        NSLog("Identical, not updating old=\(cachedStatus) new=\(status)")
                     } else {
                         //                    NSLog("found a new status \(status.status) \(self.id)")
                         // updated value
+                        NSLog("OK updating to \(status)")
                         let url = PathUtils.url(for: status.path)
                         statusCache.put(status: status, for: status.path)
                         updateBadge(for: url, with: status)

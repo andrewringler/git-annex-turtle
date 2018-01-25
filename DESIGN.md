@@ -7,7 +7,18 @@ When `git-annex-turtle-finder` receives a `requestBadgeIdentifier` it means a ne
 
 The main application, `git-annex-turtle`, periodically monitors the `PathRequestEntity` table for new entries. As it handles them, it deletes the entries and adds them as new entries in the `PathStatus` table. `git-annex-turtle` monitors all entries in `PathStatus` periodically, updating them in the database as their state changes on disk.
 
+## New Users
+Should git-annex-turtle be usable by people who have never used git-annex?
 
+One possible workflow for new users:
+
+Create a new local directory for them, lets say at `~/annex` by default with the following settings:
+
+    git annex init --version=6
+    git config annex.thin true
+    git annex adjust --unlock
+    
+Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can move files back and forth, drop files etc…
 
 
 ## TODO

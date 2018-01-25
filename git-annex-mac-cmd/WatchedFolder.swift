@@ -7,7 +7,7 @@
 //
 import Foundation
 
-class WatchedFolder: Equatable, Hashable, Comparable, Swift.Codable {
+class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
     let uuid: UUID
     let pathString: String
     

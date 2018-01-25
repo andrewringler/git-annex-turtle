@@ -8,8 +8,7 @@
 
 import Foundation
 
-class PathStatus: Equatable, Hashable {
-    
+class PathStatus: Equatable, Hashable, CustomStringConvertible {
     let isGitAnnexTracked: Bool
     let presentStatus: Present?
     let enoughCopies: EnoughCopies?
@@ -36,5 +35,8 @@ class PathStatus: Equatable, Hashable {
     }
     var hashValue: Int {
         return path.hashValue
+    }
+    public var description: String {
+        return "PathStatus: tracked:\(isGitAnnexTracked) present:\(presentStatus) enough-copies:\(enoughCopies) number-of-copies:\(numberOfCopies) path:\(path) in:\(parentWatchedFolderUUIDString)"
     }
 }

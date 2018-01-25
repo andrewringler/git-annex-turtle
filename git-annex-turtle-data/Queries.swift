@@ -169,7 +169,7 @@ class Queries {
                     pathStatus.setValue(enoughCopies?.rawValue, forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue)
                     pathStatus.setValue(numberOfCopiesAsDouble(from: numberOfCopies), forKeyPath: PathStatusAttributes.numberOfCopies.rawValue)
                     pathStatus.setValue(presentStatus?.rawValue, forKeyPath: PathStatusAttributes.presentStatus.rawValue)
-                    pathStatus.setValue(isGitAnnexTracked, forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
+                    pathStatus.setValue(NSNumber(value: isGitAnnexTracked), forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
                 } else {
                     NSLog("updateStatusForPathV2Blocking: Could not create/update entity for \(PathStatusEntityName)")
                 }
@@ -233,13 +233,19 @@ class Queries {
             fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
-                if let firstStatus = statuses.first {
-                    if let watchedFolderUUIDString = firstStatus.value(forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue) as? String,
-                        let enoughCopies = EnoughCopies(rawValue: firstStatus.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH"),
-                        let numberOfCopies = numberOfCopiesAsUInt8(firstStatus.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double),
-                        let presentStatus = Present(rawValue: firstStatus.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH"),
-                        let isGitAnnexTracked = firstStatus.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? Bool {
+                if let status = statuses.first {
+                    // two required properties
+                    if let watchedFolderUUIDString = status.value(forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue) as? String,
+                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber) {
+                        
+                        // three optional properties
+                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
+                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
+                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
+                        
                         ret = PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString)
+                    } else {
+                        NSLog("statusForPathV2Blocking: unable to fetch entry for status=\(status)")
                     }
                 }
             } catch {
@@ -343,7 +349,7 @@ class Queries {
         
         return paths
     }
-
+    
     func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
         var paths: [PathStatus] = []
         
@@ -356,16 +362,22 @@ class Queries {
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
+                    // two required properties
                     if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
-                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH"),
-                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double),
-                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH"),
-                        let isGitAnnexTracked = status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? Bool {
+                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber) {
+
+                        // three optional properties
+                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
+                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
+                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
+                        
                         paths.append(PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                    } else {
+                        NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
                     }
                 }
             } catch {
-                fatalError("Failure fetch statuses: \(error)")
+                fatalError("allNonRequestStatusesV2Blocking: Failure fetch statuses: \(error)")
             }
         }
         
@@ -790,5 +802,12 @@ class Queries {
             return Double(value)
         }
         return UNKNOWN_COPIES
+    }
+    
+    private func nsNumberAsBoolOrNil(_ val: NSNumber?) -> Bool? {
+        if let actualVal = val {
+            return Bool(truncating: actualVal)
+        }
+        return nil
     }
 }
