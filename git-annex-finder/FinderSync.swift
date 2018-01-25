@@ -211,18 +211,52 @@ class FinderSync: FIFinderSync {
     }
     
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
+        // If the user control clicked on a single file
+        // grab its status, if we have it cached
+        var statusOptional: PathStatus? = nil
+        if menuKind == FIMenuKind.contextualMenuForItems {
+            if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
+                for obj: URL in items {
+                    if let path = PathUtils.path(for: obj) {
+                        if watchedFolders.count == 1 {
+                            for watchedFolder in watchedFolders {
+                                if path.starts(with: watchedFolder.pathString) {
+                                    statusOptional = statusCache.get(for: path)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         // Produce a menu for the extension.
         let menu = NSMenu(title: "")
-        var menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "")
+        var menuItem = NSMenuItem()
+        
+        // If the user ctrl-clicked a single item that we have status information about
+        // then summarize the status as the first menu item
+        if let status = statusOptional, status.isGitAnnexTracked, let present = status.presentStatus {
+            var menuTitle = "\(present.menuDisplay())"
+            if let numberOfCopies = status.numberOfCopies {
+                menuTitle = menuTitle + ", \(numberOfCopies) copies"
+            }
+            if let enough = status.enoughCopies {
+                menuTitle = menuTitle + " (\(enough.menuDisplay()))"
+            }
+            menuItem = menu.addItem(withTitle: menuTitle, action: nil, keyEquivalent: "")
+        }
+        
+        menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "g")
         menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "a")
         menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex lock", action: #selector(gitAnnexLock(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex lock", action: #selector(gitAnnexLock(_:)), keyEquivalent: "l")
         menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex unlock", action: #selector(gitAnnexUnlock(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex unlock", action: #selector(gitAnnexUnlock(_:)), keyEquivalent: "u")
         menuItem.image = gitAnnexLogoNoArrowsColor
         
-        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "")
+        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "d")
         menuItem.image = gitAnnexLogoNoArrowsColor
         
         //        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")

@@ -22,13 +22,15 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?
+ * show file info in context menu with description of icon meaning
+ * single point of entry for git-annex / shell requests to avoid duplicate and/or simultaneous work being done
+ * parse git logs for git-annex branch to minimize the amount of files we need to recalculate status for 
+ * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating.
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
- * icons for present/absent on directories, numcopies and lacking copies on directories
+ * replace all absolute paths with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * pre-fetch files in observed folders for faster badge updates
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
- * show file info in context menu with description of icon meaning
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode

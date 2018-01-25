@@ -114,10 +114,25 @@ enum Present: String {
     case present = "present"
     case absent = "absent"
     case partialPresent = "partialPresent"
+    
+    public func menuDisplay() -> String {
+        switch self {
+        case .present: return "Present"
+        case .absent: return "Absent"
+        case .partialPresent: return "Partially Present"
+        }
+    }
 }
 enum EnoughCopies: String {
     case enough = "enough"
     case lacking = "lacking"
+    
+    public func menuDisplay() -> String {
+        switch self {
+        case .enough: return "have enough"
+        case .lacking: return "want more"
+        }
+    }
 }
 enum Status: String {
     case present = "present"
