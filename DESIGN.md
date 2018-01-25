@@ -22,9 +22,9 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * show file info in context menu with description of icon meaning
  * single point of entry for git-annex / shell requests to avoid duplicate and/or simultaneous work being done
  * parse git logs for git-annex branch to minimize the amount of files we need to recalculate status for 
+ * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this?
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating.
  * replace hard-coded absolute paths to git-annex installation with more graceful solution  
  * replace all absolute paths with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
