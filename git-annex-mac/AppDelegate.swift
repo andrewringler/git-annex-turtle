@@ -103,23 +103,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // scan our visible directories for file that we should re-calculate git-annex status for
         // this will catch files if we miss File System API updates, since they are not guaranteed
         //
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                for watchedFolder in self.watchedFolders {
-                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: true, includeDirs: false)
-                }
-                sleep(15)
-            }
-        }
-        // scan directories in a separate thread, since they can be slow
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                for watchedFolder in self.watchedFolders {
-                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: false, includeDirs: true)
-                }
-                sleep(15)
-            }
-        }
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+//                for watchedFolder in self.watchedFolders {
+//                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: true, includeDirs: false)
+//                }
+//                sleep(15)
+//            }
+//        }
+//        // scan directories in a separate thread, since they can be slow
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+//                for watchedFolder in self.watchedFolders {
+//                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: false, includeDirs: true)
+//                }
+//                sleep(15)
+//            }
+//        }
 
         //
         // Finder Sync Extension

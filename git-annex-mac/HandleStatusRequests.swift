@@ -69,19 +69,19 @@ class HandleStatusRequests {
         DispatchQueue.global(qos: .background).async {
             while true {
                 // High Priority, handle high priority requests first
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high)
                 
                 // Low Priority, handle low priority requests next
                 // if we still have some open threads available
                 // TODO, do we care about thread starvation for these?
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low)
                 
                 sleep(1)
             }
         }
     }
     
-    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int) {
+    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int, priority: Priority) {
         sharedResource.lock()
         let oldestRequestFirst = dateAddedToStatusRequestQueue.sorted(by: { $0.key < $1.key })
         sharedResource.unlock()
@@ -96,10 +96,14 @@ class HandleStatusRequests {
             // are we already handling this path?
             if let paths = watchedPaths, paths.contains(item.value.path) {
                 // we are already getting updates for this path
-                // remove from queue, its a duplicate
-                sharedResource.lock()
-                dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
-                sharedResource.unlock()
+                // if it is low priority, then whatever update we get will be new enough
+                // if it is high priority, we probably need to re-calculate
+                // so leave in the queue, and check on it later
+                if priority == .low {
+                    sharedResource.lock()
+                    dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
+                    sharedResource.unlock()
+                }
                 continue
             }
             
