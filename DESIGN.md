@@ -67,6 +67,7 @@ Also see https://git-annex.branchable.com/forum/_Does_git_annex_find___40____38_
  * https://www.raywenderlich.com/151741/macos-development-beginners-part-1
  * start of a FinderSync extension for git https://github.com/uliwitness/LittleGit/blob/master/LittleGitFinderSyncExtension/GitFolderStatus.swift
  * example project using Finder Sync https://github.com/glegrain/GitStatus/tree/master/GitStatus
+ * DispatchGroups barriers, https://blog.vishalvshekkar.com/swift-dispatchgroup-an-effortless-way-to-handle-unrelated-asynchronous-operations-together-5d4d50b570c6
  * Currently UserDefaults is working fine for sharing data between the host app and the Finder Sync extension, but this might not scale for thousands of files, might need to switch to sqLite database, which can be stored in a common location then each target reads/writes to it (or Core Data)
   * https://www.raywenderlich.com/173972/getting-started-with-core-data-tutorial-2
   * https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started

@@ -33,12 +33,8 @@ class VisibleFolders {
             ret = true
         } else if let parentPath = parent(path), paths.contains(parentPath) {
             ret = true
-        } else {
-//            NSLog("no match for path='\(path)' in paths='\(paths)'")
         }
         lock.unlock()
-        
-//        NSLog("returning \(ret) for \(path)")
         
         return ret
     }
@@ -66,8 +62,6 @@ class VisibleFolders {
     private func parent(_ path: String) -> String? {
         var url = PathUtils.url(for: path)
         url.deleteLastPathComponent()
-        var parent = PathUtils.path(for: url)
-//        NSLog("path=\(path) parent=\(parent)")
-        return parent
+        return PathUtils.path(for: url)
     }
 }

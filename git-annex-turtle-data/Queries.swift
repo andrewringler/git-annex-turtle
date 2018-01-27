@@ -100,8 +100,6 @@ class Queries {
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
-            NSLog("updateStatus: to='\(status)' path='\(path)' in='\(watchedFolder.pathString)' ")
-            
             do {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
                 fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
@@ -138,8 +136,6 @@ class Queries {
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
-            NSLog("updateStatusForPathV2Blocking: to='\(status)' path='\(path)' in='\(watchedFolder.pathString)' ")
-            
             do {
                 // insert or update
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
@@ -198,7 +194,6 @@ class Queries {
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.perform {
-            NSLog("addRequestV2Async: path='\(path)' in='\(watchedFolder.pathString)' in Finder Sync")
             if let entity = NSEntityDescription.entity(forEntityName: PathRequestEntityName, in: privateMOC) {
                 let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
                 

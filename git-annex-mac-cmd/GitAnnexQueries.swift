@@ -230,13 +230,10 @@ class GitAnnexQueries {
                                 let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory)
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                NSLog("Figuring out status for folder: '\(path)'")
-                                
                                 if let annexedFilesInWorkingTreeVal = annexedFilesInWorkingTree as? Int,
                                     let localAnnexKeysVal = localAnnexKeys as? Int {
                                     if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
                                         // all files are present
-                                        NSLog("ALL FILES ARE PRESENT for '\(path)', Finder Sync should see this")
                                         return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                                     } else if localAnnexKeysVal == 0 {
                                         // no files are present

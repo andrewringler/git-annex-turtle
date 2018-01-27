@@ -32,7 +32,7 @@ fileprivate class StatusRequest {
 }
 
 class HandleStatusRequests {
-    let maxConcurrentUpdatesPerWatchedFolder = 4
+    let maxConcurrentUpdatesPerWatchedFolder = 10
     let queries: Queries
     
     // TODO store in database? these could get quite large?
@@ -147,9 +147,26 @@ class HandleStatusRequests {
             } else if let status = statusTuple.pathStatus {
                 // OK we have a new status, even if it didn't change
                 // update in the database so we have a new date modified
-                NSLog("HandleStatusRequests: updating in Db to='\(status)' for \(r.path)")
+//                NSLog("HandleStatusRequests: updating in Db to '\(status)' for \(r.path)")
                 self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, in: r.watchedFolder)
+            } else {
+                // we have a skipped directory, save its status
+                // if it doesn't already exist, otherwise leave it alone
+                // since we didn't actually do anything
+                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path)
+                if oldStatus == nil {
+                    self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, in: r.watchedFolder)
+                }
             }
+            
+            // Done, now remove this path from the in-progress queue
+            self.sharedResource.lock()
+            var watchedPaths = self.currentlyUpdatingPathByWatchedFolder[r.watchedFolder]
+            if var paths = watchedPaths, let index = paths.index(of: r.path) {
+                paths.remove(at: index)
+                self.currentlyUpdatingPathByWatchedFolder[r.watchedFolder] = paths
+            }
+            self.sharedResource.unlock()
         }
     }
 }

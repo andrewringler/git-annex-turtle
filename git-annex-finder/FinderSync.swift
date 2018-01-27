@@ -83,15 +83,12 @@ class FinderSync: FIFinderSync {
             
             for watchedFolder in self.watchedFolders {
                 let statuses: [PathStatus] = queries.allNonRequestStatusesV2Blocking(in: watchedFolder)
-                //            NSLog("found \(statuses.count) statuses \(self.id)")
                 for status in statuses {
                     if let cachedStatus = statusCache.get(for: status.path), cachedStatus == status {
                         // OK, this value is identical to the one in our cache, ignore
-                        NSLog("Identical, not updating old=\(cachedStatus) new=\(status)")
                     } else {
-                        //                    NSLog("found a new status \(status.status) \(self.id)")
                         // updated value
-                        NSLog("OK updating to \(status)")
+                        NSLog("updating to \(status) \(id())")
                         let url = PathUtils.url(for: status.path)
                         statusCache.put(status: status, for: status.path)
                         updateBadge(for: url, with: status)
@@ -127,32 +124,13 @@ class FinderSync: FIFinderSync {
         }
     }
     
-//    private func updateBadge(for url: URL, with status: String) {
-////        let badgeName: String = badgeIcons.badgeIconForNotTracked()
-//        if let s = Status(rawValue: status) {
-//            let badgeName: String = badgeIcons.badgeIconFor(optionalPresent: s.presentStatus(), optionalNumberOfCopies: nil, optionalEnoughCopies: s.enoughCopies())
-//
-//            if (Thread.isMainThread) {
-//                //            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
-//                FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
-//            } else {
-//                DispatchQueue.main.async {
-//                    //                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
-//                    FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
-//                }
-//            }
-//        }
-//    }
-    
     private func updateBadge(for url: URL, with status: PathStatus) {
         let badgeName: String = badgeIcons.badgeIconFor(status: status)
         
         if (Thread.isMainThread) {
-            //            FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
             FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
         } else {
             DispatchQueue.main.async {
-                //                FIFinderSyncController.default().setBadgeIdentifier(Status.status(from: status).rawValue, for: url)
                 FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
             }
         }
@@ -298,7 +276,7 @@ class FinderSync: FIFinderSync {
                 if let path = PathUtils.path(for: obj) {
                     for watchedFolder in watchedFolders {
                         if path.starts(with: watchedFolder.pathString) {
-                            NSLog("submitting command request \(command) for \(path)")
+//                            NSLog("submitting command request \(command) for \(path)")
                             queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
                             break
                         }
