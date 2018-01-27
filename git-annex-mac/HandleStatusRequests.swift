@@ -32,7 +32,8 @@ fileprivate class StatusRequest {
 }
 
 class HandleStatusRequests {
-    let maxConcurrentUpdatesPerWatchedFolder = 5
+    let maxConcurrentUpdatesPerWatchedFolderHighPriority = 10
+    let maxConcurrentUpdatesPerWatchedFolderLowPriority = 5
     let queries: Queries
     
     // TODO store in database? these could get quite large?
@@ -68,19 +69,19 @@ class HandleStatusRequests {
         DispatchQueue.global(qos: .background).async {
             while true {
                 // High Priority, handle high priority requests first
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
                 
                 // Low Priority, handle low priority requests next
                 // if we still have some open threads available
                 // TODO, do we care about thread starvation for these?
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
                 
                 sleep(1)
             }
         }
     }
     
-    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest]) {
+    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int) {
         sharedResource.lock()
         let oldestRequestFirst = dateAddedToStatusRequestQueue.sorted(by: { $0.key < $1.key })
         sharedResource.unlock()
