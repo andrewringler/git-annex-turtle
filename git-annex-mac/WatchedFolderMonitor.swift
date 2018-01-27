@@ -31,7 +31,7 @@ class WatchedFolderMonitor {
                 }
             }
             if shouldUpdate {
-                checkForGitAnnexUpdatesDebounce(watchedFolder, 2 /* seconds old */)
+                checkForGitAnnexUpdatesDebounce(watchedFolder, 0 /* seconds old */)
             }
         }
     }

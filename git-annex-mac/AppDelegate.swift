@@ -52,7 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // edit the config file directly. We will attach a file system monitor to detect this
         //
         let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFoldersAndSetupFileSystemWatches)
-        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0) { events in
+        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0.1) { events in
             updateListOfWatchedFoldersDebounce()
         }
         
@@ -92,6 +92,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        
+        // TODO
+        // replace with a parsing of git-annex branch commit logs
+        // since this would give us an accurate list of all files changed
+        
         //
         // Git Annex Directory Scanning
         //
@@ -101,7 +106,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.global(qos: .background).async {
             while true {
                 for watchedFolder in self.watchedFolders {
-                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 20, includeFiles: true, includeDirs: false)
+                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: true, includeDirs: false)
                 }
                 sleep(15)
             }
@@ -110,7 +115,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.global(qos: .background).async {
             while true {
                 for watchedFolder in self.watchedFolders {
-                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 20, includeFiles: false, includeDirs: true)
+                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: false, includeDirs: true)
                 }
                 sleep(15)
             }
@@ -186,7 +191,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func updateStatusNowAsync(for path: String, in watchedFolder: WatchedFolder) {
-        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .low)
+        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
     }
     
     private func handleCommandRequests() {
@@ -230,10 +235,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleBadgeRequests() {
         for watchedFolder in self.watchedFolders {
             for path in Queries(data: data).allPathsNotHandledV2Blocking(in: watchedFolder) {
-                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
-                
-                // submit directories as low priority
-                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: false, includeDirs: true, priority: .low)
+                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
             }
         }
     }

@@ -13,7 +13,7 @@ class GitAnnexQueries {
 //    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
     // https://gist.github.com/brennanMKE/a0a2ee6aa5a2e2e66297c580c4df0d66
-    private class func directoryExistsAtPath(_ path: String) -> Bool {
+    public static func directoryExistsAtPath(_ path: String) -> Bool {
         var isDirectory = ObjCBool(true)
         let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
         return exists && isDirectory.boolValue

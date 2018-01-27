@@ -32,7 +32,7 @@ fileprivate class StatusRequest {
 }
 
 class HandleStatusRequests {
-    let maxConcurrentUpdatesPerWatchedFolder = 10
+    let maxConcurrentUpdatesPerWatchedFolder = 5
     let queries: Queries
     
     // TODO store in database? these could get quite large?
@@ -49,11 +49,15 @@ class HandleStatusRequests {
         let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
         let dateAdded = Date().timeIntervalSince1970 as Double
         
+        // directories are always low priority, since they take a long
+        // time to calculate status for
+        let isDir = GitAnnexQueries.directoryExistsAtPath(path)
+        
         sharedResource.lock()
-        if priority == .high {
-            dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
-        } else {
+        if isDir || priority == .low {
             dateAddedToStatusRequestQueueLowPriority[dateAdded] = statusRequest
+        } else {
+            dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
         }
         sharedResource.unlock()
     }
