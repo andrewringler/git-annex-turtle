@@ -75,7 +75,6 @@ class FinderSync: FIFinderSync {
     func handleDatabaseUpdatesIfAny() {
         let queries = Queries(data: self.data)
         if let moreRecentUpdatesTime = queries.timeOfMoreRecentUpdatesBlocking(lastHandled: lastHandledDatabaseChangesDateSinceEpochAsDouble) {
-            NSLog("Handling updates from \(moreRecentUpdatesTime) \(id())")
             // save this new time, marking it as handled (for this process)
             lastHandledDatabaseChangesDateSinceEpochAsDouble = moreRecentUpdatesTime
 
@@ -88,7 +87,7 @@ class FinderSync: FIFinderSync {
                         // OK, this value is identical to the one in our cache, ignore
                     } else {
                         // updated value
-                        NSLog("updating to \(status) \(id())")
+                        //NSLog("updating to \(status) \(id())")
                         let url = PathUtils.url(for: status.path)
                         statusCache.put(status: status, for: status.path)
                         updateBadge(for: url, with: status)

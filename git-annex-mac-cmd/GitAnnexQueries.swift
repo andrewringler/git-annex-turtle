@@ -167,6 +167,7 @@ class GitAnnexQueries {
     }
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         if let path :String = PathUtils.path(for: url) {
+            NSLog("git-annex info \(path)")
             if directoryExistsAtPath(path) {
                 // Directory
                 if includeDirs == false {
