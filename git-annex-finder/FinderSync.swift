@@ -149,6 +149,13 @@ class FinderSync: FIFinderSync {
         
         if let path = PathUtils.path(for: url) {
             if let watchedFolder = self.watchedFolderParent(for: path) {
+                // Request the folder:
+                // we may already have this path in our cache
+                // but we still want to create a request to let the main app know
+                // that this path is still fresh and still in view
+                DispatchQueue.global(qos: .background).async {
+                    Queries(data: self.data).addRequestV2Async(for: path, in: watchedFolder)
+                }
                 
                 // already have the status? then use it
                 if let status = self.statusCache.get(for: path) {
@@ -162,10 +169,6 @@ class FinderSync: FIFinderSync {
                         self.updateBadge(for: url, with: status)
                         return
                     }
-                    
-                    // OK, we don't have the status in the Db, lets request it
-                    let queries = Queries(data: self.data)
-                    queries.addRequestV2Async(for: path, in: watchedFolder)
                 }
             } else {
                 NSLog("Finder Sync could not find watched parent for url= \(url)")
