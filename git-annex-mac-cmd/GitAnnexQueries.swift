@@ -188,6 +188,8 @@ class GitAnnexQueries {
                 NSLog("error: %@", error)
             }
             
+            let modificationDate = Date().timeIntervalSinceNow as Double
+
             // if command didnt return an error, parse the JSON
             // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
             if(status == 0){
@@ -217,7 +219,7 @@ class GitAnnexQueries {
                                 let presentStatus = presentVal ? Present.present : Present.absent
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                                return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                             } else {
                                 //
                                 // FOLDER tracked by git-annex
@@ -235,13 +237,13 @@ class GitAnnexQueries {
                                     if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
                                         // all files are present
                                         NSLog("ALL FILES ARE PRESENT for '\(path)', Finder Sync should see this")
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                                     } else if localAnnexKeysVal == 0 {
                                         // no files are present
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                                     } else {
                                         // some files are present
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                                     }
                                 }
                                 
@@ -254,7 +256,7 @@ class GitAnnexQueries {
                     NSLog("unable to parse JSON: '", output, "'")
                 }
             }
-            return (error: false, pathStatus: PathStatus(isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+            return (error: false, pathStatus: PathStatus(isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
 
         } else {
             NSLog("could not get path for URL '%@'", url.absoluteString)

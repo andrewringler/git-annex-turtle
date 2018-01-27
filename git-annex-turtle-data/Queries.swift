@@ -234,16 +234,17 @@ class Queries {
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 if let status = statuses.first {
-                    // two required properties
+                    // three required properties
                     if let watchedFolderUUIDString = status.value(forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue) as? String,
-                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber) {
+                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
+                        let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double {
                         
                         // three optional properties
                         let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                        ret = PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString)
+                        ret = PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString, modificationDate: modificationDate)
                     } else {
                         NSLog("statusForPathV2Blocking: unable to fetch entry for status=\(status)")
                     }
@@ -362,16 +363,17 @@ class Queries {
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
-                    // two required properties
+                    // three required properties
                     if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
-                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber) {
+                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
+                        let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double {
 
                         // three optional properties
                         let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                        paths.append(PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString))
+                        paths.append(PathStatus(isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
                     } else {
                         NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
                     }

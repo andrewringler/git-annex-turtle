@@ -15,14 +15,16 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
     let numberOfCopies: UInt8?
     let path: String
     let parentWatchedFolderUUIDString: String
+    let modificationDate: Double
     
-    init(isGitAnnexTracked: Bool, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, path: String, parentWatchedFolderUUIDString: String) {
+    init(isGitAnnexTracked: Bool, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, path: String, parentWatchedFolderUUIDString: String, modificationDate: Double) {
         self.isGitAnnexTracked = isGitAnnexTracked
         self.presentStatus = presentStatus
         self.enoughCopies = enoughCopies
         self.numberOfCopies = numberOfCopies
         self.path = path
         self.parentWatchedFolderUUIDString = parentWatchedFolderUUIDString
+        self.modificationDate = modificationDate
     }
     
     static func ==(lhs: PathStatus, rhs: PathStatus) -> Bool {
@@ -37,6 +39,6 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
         return path.hashValue
     }
     public var description: String {
-        return "PathStatus: tracked:\(isGitAnnexTracked) present:\(presentStatus) enough-copies:\(enoughCopies) number-of-copies:\(numberOfCopies) path:\(path) in:\(parentWatchedFolderUUIDString)"
+        return "PathStatus: tracked:\(isGitAnnexTracked) present:\(presentStatus) enough-copies:\(enoughCopies) number-of-copies:\(numberOfCopies) path:\(path) in:\(parentWatchedFolderUUIDString) last-modified:\(modificationDate)"
     }
 }

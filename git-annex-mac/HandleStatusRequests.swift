@@ -1,0 +1,155 @@
+//
+//  HandleStatusRequests.swift
+//  git-annex-turtle
+//
+//  Created by Andrew Ringler on 1/25/18.
+//  Copyright © 2018 Andrew Ringler. All rights reserved.
+//
+
+import Foundation
+
+enum Priority {
+    case high
+    case low
+}
+
+fileprivate class StatusRequest {
+    let path: String
+    let watchedFolder: WatchedFolder
+    let secondsOld: Double
+    let includeFiles: Bool
+    let includeDirs: Bool
+    let priority: Priority
+    
+    init(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
+        self.path = path
+        self.watchedFolder = watchedFolder
+        self.secondsOld = secondsOld
+        self.includeFiles = includeFiles
+        self.includeDirs = includeDirs
+        self.priority = priority
+    }
+}
+
+class HandleStatusRequests {
+    let maxConcurrentUpdatesPerWatchedFolder = 4
+    let queries: Queries
+    
+    // TODO store in database? these could get quite large?
+    private var dateAddedToStatusRequestQueueHighPriority: [Double: StatusRequest] = [:]
+    private var dateAddedToStatusRequestQueueLowPriority: [Double: StatusRequest] = [:]
+    private var currentlyUpdatingPathByWatchedFolder: [WatchedFolder: [String]] = [:]
+    
+    // swift collections are NOT thread-safe, but even if they were
+    // we still need a lock to guarantee transactions are atomic across our collections
+    private var sharedResource = NSLock()
+    
+    // enqueue the request
+    public func updateStatusFor(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
+        let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
+        let dateAdded = Date().timeIntervalSince1970 as Double
+        
+        sharedResource.lock()
+        if priority == .high {
+            dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
+        } else {
+            dateAddedToStatusRequestQueueLowPriority[dateAdded] = statusRequest
+        }
+        sharedResource.unlock()
+    }
+    
+    init(queries: Queries) {
+        self.queries = queries
+        
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                // High Priority, handle high priority requests first
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority)
+                
+                // Low Priority, handle low priority requests next
+                // if we still have some open threads available
+                // TODO, do we care about thread starvation for these?
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority)
+                
+                sleep(1)
+            }
+        }
+    }
+    
+    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest]) {
+        sharedResource.lock()
+        let oldestRequestFirst = dateAddedToStatusRequestQueue.sorted(by: { $0.key < $1.key })
+        sharedResource.unlock()
+        
+        // OK for each item, lets check if we should update it
+        for item in oldestRequestFirst {
+            sharedResource.lock()
+            var watchedPaths = currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder]
+            sharedResource.unlock()
+            
+            // Duplicate?
+            // are we already handling this path?
+            if let paths = watchedPaths, paths.contains(item.value.path) {
+                // we are already getting updates for this path
+                // remove from queue, its a duplicate
+                sharedResource.lock()
+                dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
+                sharedResource.unlock()
+                continue
+            }
+            
+            // Queue Full?
+            // do we already have too many concurrent requests in this watched folder?
+            if let paths = watchedPaths, paths.count >= maxConcurrentUpdatesPerWatchedFolder {
+                // too many concurrent updates for this WatchedFolder
+                // keep in queue and try again later
+                continue
+            }
+            
+            // Fresh Enough?
+            // do we already have a new enough status update for this file in the database?
+            let statusOptional = queries.statusForPathV2Blocking(path: item.value.path)
+            let oldestAllowableDate = (Date().timeIntervalSince1970 as Double) - item.value.secondsOld
+            if let status = statusOptional, status.modificationDate > oldestAllowableDate {
+                // OK, we already have this path in the database, and it is new enough
+                // remove this request, it is not necessary
+                sharedResource.lock()
+                dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
+                sharedResource.unlock()
+                continue
+            }
+            
+            // Update it
+            // we aren't currently updating this path
+            // and we don't have a fresh enough copy in the database
+            // and we have enough spare threads to actually do the request
+            // so, we'll update it
+            sharedResource.lock()
+            // remove from queue
+            dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
+            // mark as in progress
+            if watchedPaths != nil {
+                watchedPaths!.append(item.value.path)
+                currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder] = watchedPaths!
+            } else {
+                currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder] = [item.value.path]
+            }
+            sharedResource.unlock()
+            updateStatusAsync(request: item.value)
+        }
+    }
+    
+    private func updateStatusAsync(request r: StatusRequest) {
+        DispatchQueue.global(qos: .background).async {
+            let statusTuple = GitAnnexQueries.gitAnnexPathInfo(for: PathUtils.url(for: r.path), in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
+            if statusTuple.error {
+                NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
+            } else if let status = statusTuple.pathStatus {
+                // OK we have a new status, even if it didn't change
+                // update in the database so we have a new date modified
+                NSLog("HandleStatusRequests: updating in Db to='\(status)' for \(r.path)")
+                self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, in: r.watchedFolder)
+            }
+        }
+    }
+}
