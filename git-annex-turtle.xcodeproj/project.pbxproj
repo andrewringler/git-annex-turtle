@@ -14,6 +14,9 @@
 		490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */; };
 		490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */; };
 		49178B97201A67EA00B98A46 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */; };
+		49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */; };
+		49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
+		49178B9F201E931200B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		4922DC7A1FFD5CA900448C22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		4936EA002000482700200973 /* git-annex-turtle-cmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -138,6 +141,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		49178B9A201E927E00B98A46 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4936E9FF2000481D00200973 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -159,15 +172,6 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		499B44701DE54A250091E0E3 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
-			dstPath = "";
-			dstSubfolderSpec = 6;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -184,6 +188,8 @@
 		490BCBA01DE5444D00734FF4 /* git_annex_macUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_macUITests.swift; sourceTree = "<group>"; };
 		490BCBA21DE5444D00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleStatusRequests.swift; sourceTree = "<group>"; };
+		49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = changedAnnexFilesAfterCommit.sh; sourceTree = "<group>"; };
+		49178B9D201E92C400B98A46 /* ShellScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellScripts.swift; sourceTree = "<group>"; };
 		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		49635EF32019208500AB95E5 /* PathStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathStatus.swift; sourceTree = "<group>"; };
@@ -356,6 +362,7 @@
 		490BCB841DE5444C00734FF4 /* git-annex-mac */ = {
 			isa = PBXGroup;
 			children = (
+				49178B9C201E92AD00B98A46 /* shell-scripts */,
 				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
 				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
 				49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */,
@@ -383,6 +390,15 @@
 				490BCBA21DE5444D00734FF4 /* Info.plist */,
 			);
 			path = "git-annex-macUITests";
+			sourceTree = "<group>";
+		};
+		49178B9C201E92AD00B98A46 /* shell-scripts */ = {
+			isa = PBXGroup;
+			children = (
+				49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */,
+				49178B9D201E92C400B98A46 /* ShellScripts.swift */,
+			);
+			path = "shell-scripts";
 			sourceTree = "<group>";
 		};
 		499B44611DE544F00091E0E3 /* git-annex-finder */ = {
@@ -502,6 +518,7 @@
 				490BCB801DE5444C00734FF4 /* Resources */,
 				499B446D1DE544F00091E0E3 /* Embed App Extensions */,
 				4936E9FF2000481D00200973 /* CopyFiles */,
+				49178B9A201E927E00B98A46 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -572,7 +589,6 @@
 			buildPhases = (
 				499B446E1DE54A250091E0E3 /* Sources */,
 				499B446F1DE54A250091E0E3 /* Frameworks */,
-				499B44701DE54A250091E0E3 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -902,6 +918,7 @@
 				49F0ECFC200E5F5E00C8BBCB /* Queries.swift in Sources */,
 				497D1FCB20114BF200106566 /* debounce-throttle.swift in Sources */,
 				49178B97201A67EA00B98A46 /* HandleStatusRequests.swift in Sources */,
+				49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */,
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
@@ -962,6 +979,7 @@
 				49EFD2022007BFCA005742DB /* Constants.swift in Sources */,
 				49635EF62019244100AB95E5 /* PathStatus.swift in Sources */,
 				49EF626E200E70B6002D1585 /* DataEntrypoint.swift in Sources */,
+				49178B9F201E931200B98A46 /* ShellScripts.swift in Sources */,
 				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
 				49EF6271200E75D7002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,

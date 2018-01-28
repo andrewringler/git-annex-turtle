@@ -45,6 +45,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // also populates menu with correct folders (if any)
         updateListOfWatchedFoldersAndSetupFileSystemWatches()
         
+        // Do onces for testing
+        for watchedFolder in watchedFolders {
+            let filesModifed = GitAnnexQueries.allFilesModifiedSinceBlocking(commitHash: "274e2500f2c783d620ee0c299d80f4a5ca5d2548", in: watchedFolder)
+            NSLog("Modified files: \(filesModifed) in \(watchedFolder)")
+        }
+        
         //
         // Watch List Config File Updates: ~/.config/git-annex/turtle-watch
         //

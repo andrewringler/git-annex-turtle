@@ -347,4 +347,24 @@ class GitAnnexQueries {
         }
         return nil
     }
+    
+    class func allFilesModifiedSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+        let bundle = Bundle(for: ShellScripts.self)
+        if let scriptPath: String = bundle.path(forResource: "changedAnnexFilesAfterCommit", ofType: "sh") {
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash)
+            
+            if(status == 0){ // success
+                return output
+            } else {
+                NSLog("allFilesModifiedSinceBlocking(commitHash: \(commitHash)")
+                NSLog("status: \(status)")
+                NSLog("output: \(output)")
+                NSLog("error: \(error)")
+            }
+        } else {
+            NSLog("allFilesModifiedSinceBlocking: error, could not find shell script in bundle")
+        }
+
+        return []
+    }
 }
