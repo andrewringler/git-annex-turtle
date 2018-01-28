@@ -1,0 +1,69 @@
+git log -r git-annex
+show the latest commits to the git-annex branch recent first
+
+git annex lookupkey a.png 
+lookup the git annex key given a path name
+
+git show 428206caa2928
+show the commit message for a commit found in git log command above
+
+understanding the git show file format
+prefixed with a bs
+https://stackoverflow.com/questions/6764953/what-is-the-reason-for-the-a-b-prefixes-of-git-diff
+
+show list of files changed in a commit
+so combined with git log -r git-annex above, can get list of files changed
+in a git-annex change
+git diff-tree --no-commit-id --name-only -r 428206caa2928
+
+if log files are changed then we need to re-calculate status for the file involved
+IE a line could look like
+296/8ea/SHA256E-s12816--7b274efbfb392aeb22d8fef8d35c0b051b623af492f5c1c7cb26ceb5f18cdcc6.png.log
+
+the first two dirs are either 3/3 letters or 2/2 letters (old format)
+http://git-annex.branchable.com/internals/hashing/
+
+** NOTE: Directories will never show up in the git log, so we need to manually invalidate (re-calculate) all parents of a changed file
+
+
+After our statuses are up to date we can record the latest commit time, and then just parse updates after that time:
+
+git log --after="Sat Jan 27 09:19:30 2018 -0500" -r git-annex
+
+
+
+Show all commit hashes after a certain date-time (one per line)
+git log --pretty=format:"%H" --date=iso8601 --after="2018-1-27 09:00:00" -r git-annex
+
+ec6a6cf84ecb4e2dbfc5a4d527a983896e994daa
+26dce8755266313d3e7ea7c1afeb1efa2f4a3fb0
+428206caa29288fd368d08b9959e45f7b2d2216b
+
+etc…
+
+list files changed for one of them:
+git diff-tree --no-commit-id --name-only -r ec6a6cf84ecb4
+
+
+https://stackoverflow.com/questions/7693249/how-to-list-commits-since-certain-commit
+Show all commits after (and not including) a certain commit 
+one per line
+git rev-list 274e2500f2c783d620ee0c299d80f4a5ca5d2548..git-annex
+
+or, perhaps more guaranteed format:
+git log --pretty=format:"%H" -r git-annex 274e2500f2c783d620ee0c299d80f4a5ca5d2548..git-annex
+
+
+ignore non matching lines: https://stackoverflow.com/questions/1665549/have-sed-ignore-non-matching-lines
+
+Full command:
+list all files changed in a all commits after a certain commit
+parse so we get just the key name
+
+git log --pretty=format:"%H" -r git-annex 274e2500f2c783d620ee0c299d80f4a5ca5d2548..git-annex | xargs -I {} git diff-tree --no-commit-id --name-only -r {} | uniq | sed -e 's/\([a-zA-Z0-9]\{2,3\}\/[a-zA-Z0-9]\{2,3\}\/\)\(.*\)\(\.log\)/\2/' -e 'tx' -e 'd' -e ':x'
+
+example output:
+SHA256E-s13953--0d80f45aa8141fbb5878924416970a686fcc53060bb9ddd58d4495b9941eb379.png
+SHA256E-s9800--8f984c6af71eaaafa79df034553e020f80bc22d49130fbc0d15a7652e29c3760.png
+SHA256E-s12951--90b14b985eabcd73d789329b09304cbe87e78b2ef3381e192fbabe91d36e779a.png
+SHA256E-s12816--7b274efbfb392aeb22d8fef8d35c0b051b623af492f5c1c7cb26ceb5f18cdcc6.png
