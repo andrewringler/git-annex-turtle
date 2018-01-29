@@ -218,9 +218,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          */
         if let lastAnnexCommit = lastAnnexCommitOptional {
             let keysChanged = GitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: lastAnnexCommit, in: watchedFolder)
-            NSLog("DEBUG, keys changed: \(keysChanged)")
             var newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
-            NSLog("DEBUG, paths for keys: \(newPaths)")
             paths += newPaths
         }
         paths = Set<String>(paths).sorted() // remove duplicates
