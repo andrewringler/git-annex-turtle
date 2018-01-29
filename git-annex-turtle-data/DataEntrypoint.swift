@@ -31,7 +31,7 @@ class DataEntrypoint {
         // https://useyourloaf.com/blog/easier-core-data-setup-with-persistent-containers/
         
         let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent("git_annex_turtle_data.sqlite") else {
+        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
             fatalError("Error loading model from bundle")
         }
         let description = NSPersistentStoreDescription(url: newStoreURL)

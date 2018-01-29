@@ -17,6 +17,8 @@
     </entity>
     <entity name="PathStatusEntity" representedClassName="PathStatusEntity" syncable="YES" codeGenerationType="class">
         <attribute name="enoughCopiesStatus" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="gitAnnexKey" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isDir" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="isGitAnnexTracked" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="modificationDate" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="numberOfCopies" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
@@ -49,7 +51,7 @@
     <elements>
         <element name="CommandRequestsEntity" positionX="-45" positionY="27" width="128" height="105"/>
         <element name="PathRequestEntity" positionX="-45" positionY="63" width="128" height="75"/>
-        <element name="PathStatusEntity" positionX="-63" positionY="-18" width="128" height="165"/>
+        <element name="PathStatusEntity" positionX="-63" positionY="-18" width="128" height="195"/>
         <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
         <element name="VisibleFoldersEntity" positionX="-54" positionY="36" width="128" height="75"/>
         <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>

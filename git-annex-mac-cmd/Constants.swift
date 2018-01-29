@@ -9,6 +9,7 @@
 import Foundation
 
 let groupID = "group.com.andrewringler.git-annex-mac.sharedgroup"
+let databaseName = "git_annex_turtle_data_v1.sqlite"
 
 let GitAnnexTurtleDbPrefix = "gitannex."
 let GitAnnexTurtleUserDefaultsWatchedFoldersUpdated = "gitannex.watched-folders-updated"
@@ -205,6 +206,7 @@ enum GitAnnexJSON: String {
     case command = "command"
     case note = "note"
     case whereis = "whereis"
+    case key = "key"
 }
 
 class PathUtils {

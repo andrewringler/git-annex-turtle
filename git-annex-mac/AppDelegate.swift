@@ -28,9 +28,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     var visibleFolders: VisibleFolders? = nil
-    // NSCache is thread safe
-    var handledCommit = NSCache<NSString, NSString>()
-    
+    var handledGitCommit = WatchedFolderToCommitHash()
+    var handledAnnexCommit = WatchedFolderToCommitHash()
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
@@ -190,19 +190,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //    }
 
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
-        NSLog("checkForGitAnnexUpdates \(watchedFolder)")
+        NSLog("Checking for updates in \(watchedFolder)")
+        
         var paths: [String] = []
-        if let lastCommit = handledCommit.object(forKey: watchedFolder.uuid.uuidString as NSString) as? String {
-            let keys = GitAnnexQueries.allKeysWithLocationsChangesSinceBlocking(commitHash: lastCommit, in: watchedFolder)
-        } else {
-            NSLog("could not find a latest commit entry for watched folder \(watchedFolder)")
+        
+        let lastGitCommitOptional = handledGitCommit.get(for: watchedFolder)
+        let lastAnnexCommitOptional = handledAnnexCommit.get(for: watchedFolder)
+        
+        // Mark current commits as handled
+        updateLatestCommitEntriesForWatchedFolders()
+        
+        /* Commits to git could mean:
+         * - new file content (we should update key)
+         * - existing file points to new content in git-annex
+         * - change in lock/unlock state
+         * - add/drop for a path
+         */
+        if let lastGitCommit = lastGitCommitOptional {
+            var gitPaths = GitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: lastGitCommit, in: watchedFolder)
+            // convert relative git paths to absolute paths
+            gitPaths = gitPaths.map { "\(watchedFolder.pathString)/\($0)" }
+            paths += gitPaths
         }
         
-//        let queries = Queries(data: self.data)
-//        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
+        /* Commits to git-annex branch could mean:
+         * - location updates for file content
+         */
+        if let lastAnnexCommit = lastAnnexCommitOptional {
+            let keysChanged = GitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: lastAnnexCommit, in: watchedFolder)
+            NSLog("DEBUG, keys changed: \(keysChanged)")
+            var newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
+            NSLog("DEBUG, paths for keys: \(newPaths)")
+            paths += newPaths
+        }
+        paths = Set<String>(paths).sorted() // remove duplicates
         
         if paths.count > 0 {
-            NSLog("Requesting updated statuses for: \(paths)")
+            NSLog("Requesting updated statuses for \(paths)")
         }
         
         for path in paths {
@@ -265,14 +289,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // that have changed since the latest commit, then update the latest
         // commit hash
         for watchedFolder in watchedFolders {
-            let key = watchedFolder.uuid.uuidString as NSString
-            
+            // master branch (IE git files)
             // grab latest commit hash, if we don't already have one
-            if handledCommit.object(forKey: key) == nil {
-                if let commitHash = GitAnnexQueries.latestCommitHashBlocking(in: watchedFolder) {
-                    handledCommit.setObject(commitHash as NSString, forKey: key)
+            if !handledGitCommit.contains(for: watchedFolder) {
+                if let gitGitCommitHash = GitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder) {
+                    handledGitCommit.put(value: gitGitCommitHash, for: watchedFolder)
                 } else {
-                    NSLog("Error: could not find latest git-annex commit for watchedFolder: \(watchedFolder)")
+                    NSLog("Error: could not find latest commit on master branch for watchedFolder: \(watchedFolder)")
+                }
+            }
+
+            // git-annex branch (IE git-annex location tracking)
+            // grab latest commit hash, if we don't already have one
+            if !handledAnnexCommit.contains(for: watchedFolder) {
+                if let gitAnnexCommitHash = GitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
+                    handledAnnexCommit.put(value: gitAnnexCommitHash, for: watchedFolder)
+                } else {
+                    NSLog("Error: could not find latest git-annex branch commit for watchedFolder: \(watchedFolder)")
                 }
             }
         }
@@ -280,7 +313,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     private func handleBadgeRequests() {
         for watchedFolder in self.watchedFolders {
-            for path in Queries(data: data).allPathsNotHandledV2Blocking(in: watchedFolder) {
+            for path in Queries(data: data).allPathRequestsV2Blocking(in: watchedFolder) {
                 handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
             }
         }
@@ -373,3 +406,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+class WatchedFolderToCommitHash {
+    // NSCache is thread-safe
+    var map = NSCache<NSString, NSString>()
+    
+    func get(for key: WatchedFolder) -> String? {
+        return map.object(forKey: key.uuid.uuidString as NSString) as String?
+    }
+    
+    func put(value: String, for key: WatchedFolder) {
+        map.setObject(value as NSString, forKey: key.uuid.uuidString as NSString)
+    }
+    
+    func contains(for key: WatchedFolder) -> Bool {
+        return map.object(forKey: key.uuid.uuidString as NSString) as String? != nil
+    }
+}

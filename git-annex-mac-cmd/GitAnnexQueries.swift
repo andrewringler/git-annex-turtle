@@ -168,7 +168,8 @@ class GitAnnexQueries {
     class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         if let path :String = PathUtils.path(for: url) {
             NSLog("git-annex info \(path)")
-            if directoryExistsAtPath(path) {
+            let isDir = directoryExistsAtPath(path)
+            if isDir {
                 // Directory
                 if includeDirs == false {
                     return (error: false, pathStatus: nil) // skip
@@ -202,6 +203,7 @@ class GitAnnexQueries {
                         let success = dictionary[GitAnnexJSON.success.rawValue]
                         let present = dictionary[GitAnnexJSON.present.rawValue]
                         let file = dictionary[GitAnnexJSON.file.rawValue]
+                        let key = dictionary[GitAnnexJSON.key.rawValue]
                         let directory = dictionary[GitAnnexJSON.directory.rawValue]
                         let localAnnexKeys = dictionary[GitAnnexJSON.localAnnexKeys.rawValue]
                         let annexedFilesInWorkingTree = dictionary[GitAnnexJSON.annexedFilesInWorkingTree.rawValue]
@@ -209,7 +211,7 @@ class GitAnnexQueries {
                         
                         // Tracked by git-annex (success in the JSON means tracked by git-annex)
                         if let successVal = success as? Bool, successVal {
-                            if let presentVal = present as? Bool {
+                            if let presentVal = present as? Bool, let keyVal = key as? String {
                                 //
                                 // FILE tracked by git-annex
                                 //
@@ -220,7 +222,7 @@ class GitAnnexQueries {
                                 let presentStatus = presentVal ? Present.present : Present.absent
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
+                                return (error: false, pathStatus: PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: keyVal))
                             } else {
                                 //
                                 // FOLDER tracked by git-annex
@@ -235,13 +237,13 @@ class GitAnnexQueries {
                                     let localAnnexKeysVal = localAnnexKeys as? Int {
                                     if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
                                         // all files are present
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
                                     } else if localAnnexKeysVal == 0 {
                                         // no files are present
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
                                     } else {
                                         // some files are present
-                                        return (error: false, pathStatus: PathStatus(isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
                                     }
                                 }
                                 
@@ -254,7 +256,7 @@ class GitAnnexQueries {
                     NSLog("unable to parse JSON: '", output, "'")
                 }
             }
-            return (error: false, pathStatus: PathStatus(isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate))
+            return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil))
 
         } else {
             NSLog("could not get path for URL '%@'", url.absoluteString)
@@ -351,7 +353,7 @@ class GitAnnexQueries {
     /* returns list of files tracked by git annex that have been modified
      * since the give commitHash
      * where commitHash is a commit in the git-annex branch */
-    class func allKeysWithLocationsChangesSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+    class func allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedAnnexFilesAfterCommit", ofType: "sh") {
             let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash)
@@ -371,7 +373,30 @@ class GitAnnexQueries {
         return []
     }
     
-    class func latestCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
+    /* returns list of files in git repo that have been modified
+     * since the give commitHash
+     * where commitHash is a commit in the master branch */
+    class func allFileChangesGitSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+        let bundle = Bundle(for: ShellScripts.self)
+        if let scriptPath: String = bundle.path(forResource: "changedGitFilesAfterCommit", ofType: "sh") {
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash)
+            
+            if(status == 0){ // success
+                return output.filter { $0.count > 0 }
+            } else {
+                NSLog("allFileChangesSinceBlocking(commitHash: \(commitHash)")
+                NSLog("status: \(status)")
+                NSLog("output: \(output)")
+                NSLog("error: \(error)")
+            }
+        } else {
+            NSLog("allFileChangesSinceBlocking: error, could not find shell script in bundle")
+        }
+        
+        return []
+    }
+    
+    class func latestGitAnnexCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
         let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: "log", "--pretty=format:\"%H\"", "-r", "git-annex", "-n", "1")
         
         if(status == 0){ // success
@@ -380,7 +405,24 @@ class GitAnnexQueries {
             }
         }
         
-        NSLog("latestCommitHashBlocking: error")
+        NSLog("latestGitAnnexCommitHashBlocking: error")
+        NSLog("status: \(status)")
+        NSLog("output: \(output)")
+        NSLog("error: \(error)")
+        
+        return nil
+    }
+    
+    class func latestGitCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
+        let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: "log", "--pretty=format:\"%H\"", "-n", "1")
+        
+        if(status == 0){ // success
+            if output.count == 1 {
+                return output.first
+            }
+        }
+        
+        NSLog("latestGitCommitHashBlocking: error")
         NSLog("status: \(status)")
         NSLog("output: \(output)")
         NSLog("error: \(error)")
