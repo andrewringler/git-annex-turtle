@@ -28,7 +28,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     var visibleFolders: VisibleFolders? = nil
-
+    // NSCache is thread safe
+    var handledCommit = NSCache<NSString, NSString>()
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
@@ -44,12 +46,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Read in list of watched folders from Config (or create)
         // also populates menu with correct folders (if any)
         updateListOfWatchedFoldersAndSetupFileSystemWatches()
-        
-        // Do onces for testing
-        for watchedFolder in watchedFolders {
-            let filesModifed = GitAnnexQueries.allFilesModifiedSinceBlocking(commitHash: "274e2500f2c783d620ee0c299d80f4a5ca5d2548", in: watchedFolder)
-            NSLog("Modified files: \(filesModifed) in \(watchedFolder)")
-        }
         
         //
         // Watch List Config File Updates: ~/.config/git-annex/turtle-watch
@@ -97,11 +93,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 sleep(1)
             }
         }
-        
-        
-        // TODO
-        // replace with a parsing of git-annex branch commit logs
-        // since this would give us an accurate list of all files changed
         
         //
         // Git Annex Directory Scanning
@@ -165,6 +156,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             NSLog("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
 
+            updateLatestCommitEntriesForWatchedFolders()
+            
             // Save updated folder list to the database
             let queries = Queries(data: data)
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
@@ -184,9 +177,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: true)
     }
             
+//    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
+//        let queries = Queries(data: self.data)
+//        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
+//
+//        for path in paths {
+//            // ignore non-visible paths
+//            if let visible = visibleFolders?.isVisible(path: path), visible {
+//                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: .low)
+//            }
+//        }
+//    }
+
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
-        let queries = Queries(data: self.data)
-        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
+        NSLog("checkForGitAnnexUpdates \(watchedFolder)")
+        var paths: [String] = []
+        if let lastCommit = handledCommit.object(forKey: watchedFolder.uuid.uuidString as NSString) as? String {
+            let keys = GitAnnexQueries.allKeysWithLocationsChangesSinceBlocking(commitHash: lastCommit, in: watchedFolder)
+        } else {
+            NSLog("could not find a latest commit entry for watched folder \(watchedFolder)")
+        }
+        
+//        let queries = Queries(data: self.data)
+//        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
+        
+        if paths.count > 0 {
+            NSLog("Requesting updated statuses for: \(paths)")
+        }
         
         for path in paths {
             // ignore non-visible paths
@@ -195,7 +212,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-
+    
     private func updateStatusNowAsync(for path: String, in watchedFolder: WatchedFolder) {
         handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
     }
@@ -233,6 +250,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                     
                     break
+                }
+            }
+        }
+    }
+    
+    private func updateLatestCommitEntriesForWatchedFolders() {
+        // Mark the current commit as handled
+        //
+        // NOTE: currently, this is true, as any folder requests that come in
+        // will trigger a new git-annex request regardless of freshness
+        // for performance we should probably store this latest commit hash
+        // in the database, check on startup and re-scan any files in the database
+        // that have changed since the latest commit, then update the latest
+        // commit hash
+        for watchedFolder in watchedFolders {
+            let key = watchedFolder.uuid.uuidString as NSString
+            
+            // grab latest commit hash, if we don't already have one
+            if handledCommit.object(forKey: key) == nil {
+                if let commitHash = GitAnnexQueries.latestCommitHashBlocking(in: watchedFolder) {
+                    handledCommit.setObject(commitHash as NSString, forKey: key)
+                } else {
+                    NSLog("Error: could not find latest git-annex commit for watchedFolder: \(watchedFolder)")
                 }
             }
         }

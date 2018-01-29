@@ -348,23 +348,43 @@ class GitAnnexQueries {
         return nil
     }
     
-    class func allFilesModifiedSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+    /* returns list of files tracked by git annex that have been modified
+     * since the give commitHash
+     * where commitHash is a commit in the git-annex branch */
+    class func allKeysWithLocationsChangesSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedAnnexFilesAfterCommit", ofType: "sh") {
             let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash)
             
             if(status == 0){ // success
-                return output
+                return output.filter { $0.count > 0 }
             } else {
-                NSLog("allFilesModifiedSinceBlocking(commitHash: \(commitHash)")
+                NSLog("allKeysWithLocationsChangesSinceBlocking(commitHash: \(commitHash)")
                 NSLog("status: \(status)")
                 NSLog("output: \(output)")
                 NSLog("error: \(error)")
             }
         } else {
-            NSLog("allFilesModifiedSinceBlocking: error, could not find shell script in bundle")
+            NSLog("allKeysWithLocationsChangesSinceBlocking: error, could not find shell script in bundle")
         }
 
         return []
+    }
+    
+    class func latestCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
+        let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: "log", "--pretty=format:\"%H\"", "-r", "git-annex", "-n", "1")
+        
+        if(status == 0){ // success
+            if output.count == 1 {
+                return output.first
+            }
+        }
+        
+        NSLog("latestCommitHashBlocking: error")
+        NSLog("status: \(status)")
+        NSLog("output: \(output)")
+        NSLog("error: \(error)")
+        
+        return nil
     }
 }

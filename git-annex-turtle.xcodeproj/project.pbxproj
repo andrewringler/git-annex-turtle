@@ -17,6 +17,8 @@
 		49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */; };
 		49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
 		49178B9F201E931200B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
+		49178BA1201EB2B000B98A46 /* changedGitFilesAfterCommit.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
+		49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		4922DC7A1FFD5CA900448C22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		4936EA002000482700200973 /* git-annex-turtle-cmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -147,6 +149,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */,
 				49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -190,6 +193,7 @@
 		49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleStatusRequests.swift; sourceTree = "<group>"; };
 		49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = changedAnnexFilesAfterCommit.sh; sourceTree = "<group>"; };
 		49178B9D201E92C400B98A46 /* ShellScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellScripts.swift; sourceTree = "<group>"; };
+		49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = changedGitFilesAfterCommit.sh; sourceTree = "<group>"; };
 		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		49635EF32019208500AB95E5 /* PathStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathStatus.swift; sourceTree = "<group>"; };
@@ -395,6 +399,7 @@
 		49178B9C201E92AD00B98A46 /* shell-scripts */ = {
 			isa = PBXGroup;
 			children = (
+				49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */,
 				49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */,
 				49178B9D201E92C400B98A46 /* ShellScripts.swift */,
 			);
@@ -830,6 +835,7 @@
 			files = (
 				49EFD1F92006D2D0005742DB /* Main.storyboard in Resources */,
 				490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */,
+				49178BA1201EB2B000B98A46 /* changedGitFilesAfterCommit.sh in Resources */,
 				490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
