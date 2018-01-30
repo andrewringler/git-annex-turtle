@@ -59,7 +59,7 @@ class FinderSync: FIFinderSync {
         let newWatchedFolders: Set<WatchedFolder> = queries.allWatchedFoldersBlocking()
         if newWatchedFolders != watchedFolders {
             watchedFolders = newWatchedFolders
-
+            
             if (Thread.isMainThread) {
                 FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
             } else {
@@ -67,7 +67,7 @@ class FinderSync: FIFinderSync {
                     FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
                 }
             }
-
+            
             NSLog("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
         }
     }
@@ -77,7 +77,7 @@ class FinderSync: FIFinderSync {
         if let moreRecentUpdatesTime = queries.timeOfMoreRecentUpdatesBlocking(lastHandled: lastHandledDatabaseChangesDateSinceEpochAsDouble) {
             // save this new time, marking it as handled (for this process)
             lastHandledDatabaseChangesDateSinceEpochAsDouble = moreRecentUpdatesTime
-
+            
             updateWatchedFolders(queries: queries)
             
             for watchedFolder in self.watchedFolders {
@@ -88,7 +88,7 @@ class FinderSync: FIFinderSync {
                     } else {
                         // updated value
                         //NSLog("updating to \(status) \(id())")
-                        let url = PathUtils.url(for: status.path)
+                        let url = PathUtils.url(for: status.path, in: watchedFolder)
                         statusCache.put(status: status, for: status.path)
                         updateBadge(for: url, with: status)
                     }
@@ -100,11 +100,15 @@ class FinderSync: FIFinderSync {
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
         NSLog("beginObservingDirectory for \(url) \(id())")
-        if let path = PathUtils.path(for: url) {
+        if let absolutePath = PathUtils.path(for: url) {
             for watchedFolder in watchedFolders {
-                if path.starts(with: watchedFolder.pathString) {
-                    Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder)
-                    return
+                if absolutePath.starts(with: watchedFolder.pathString) {
+                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                        Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder)
+                        return
+                    } else {
+                        NSLog("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
+                    }
                 }
             }
         } else {
@@ -143,32 +147,36 @@ class FinderSync: FIFinderSync {
         }
         return nil
     }
-
+    
     override func requestBadgeIdentifier(for url: URL) {
         NSLog("requestBadgeIdentifier for \(url) \(id())")
         
-        if let path = PathUtils.path(for: url) {
-            if let watchedFolder = self.watchedFolderParent(for: path) {
-                // Request the folder:
-                // we may already have this path in our cache
-                // but we still want to create a request to let the main app know
-                // that this path is still fresh and still in view
-                DispatchQueue.global(qos: .background).async {
-                    Queries(data: self.data).addRequestV2Async(for: path, in: watchedFolder)
-                }
-                
-                // already have the status? then use it
-                if let status = self.statusCache.get(for: path) {
-                    self.updateBadge(for: url, with: status)
-                    return
-                }
-
-                // OK, status is not in the cache, maybe it is in the Db?
-                DispatchQueue.global(qos: .background).async {
-                    if let status = self.statusCache.getAndCheckDb(for: path) {
+        if let absolutePath = PathUtils.path(for: url) {
+            if let watchedFolder = self.watchedFolderParent(for: absolutePath) {
+                if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                    // Request the folder:
+                    // we may already have this path in our cache
+                    // but we still want to create a request to let the main app know
+                    // that this path is still fresh and still in view
+                    DispatchQueue.global(qos: .background).async {
+                        Queries(data: self.data).addRequestV2Async(for: path, in: watchedFolder)
+                    }
+                    
+                    // already have the status? then use it
+                    if let status = self.statusCache.get(for: path) {
                         self.updateBadge(for: url, with: status)
                         return
                     }
+                    
+                    // OK, status is not in the cache, maybe it is in the Db?
+                    DispatchQueue.global(qos: .background).async {
+                        if let status = self.statusCache.getAndCheckDb(for: path) {
+                            self.updateBadge(for: url, with: status)
+                            return
+                        }
+                    }
+                } else {
+                    NSLog("Finder Sync could not get a relative path for '\(absolutePath)' in \(watchedFolder)")
                 }
             } else {
                 NSLog("Finder Sync could not find watched parent for url= \(url)")
@@ -197,11 +205,15 @@ class FinderSync: FIFinderSync {
         if menuKind == FIMenuKind.contextualMenuForItems {
             if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
                 for obj: URL in items {
-                    if let path = PathUtils.path(for: obj) {
+                    if let absolutePath = PathUtils.path(for: obj) {
                         if watchedFolders.count == 1 {
                             for watchedFolder in watchedFolders {
-                                if path.starts(with: watchedFolder.pathString) {
-                                    statusOptional = statusCache.get(for: path)
+                                if absolutePath.starts(with: watchedFolder.pathString) {
+                                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                                        statusOptional = statusCache.get(for: path)
+                                    } else {
+                                        NSLog("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
+                                    }
                                 }
                             }
                         }
@@ -250,7 +262,7 @@ class FinderSync: FIFinderSync {
         menuItem.image = gitLogoOrange
         return menu
     }
-
+    
     @IBAction func gitAnnexGet(_ sender: AnyObject?) {
         commandRequest(with: .gitAnnex(.get), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
@@ -275,11 +287,15 @@ class FinderSync: FIFinderSync {
         
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
             for obj: URL in items {
-                if let path = PathUtils.path(for: obj) {
+                if let absolutePath = PathUtils.path(for: obj) {
                     for watchedFolder in watchedFolders {
-                        if path.starts(with: watchedFolder.pathString) {
-//                            NSLog("submitting command request \(command) for \(path)")
-                            queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
+                        if absolutePath.starts(with: watchedFolder.pathString) {
+                            if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                                queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
+                            } else {
+                                NSLog("commandRequest: could not find relative path for \(absolutePath) in \(watchedFolder)")
+                            }
+                            //                            NSLog("submitting command request \(command) for \(path)")
                             break
                         }
                     }

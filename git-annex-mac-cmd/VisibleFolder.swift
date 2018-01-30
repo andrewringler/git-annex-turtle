@@ -10,25 +10,27 @@ import Foundation
 
 class VisibleFolder: Equatable, Hashable, Comparable, CustomStringConvertible {
     let parent: WatchedFolder
-    let path: String
+    let relativePath: String
+    let absolutePath: String
     
-    init(path: String, parent: WatchedFolder) {
-        self.path = path
+    init(relativePath: String, parent: WatchedFolder) {
+        self.relativePath = relativePath
         self.parent = parent
+        self.absolutePath = PathUtils.absolutePath(for: relativePath, in: parent)
     }
     
     static func pretty<T>(_ visibleFolders: T) -> String where T: Sequence, T.Iterator.Element : VisibleFolder {
-        return  visibleFolders.map { "\($0.path)" }.joined(separator: ",")
+        return  visibleFolders.map { "\($0.absolutePath)" }.joined(separator: ",")
     }
     static func ==(lhs: VisibleFolder, rhs: VisibleFolder) -> Bool {
-        return lhs.path == rhs.path
+        return lhs.absolutePath == rhs.absolutePath
     }
     static func <(lhs: VisibleFolder, rhs: VisibleFolder) -> Bool {
-        return lhs.path < rhs.path
+        return lhs.absolutePath < rhs.absolutePath
     }
     var hashValue: Int {
-        return path.hashValue
+        return absolutePath.hashValue
     }
     
-    public var description: String { return "VisibleFolder: '\(path)' \(parent.uuid.uuidString)" }
+    public var description: String { return "VisibleFolder: '\(relativePath)' \(parent.uuid.uuidString)" }
 }

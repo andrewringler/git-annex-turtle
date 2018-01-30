@@ -102,42 +102,30 @@ class GitAnnexQueries {
         return ret
     }
     
-    class func gitAnnexCommand(for url: URL, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.rawValue, path)
-            let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
-            
-            if status != 0 {
-                NSLog(commandRun)
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
-            }
-            
-            return (status == 0, error, output, commandRun)
-        } else {
-            NSLog("unable to get path from URL '%@'", url.absoluteString)
+    class func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.rawValue, path)
+        let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
+        
+        if status != 0 {
+            NSLog(commandRun)
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
         }
         
-        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.rawValue + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
+        return (status == 0, error, output, commandRun)
     }
-    class func gitCommand(for url: URL, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.rawValue, path)
-            let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
-            
-            if status != 0 {
-                NSLog(commandRun)
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
-            }
-            return (status == 0, error, output, commandRun)
-        } else {
-            NSLog("unable to get path from URL '%@'", url.absoluteString)
-        }
+    class func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.rawValue, path)
+        let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         
-        return (false, ["git-annex-turtle: unknown error"], ["Command '" + cmd.rawValue + "'did not run. Unable to retrieve file path for URL='" + url.absoluteString + "'"], "n/a")
+        if status != 0 {
+            NSLog(commandRun)
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        return (status == 0, error, output, commandRun)
     }
     class func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?
@@ -165,111 +153,108 @@ class GitAnnexQueries {
         }
         return nil
     }
-    class func gitAnnexPathInfo(for url: URL, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
-        if let path :String = PathUtils.path(for: url) {
-            NSLog("git-annex info \(path)")
-            let isDir = directoryExistsAtPath(path)
-            if isDir {
-                // Directory
-                if includeDirs == false {
-                    return (error: false, pathStatus: nil) // skip
-                }
-            } else {
-                // File
-                if includeFiles == false {
-                    return (error: false, pathStatus: nil) // skip
-                }
+    class func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
+        NSLog("git-annex info \(path)")
+        let isDir = directoryExistsAtPath(path)
+        if isDir {
+            // Directory
+            if includeDirs == false {
+                return (error: false, pathStatus: nil) // skip
             }
-            
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
-            
-            if status != 0 {
-                NSLog("gitAnnexPathInfo for url='\(url)' in='\(workingDirectory)'")
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
+        } else {
+            // File
+            if includeFiles == false {
+                return (error: false, pathStatus: nil) // skip
             }
-            
-            let modificationDate = Date().timeIntervalSinceNow as Double
-            
-            // if command didnt return an error, parse the JSON
-            // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
-            if(status == 0){
-                do {
-                    var data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
-                    var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
+        
+        if status != 0 {
+            NSLog("gitAnnexPathInfo for path='\(path)' in='\(workingDirectory)'")
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        
+        let modificationDate = Date().timeIntervalSinceNow as Double
+        
+        // if command didnt return an error, parse the JSON
+        // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
+        if(status == 0){
+            do {
+                var data: Data = (output.first as! NSString).data(using: String.Encoding.utf8.rawValue)!
+                var json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                
+                if let dictionary = json as? [String: Any] {
+                    let success = dictionary[GitAnnexJSON.success.rawValue]
+                    let present = dictionary[GitAnnexJSON.present.rawValue]
+                    let file = dictionary[GitAnnexJSON.file.rawValue]
+                    let key = dictionary[GitAnnexJSON.key.rawValue]
+                    let directory = dictionary[GitAnnexJSON.directory.rawValue]
+                    let localAnnexKeys = dictionary[GitAnnexJSON.localAnnexKeys.rawValue]
+                    let annexedFilesInWorkingTree = dictionary[GitAnnexJSON.annexedFilesInWorkingTree.rawValue]
+                    let command = dictionary[GitAnnexJSON.command.rawValue]
                     
-                    if let dictionary = json as? [String: Any] {
-                        let success = dictionary[GitAnnexJSON.success.rawValue]
-                        let present = dictionary[GitAnnexJSON.present.rawValue]
-                        let file = dictionary[GitAnnexJSON.file.rawValue]
-                        let key = dictionary[GitAnnexJSON.key.rawValue]
-                        let directory = dictionary[GitAnnexJSON.directory.rawValue]
-                        let localAnnexKeys = dictionary[GitAnnexJSON.localAnnexKeys.rawValue]
-                        let annexedFilesInWorkingTree = dictionary[GitAnnexJSON.annexedFilesInWorkingTree.rawValue]
-                        let command = dictionary[GitAnnexJSON.command.rawValue]
-                        
-                        // Tracked by git-annex (success in the JSON means tracked by git-annex)
-                        if let successVal = success as? Bool {
-                            if successVal == true {
-                                if let presentVal = present as? Bool, let keyVal = key as? String {
-                                    //
-                                    // FILE tracked by git-annex
-                                    //
-                                    // (we have a file if the present attribute exists in the json)
-                                    //
-                                    let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory)
-                                    let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory)
-                                    let presentStatus = presentVal ? Present.present : Present.absent
-                                    let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
-                                    
-                                    return (error: false, pathStatus: PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: keyVal))
-                                } else {
-                                    //
-                                    // FOLDER tracked by git-annex
-                                    //
-                                    // (we have a folder if the present attribute is missing from the JSON)
-                                    //
-                                    let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: url, in: workingDirectory)
-                                    let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: url, in: workingDirectory)
-                                    let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
-                                    
-                                    if let annexedFilesInWorkingTreeVal = annexedFilesInWorkingTree as? Int,
-                                        let localAnnexKeysVal = localAnnexKeys as? Int {
-                                        if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
-                                            // all files are present
-                                            return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
-                                        } else if localAnnexKeysVal == 0 {
-                                            // no files are present
-                                            return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
-                                        } else {
-                                            // some files are present
-                                            return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
-                                        }
-                                    }
-                                    
-                                    NSLog("ERROR: could not figure out a status for folder: '\(path)' '\(dictionary)'")
-                                    
-                                }
-                            } else {
-                                // git-annex returned success: false
+                    // Tracked by git-annex (success in the JSON means tracked by git-annex)
+                    if let successVal = success as? Bool {
+                        if successVal == true {
+                            if let presentVal = present as? Bool, let keyVal = key as? String {
+                                //
+                                // FILE tracked by git-annex
+                                //
+                                // (we have a file if the present attribute exists in the json)
+                                //
+                                let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: path, in: workingDirectory)
+                                let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: path, in: workingDirectory)
+                                let presentStatus = presentVal ? Present.present : Present.absent
+                                let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                // Do we have a tracked unlocked present file
-                                // in a v5 git-annex repo?
-                             
-                                // TODO
+                                return (error: false, pathStatus: PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: keyVal))
+                            } else {
+                                //
+                                // FOLDER tracked by git-annex
+                                //
+                                // (we have a folder if the present attribute is missing from the JSON)
+                                //
+                                let numberOfCopies = GitAnnexQueries.gitAnnexNumberOfCopies(for: path, in: workingDirectory)
+                                let lackingCopies = GitAnnexQueries.gitAnnexLackingCopies(for: path, in: workingDirectory)
+                                let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
+                                
+                                if let annexedFilesInWorkingTreeVal = annexedFilesInWorkingTree as? Int,
+                                    let localAnnexKeysVal = localAnnexKeys as? Int {
+                                    if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
+                                        // all files are present
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
+                                    } else if localAnnexKeysVal == 0 {
+                                        // no files are present
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
+                                    } else {
+                                        // some files are present
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */))
+                                    }
+                                }
+                                
+                                NSLog("ERROR: could not figure out a status for folder: '\(path)' '\(dictionary)'")
+                                
                             }
+                        } else {
+                            // git-annex returned success: false
+                            
+                            // Do we have a tracked unlocked present file
+                            // in a v5 git-annex repo?
+                            
+                            // TODO
                         }
                     }
-                } catch {
-                    NSLog("unable to parse JSON: '", output, "'")
                 }
+            } catch {
+                NSLog("unable to parse JSON: '", output, "'")
             }
-            return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil))
             
-        } else {
-            NSLog("could not get path for URL '%@'", url.absoluteString)
+            return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil))
         }
+        
         return (error: true, pathStatus: nil)
     }
     
@@ -277,57 +262,54 @@ class GitAnnexQueries {
      * For a directory: returns the number of copies of the file with the least copies
      * contained within the directory
      */
-    class func gitAnnexNumberOfCopies(for url: URL, in workingDirectory: String) -> UInt8? {
-        if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "whereis", path)
-            
-            // if command didnt return an error, parse the JSON
-            // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
-            if(status == 0){
-                do {
-                    var leastCopies: Int? = nil
-                    
-                    /* git-annex returns 1-line of valid JSON for each file contained within a folder */
-                    for outputLine in output {
-                        if let data: Data = (outputLine as NSString).data(using: String.Encoding.utf8.rawValue) {
-                            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+    class func gitAnnexNumberOfCopies(for path: String, in workingDirectory: String) -> UInt8? {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "whereis", path)
+        
+        // if command didnt return an error, parse the JSON
+        // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
+        if(status == 0){
+            do {
+                var leastCopies: Int? = nil
+                
+                /* git-annex returns 1-line of valid JSON for each file contained within a folder */
+                for outputLine in output {
+                    if let data: Data = (outputLine as NSString).data(using: String.Encoding.utf8.rawValue) {
+                        let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                        
+                        if let dictionary = json as? [String: Any] {
+                            let success = dictionary[GitAnnexJSON.success.rawValue]
+                            let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
                             
-                            if let dictionary = json as? [String: Any] {
-                                let success = dictionary[GitAnnexJSON.success.rawValue]
-                                let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]]
-                                
-                                // calculate number of copies, for this file
-                                if success != nil && whereis != nil, let whereisval = whereis {
-                                    let numberOfCopies = whereisval.count
-                                    if leastCopies == nil || numberOfCopies < leastCopies! {
-                                        leastCopies = numberOfCopies
-                                    }
-                                } else {
-                                    NSLog("issue getting data from JSON: '\(dictionary)'")
+                            // calculate number of copies, for this file
+                            if success != nil && whereis != nil, let whereisval = whereis {
+                                let numberOfCopies = whereisval.count
+                                if leastCopies == nil || numberOfCopies < leastCopies! {
+                                    leastCopies = numberOfCopies
                                 }
+                            } else {
+                                NSLog("issue getting data from JSON: '\(dictionary)'")
                             }
-                        } else {
-                            NSLog("could not get output as string \(outputLine)")
                         }
+                    } else {
+                        NSLog("could not get output as string \(outputLine)")
                     }
-                    
-                    if let leastCopiesVal = leastCopies {
-                        return UInt8(leastCopiesVal)
-                    }
-                    return nil
-                } catch {
-                    NSLog("unable to parse JSON: '\(output)' for url='\(url)' workingdir='\(workingDirectory)'")
                 }
-            } else {
-                NSLog("gitAnnexNumberOfCopies")
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
+                
+                if let leastCopiesVal = leastCopies {
+                    return UInt8(leastCopiesVal)
+                }
                 return nil
+            } catch {
+                NSLog("unable to parse JSON: '\(output)' for path='\(path)' workingdir='\(workingDirectory)'")
             }
         } else {
-            NSLog("could not get path for URL \(url)")
+            NSLog("gitAnnexNumberOfCopies")
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+            return nil
         }
+        
         return nil
     }
     
@@ -336,27 +318,22 @@ class GitAnnexQueries {
      * calling this on directories causes git-annex to query each child file recursively
      * this can be slow, guard when you call this on directories
      */
-    class func gitAnnexLackingCopies(for url: URL, in workingDirectory: String) -> Bool? {
-        if let path = PathUtils.path(for: url) {
-            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "--lackingcopies=1", "find", path)
-            
-            // if command didnt return an error, count the lines returned
-            if(status == 0){
-                if let firstLine = output.first {
-                    return !firstLine.isEmpty
-                }
-                return false
-            } else {
-                NSLog("gitAnnexLackingCopies")
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
-                return nil
+    class func gitAnnexLackingCopies(for path: String, in workingDirectory: String) -> Bool? {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "--lackingcopies=1", "find", path)
+        
+        // if command didnt return an error, count the lines returned
+        if(status == 0){
+            if let firstLine = output.first {
+                return !firstLine.isEmpty
             }
+            return false
         } else {
-            NSLog("could not get path for URL \(url)")
+            NSLog("gitAnnexLackingCopies")
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+            return nil
         }
-        return nil
     }
     
     /* returns list of files tracked by git annex that have been modified

@@ -150,7 +150,7 @@ class HandleStatusRequests {
     
     private func updateStatusAsync(request r: StatusRequest) {
         DispatchQueue.global(qos: .background).async {
-            let statusTuple = GitAnnexQueries.gitAnnexPathInfo(for: PathUtils.url(for: r.path), in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
+            let statusTuple = GitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
             if statusTuple.error {
                 NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
             } else if let status = statusTuple.pathStatus {

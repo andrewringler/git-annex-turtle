@@ -12,7 +12,7 @@ class VisibleFolders {
     let data: DataEntrypoint
     let app: AppDelegate
     
-    private var paths = Set<String>()
+    private var absolutePaths = Set<String>()
     private var visibleFolders = Set<VisibleFolder>()
     private let lock = NSLock() // set is NOT thread-safe, use a lock
     
@@ -25,13 +25,14 @@ class VisibleFolders {
     // A path is visible if it matches exactly a visible folder
     // or if it is an immediate child of a visible folder
     //
-    func isVisible(path: String) -> Bool {
+    func isVisible(relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
         var ret = false
+        let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
         
         lock.lock()
-        if paths.contains(path) {
+        if absolutePaths.contains(absolutePath) {
             ret = true
-        } else if let parentPath = parent(path), paths.contains(parentPath) {
+        } else if let parentPath = parent(absolutePath), absolutePaths.contains(parentPath) {
             ret = true
         }
         lock.unlock()
@@ -44,7 +45,7 @@ class VisibleFolders {
         var newVisibleFolders = Set<VisibleFolder>()
         for visibleFolderTuple in visibleFoldersTuples {
             if let parent = app.watchedFolderFrom(uuid: visibleFolderTuple.watchedFolderParentUUID) {
-                newVisibleFolders.insert(VisibleFolder(path: visibleFolderTuple.path, parent: parent))
+                newVisibleFolders.insert(VisibleFolder(relativePath: visibleFolderTuple.path, parent: parent))
             } else {
                 NSLog("updateListOfVisibleFolders: could not find WatchedFolder for \(visibleFolderTuple)")
             }
@@ -52,7 +53,7 @@ class VisibleFolders {
         lock.lock()
         if visibleFolders != newVisibleFolders {
             visibleFolders = newVisibleFolders
-            paths = Set(visibleFolders.map { $0.path })
+            absolutePaths = Set(visibleFolders.map { $0.absolutePath })
             NSLog("Updated Visible: \(VisibleFolder.pretty(visibleFolders))")
         }
         lock.unlock()
@@ -60,7 +61,7 @@ class VisibleFolders {
     
     // parent is this path, minus one component
     private func parent(_ path: String) -> String? {
-        var url = PathUtils.url(for: path)
+        var url = PathUtils.urlFor(absolutePath: path)
         url.deleteLastPathComponent()
         return PathUtils.path(for: url)
     }

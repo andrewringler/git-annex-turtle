@@ -214,10 +214,36 @@ class PathUtils {
         return (url as NSURL).path
     }
     
+    class func urlFor(absolutePath: String) -> URL {
+        return URL(fileURLWithPath: absolutePath)
+    }
+    
+    class func absolutePath(for relativePath: String, in watchedFolder: WatchedFolder) -> String {
+        return "\(watchedFolder.pathString)/\(relativePath)"
+    }
+    
+    class func relativePath(for absolutePath: String, in watchedFolder: WatchedFolder) -> String? {
+        // Root?
+        if absolutePath == watchedFolder.pathString {
+            NSLog("Converted \(absolutePath) to .")
+            return "."
+        }
+        
+        // Sub-folder or file?
+        let prefix = "\(watchedFolder.pathString)/"
+        if absolutePath.starts(with: prefix) {
+            var relativePath = absolutePath
+            relativePath.removeFirst(prefix.count)
+            NSLog("Converted \(absolutePath) to \(relativePath)")
+            return relativePath
+        }
+        return nil
+    }
+    
     // instantiating URL directly doesn't work, it prepends the container path
     // see https://stackoverflow.com/questions/27062454/converting-url-to-string-and-
-    class func url(for stringPath: String) -> URL {
-        return URL(fileURLWithPath: stringPath)
+    class func url(for relativePath: String, in watchedFolder: WatchedFolder) -> URL {
+        return URL(fileURLWithPath: absolutePath(for: relativePath, in: watchedFolder))
     }
     
     /*

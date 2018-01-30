@@ -209,7 +209,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let lastGitCommit = lastGitCommitOptional {
             var gitPaths = GitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: lastGitCommit, in: watchedFolder)
             // convert relative git paths to absolute paths
-            gitPaths = gitPaths.map { "\(watchedFolder.pathString)/\($0)" }
+//            gitPaths = gitPaths.map { "\(watchedFolder.pathString)/\($0)" }
             paths += gitPaths
         }
         
@@ -240,7 +240,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         for path in paths {
             // ignore non-visible paths
-            if let visible = visibleFolders?.isVisible(path: path), visible {
+            if let visible = visibleFolders?.isVisible(relativePath: path, in: watchedFolder), visible {
                 handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: .low)
             }
         }
@@ -257,11 +257,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         for commandRequest in commandRequests {
             for watchedFolder in self.watchedFolders {
                 if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
-                    let url = PathUtils.url(for: commandRequest.pathString)
-                    
                     // Is this a Git Annex Command?
                     if commandRequest.commandType.isGitAnnex {
-                        let status = GitAnnexQueries.gitAnnexCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = GitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             // git-annex has very nice error message, use them as-is
                             self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
@@ -273,7 +271,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     
                     // Is this a Git Command?
                     if commandRequest.commandType.isGit {
-                        let status = GitAnnexQueries.gitCommand(for: url, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = GitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                         } else {
