@@ -392,6 +392,34 @@ class Queries {
         return paths
     }
     
+    func allNonTrackedPathsBlocking(in watchedFolder: WatchedFolder) -> [String] {
+        var paths: [String] = []
+        
+        let moc = data.persistentContainer.viewContext
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isGitAnnexTracked.rawValue) == \(NSNumber(value: false))")
+            do {
+                let results = try privateMOC.fetch(fetchRequest)
+                for result in results {
+                    // required properties
+                    if let path = result.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String {
+
+                        paths.append(path)
+                    } else {
+                        NSLog("allNonTrackedPathsBlocking: unable to parse result in \(watchedFolder)")
+                    }
+                }
+            } catch {
+                fatalError("allNonTrackedPathsBlocking: Failure fetch statuses: in \(watchedFolder)")
+            }
+        }
+        
+        return paths
+    }
+    
     func pathsWithStatusesGivenAnnexKeysBlocking(keys: [String], in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
         

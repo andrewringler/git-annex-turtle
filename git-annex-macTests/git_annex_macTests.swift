@@ -21,6 +21,29 @@ class git_annex_turtleTests: XCTestCase {
         super.tearDown()
     }
     
+    func testWatchedFolder_equals_equal() {
+        let uuidString = UUID().uuidString
+        let a = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
+        let b = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
+        
+        XCTAssertEqual(a, b)
+    }
+    
+    func testWatchedFolder_equals_path_ignored() {
+        let uuidString = UUID().uuidString
+        let a = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
+        let b = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "b")
+        
+        XCTAssertEqual(a, b)
+    }
+    
+    func testWatchedFolder_equals_not_equal_uuid() {
+        let a = WatchedFolder(uuid: UUID(), pathString: "a")
+        let b = WatchedFolder(uuid: UUID(), pathString: "a")
+        
+        XCTAssertNotEqual(a, b)
+    }
+
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.

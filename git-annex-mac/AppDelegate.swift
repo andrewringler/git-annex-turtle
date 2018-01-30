@@ -218,8 +218,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          */
         if let lastAnnexCommit = lastAnnexCommitOptional {
             let keysChanged = GitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: lastAnnexCommit, in: watchedFolder)
-            var newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
+            let newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
             paths += newPaths
+            
+            // TODO add back in if needed
+//            if keysChanged.count != newPaths.count {
+//                // for 1 or more paths we were unable to find an associated key
+//                // perhaps user did a `git annex add` via the commandline
+//                // if the path was ever shown in a Finder window we will have
+//                // a not-tracked entry for it, lets re-check all of our untracked paths
+//                let newPaths = Queries(data: data).allNonTrackedPathsBlocking(in: watchedFolder)
+//                NSLog("Checking non tracked paths \(newPaths)")
+//                paths += newPaths
+//            }
         }
         paths = Set<String>(paths).sorted() // remove duplicates
         

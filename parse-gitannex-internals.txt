@@ -67,3 +67,15 @@ SHA256E-s13953--0d80f45aa8141fbb5878924416970a686fcc53060bb9ddd58d4495b9941eb379
 SHA256E-s9800--8f984c6af71eaaafa79df034553e020f80bc22d49130fbc0d15a7652e29c3760.png
 SHA256E-s12951--90b14b985eabcd73d789329b09304cbe87e78b2ef3381e192fbabe91d36e779a.png
 SHA256E-s12816--7b274efbfb392aeb22d8fef8d35c0b051b623af492f5c1c7cb26ceb5f18cdcc6.png
+
+
+
+
+
+====== v5 unlocked present files
+git-annex does not have path info for an unlocked present file
+but, if 
+git annex calckey <filename>
+equals a known key, then the content has not yet changed, so we can use whatever
+value is in the database, maybe…? although this would be out of date after a sync
+so perhaps we need to then do

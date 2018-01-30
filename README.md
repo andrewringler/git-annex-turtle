@@ -26,7 +26,7 @@ The Apple Finder Sync Extension only allows one app to register per folder, so o
 
 ### Important Directories
 `~/Library/Group Containers/group.com.andrewringler.git-annex-mac.sharedgroup`
-App Group location for UserDefaults and sqlite database.
+App Group location for sqlite database.
 
  `~/.config/git-annex/turtle-watch`
 List of UNIX-style folder paths for git-annex-turtle to watch. Update manually or with the GUI. One folder per line.
