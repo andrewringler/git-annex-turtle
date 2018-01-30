@@ -12,6 +12,7 @@
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="pathString"/>
+                <constraint value="watchedFolderUUIDString"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
@@ -29,6 +30,7 @@
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="pathString"/>
+                <constraint value="watchedFolderUUIDString"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
@@ -41,12 +43,18 @@
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="pathString"/>
+                <constraint value="watchedFolderParentUUIDString"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
     <entity name="WatchedFolderEntity" representedClassName="WatchedFolderEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="uuidString" optional="YES" attributeType="String" syncable="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="uuidString"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
     </entity>
     <elements>
         <element name="CommandRequestsEntity" positionX="-45" positionY="27" width="128" height="105"/>

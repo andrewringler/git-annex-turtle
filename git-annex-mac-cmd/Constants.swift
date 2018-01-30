@@ -210,6 +210,7 @@ enum GitAnnexJSON: String {
 }
 
 class PathUtils {
+    private static let CURRENT_DIR = "."
     class func path(for url: URL) -> String? {
         return (url as NSURL).path
     }
@@ -219,14 +220,16 @@ class PathUtils {
     }
     
     class func absolutePath(for relativePath: String, in watchedFolder: WatchedFolder) -> String {
+        if relativePath == CURRENT_DIR {
+            return watchedFolder.pathString
+        }
         return "\(watchedFolder.pathString)/\(relativePath)"
     }
     
     class func relativePath(for absolutePath: String, in watchedFolder: WatchedFolder) -> String? {
         // Root?
         if absolutePath == watchedFolder.pathString {
-            NSLog("Converted \(absolutePath) to .")
-            return "."
+            return CURRENT_DIR
         }
         
         // Sub-folder or file?
@@ -234,7 +237,6 @@ class PathUtils {
         if absolutePath.starts(with: prefix) {
             var relativePath = absolutePath
             relativePath.removeFirst(prefix.count)
-            NSLog("Converted \(absolutePath) to \(relativePath)")
             return relativePath
         }
         return nil
