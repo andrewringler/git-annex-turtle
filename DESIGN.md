@@ -22,17 +22,16 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * parse git logs for git-annex branch to minimize the amount of files we need to recalculate status for 
+ * replace hard-coded absolute paths to git-annex installation with more graceful solution  
+ * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating.
+ * in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * bundle git-annex with turtle, or have some install script that will download it
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
+ * don't allow nested repositories watching, 
  * don't display git-annex lock context menu in v5 repos, it always fails without force?
  * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this?
- * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating.
- * in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
- * replace hard-coded absolute paths to git-annex installation with more graceful solution  
- * replace all absolute paths with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
- * pre-fetch files in observed folders for faster badge updates
+ * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * rename git-annex-finder process name to 'git-annex-turtle Finder'

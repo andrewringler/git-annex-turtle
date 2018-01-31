@@ -241,9 +241,15 @@ class GitAnnexQueries {
                         } else {
                             // git-annex returned success: false
                             
-                            // Do we have a tracked unlocked present file
-                            // in a v5 git-annex repo?
-                            
+                            // We could have a tracked unlocked present file
+                            // in a v5 indirect git-annex repo?
+                            // if so, we get no info from git annex info
+                            // we could do calckey, but this could get out of date
+                            // if we don't monitor the folder for changes?
+                            // TODO calculate location counts using readpresentkey?
+//                            if let calculatedKey = GitAnnexQueries.gitAnnexCalcKey(for: path, in: workingDirectory) {
+//                                
+//                            }
                             // TODO
                         }
                     }
