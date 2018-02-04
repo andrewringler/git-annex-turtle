@@ -248,7 +248,7 @@ class GitAnnexQueries {
                             // if we don't monitor the folder for changes?
                             // TODO calculate location counts using readpresentkey?
 //                            if let calculatedKey = GitAnnexQueries.gitAnnexCalcKey(for: path, in: workingDirectory) {
-//                                
+//
 //                            }
                             // TODO
                         }

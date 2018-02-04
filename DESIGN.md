@@ -22,6 +22,7 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
+ * a large root folder can take a long time to compute status for, this can get processor/disc intensive if we need to re-calculate every time any child is invalidated, perhaps we need a full scan of the entire repo and store information for every file, then track updates?
  * menu-bar icon should animate while performing actions. Menu should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
  * Test with Assistant
  * Test with v6 repos
