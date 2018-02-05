@@ -13,12 +13,18 @@ class GitAnnexQueries {
     //    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
     // https://gist.github.com/brennanMKE/a0a2ee6aa5a2e2e66297c580c4df0d66
-    public static func directoryExistsAtPath(_ path: String) -> Bool {
+    private static func directoryExistsAt(absolutePath: String) -> Bool {
         var isDirectory = ObjCBool(true)
-        let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+        let exists = FileManager.default.fileExists(atPath: absolutePath, isDirectory: &isDirectory)
         return exists && isDirectory.boolValue
     }
-    
+    public static func directoryExistsAt(relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+        var isDirectory = ObjCBool(true)
+        let absolutePath = "\(watchedFolder.pathString)/\(relativePath)"
+        let exists = FileManager.default.fileExists(atPath: absolutePath, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
+    }
+
     /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
@@ -38,7 +44,7 @@ class GitAnnexQueries {
         
         /* check for a valid working directory now, because Process will not let us catch
          * the exception thrown if the directory is invalid */
-        if !directoryExistsAtPath(workingDirectory) {
+        if !directoryExistsAt(absolutePath: workingDirectory) {
             NSLog("Invalid working directory '%@'", workingDirectory)
             return ret
         }
@@ -129,7 +135,7 @@ class GitAnnexQueries {
     }
     class func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?
-        if !directoryExistsAtPath(workingDirectory) {
+        if !directoryExistsAt(absolutePath: workingDirectory) {
             NSLog("Not a valid git-annex folder, nor even a directory '%@'", workingDirectory)
             return nil
         }
@@ -155,7 +161,7 @@ class GitAnnexQueries {
     }
     class func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         NSLog("git-annex info \(path)")
-        let isDir = directoryExistsAtPath(path)
+        let isDir = directoryExistsAt(relativePath: path, in: watchedFolder)
         if isDir {
             // Directory
             if includeDirs == false {

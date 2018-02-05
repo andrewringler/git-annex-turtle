@@ -52,7 +52,7 @@ class HandleStatusRequests {
         
         // directories are always low priority, since they take a long
         // time to calculate status for
-        let isDir = GitAnnexQueries.directoryExistsAtPath(path)
+        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
         
         sharedResource.lock()
         if isDir || priority == .low {
