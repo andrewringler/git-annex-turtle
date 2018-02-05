@@ -26,7 +26,6 @@
         <attribute name="numberOfCopies" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="presentStatus" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="statusString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -60,7 +59,7 @@
     <elements>
         <element name="CommandRequestsEntity" positionX="-45" positionY="27" width="128" height="105"/>
         <element name="PathRequestEntity" positionX="-45" positionY="63" width="128" height="75"/>
-        <element name="PathStatusEntity" positionX="-63" positionY="-18" width="128" height="210"/>
+        <element name="PathStatusEntity" positionX="-63" positionY="-18" width="128" height="195"/>
         <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
         <element name="VisibleFoldersEntity" positionX="-54" positionY="36" width="128" height="75"/>
         <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>

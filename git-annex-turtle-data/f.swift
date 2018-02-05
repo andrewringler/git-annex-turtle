@@ -12,8 +12,6 @@ import CoreData
 
 let PathStatusEntityName = "PathStatusEntity"
 enum PathStatusAttributes: String {
-    case statusString = "statusString" // DEPRECATED
-    
     case watchedFolderUUIDString = "watchedFolderUUIDString"
     case pathString = "pathString"
     case modificationDate = "modificationDate"
@@ -130,7 +128,7 @@ class Queries {
 //        }
 //    }
     
-    func updateStatusForPathV2Blocking(to status: Status, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
+    func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -158,9 +156,6 @@ class Queries {
                 }
                 
                 if let pathStatus = entry {
-                    // DEPRECATED
-                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
-                    
                     pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
                     
                     pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
