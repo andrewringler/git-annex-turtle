@@ -119,8 +119,9 @@ class HandleStatusRequests {
             // do we already have a new enough status update for this file in the database?
             let statusOptional = queries.statusForPathV2Blocking(path: item.value.path)
             let oldestAllowableDate = (Date().timeIntervalSince1970 as Double) - item.value.secondsOld
-            if let status = statusOptional, status.modificationDate > oldestAllowableDate {
-                // OK, we already have this path in the database, and it is new enough
+            if let status = statusOptional, status.modificationDate > oldestAllowableDate, status.needsUpdate == false {
+                // OK, we already have this path in the database
+                // and it is new enough, and it isn't marked as needing updating
                 // remove this request, it is not necessary
                 sharedResource.lock()
                 dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
