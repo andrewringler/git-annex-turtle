@@ -23,6 +23,7 @@ enum PathStatusAttributes: String {
     case presentStatus = "presentStatus"
     case gitAnnexKey = "gitAnnexKey"
     case isDir = "isDir"
+    case needsUpdate = "needsUpdate"
 }
 
 let PathRequestEntityName = "PathRequestEntity"
@@ -130,7 +131,7 @@ class Queries {
 //    }
     
     func updateStatusForPathV2Blocking(to status: Status, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
-        WatchedFolder, isDir: Bool) {
+        WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
@@ -170,6 +171,7 @@ class Queries {
                     pathStatus.setValue(NSNumber(value: isGitAnnexTracked), forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
                     pathStatus.setValue(key, forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue)
                     pathStatus.setValue(NSNumber(value: isDir), forKeyPath: PathStatusAttributes.isDir.rawValue)
+                    pathStatus.setValue(NSNumber(value: needsUpdate), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
                     
                 } else {
                     NSLog("updateStatusForPathV2Blocking: Could not create/update entity for \(PathStatusEntityName)")
@@ -238,7 +240,8 @@ class Queries {
                     if let watchedFolderUUIDString = status.value(forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue) as? String,
                         let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
                         let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
-                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber)
+                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
+                        let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
                         {
                         
                         // optional properties
@@ -247,7 +250,7 @@ class Queries {
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                        ret = PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString, modificationDate: modificationDate, key: key)
+                            ret = PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolderUUIDString, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate)
                     } else {
                         NSLog("statusForPathV2Blocking: unable to fetch entry for status=\(status)")
                     }
@@ -370,7 +373,8 @@ class Queries {
                     if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
                         let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
                         let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
-                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber)
+                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
+                        let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
                         {
 
                         // optional properties
@@ -379,7 +383,7 @@ class Queries {
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                            paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: key))
+                            paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
                     } else {
                         NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
                     }

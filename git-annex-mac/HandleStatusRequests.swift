@@ -156,14 +156,14 @@ class HandleStatusRequests {
             } else if let status = statusTuple.pathStatus {
                 // OK we have a new status, even if it didn't change
                 // update in the database so we have a new date modified
-                self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: r.watchedFolder, isDir: status.isDir)
+                self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: r.watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
             } else {
                 // we have a skipped directory, save its status
                 // if it doesn't already exist, otherwise leave it alone
                 // since we didn't actually do anything
                 let oldStatus = self.queries.statusForPathV2Blocking(path: r.path)
                 if oldStatus == nil {
-                    self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true)
+                    self.queries.updateStatusForPathV2Blocking(to: Status.unknown /* DEPRECATED */, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
                 }
             }
             
