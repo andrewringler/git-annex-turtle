@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		49082F32201125D60030DE80 /* StatusCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49082F31201125D60030DE80 /* StatusCache.swift */; };
-		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
+		490BCB861DE5444C00734FF4 /* includeDirsincludeDirs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* includeDirsincludeDirs.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
 		490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */; };
@@ -65,7 +65,7 @@
 		49EFD1ED2006CEF7005742DB /* git_annex_preferencesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1EC2006CEF7005742DB /* git_annex_preferencesUITests.swift */; };
 		49EFD1F82006D08A005742DB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1D02006CEF7005742DB /* ViewController.swift */; };
 		49EFD1F92006D2D0005742DB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D42006CEF7005742DB /* Main.storyboard */; };
-		49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
+		49EFD1FC2007BD89005742DB /* includeDirsincludeDirs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* includeDirsincludeDirs.swift */; };
 		49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		49EFD1FE2007BF70005742DB /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		49EFD2002007BFB1005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
@@ -180,7 +180,7 @@
 /* Begin PBXFileReference section */
 		49082F31201125D60030DE80 /* StatusCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCache.swift; sourceTree = "<group>"; };
 		490BCB821DE5444C00734FF4 /* git-annex-turtle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-turtle.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		490BCB851DE5444C00734FF4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		490BCB851DE5444C00734FF4 /* includeDirsincludeDirs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = includeDirsincludeDirs.swift; sourceTree = "<group>"; };
 		490BCB871DE5444C00734FF4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		490BCB8A1DE5444C00734FF4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		490BCB8C1DE5444C00734FF4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -368,7 +368,7 @@
 			children = (
 				49178B9C201E92AD00B98A46 /* shell-scripts */,
 				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
-				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
+				490BCB851DE5444C00734FF4 /* includeDirsincludeDirs.swift */,
 				49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */,
 				490BCB871DE5444C00734FF4 /* Assets.xcassets */,
 				490BCB891DE5444C00734FF4 /* MainMenu.xib */,
@@ -926,7 +926,7 @@
 				49178B97201A67EA00B98A46 /* HandleStatusRequests.swift in Sources */,
 				49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */,
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
-				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
+				490BCB861DE5444C00734FF4 /* includeDirsincludeDirs.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
 				49E13FBF2013AD4B00EE3DBE /* VisibleFolder.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
@@ -999,7 +999,7 @@
 				49EFD2032007BFCA005742DB /* Constants.swift in Sources */,
 				49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */,
 				49F0ECFD200E5F6000C8BBCB /* f.swift in Sources */,
-				49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */,
+				49EFD1FC2007BD89005742DB /* includeDirsincludeDirs.swift in Sources */,
 				49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */,
 				49EF626D200E70B5002D1585 /* DataEntrypoint.swift in Sources */,
 				49DD9BA820192B0300B90DC7 /* PathStatus.swift in Sources */,

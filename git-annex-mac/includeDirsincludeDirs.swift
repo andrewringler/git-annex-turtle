@@ -174,7 +174,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // updates from Watched Folder monitor
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {
-        checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: false)
+        checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: true)
     }
             
 //    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
@@ -246,7 +246,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func updateStatusNowAsync(for path: String, in watchedFolder: WatchedFolder) {
-        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
+        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
     }
     
     private func handleCommandRequests() {
@@ -320,7 +320,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func handleBadgeRequests() {
         for watchedFolder in self.watchedFolders {
             for path in Queries(data: data).allPathRequestsV2Blocking(in: watchedFolder) {
-                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
+                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
             }
         }
     }
