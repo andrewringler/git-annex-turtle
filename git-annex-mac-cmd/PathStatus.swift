@@ -15,19 +15,21 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
     let enoughCopies: EnoughCopies?
     let numberOfCopies: UInt8?
     let path: String
-    let parentWatchedFolderUUIDString: String
-    let modificationDate: Double
+    let watchedFolder: WatchedFolder
+    let parentPath: String?
     let key: String? /* folders don't have a key */
+    let modificationDate: Double
     let needsUpdate: Bool
     
-    init(isDir: Bool, isGitAnnexTracked: Bool, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, path: String, parentWatchedFolderUUIDString: String, modificationDate: Double, key: String?, needsUpdate: Bool) {
+    init(isDir: Bool, isGitAnnexTracked: Bool, presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, path: String, watchedFolder: WatchedFolder, modificationDate: Double, key: String?, needsUpdate: Bool) {
         self.isDir = isDir
         self.isGitAnnexTracked = isGitAnnexTracked
         self.presentStatus = presentStatus
         self.enoughCopies = enoughCopies
         self.numberOfCopies = numberOfCopies
         self.path = path
-        self.parentWatchedFolderUUIDString = parentWatchedFolderUUIDString
+        self.parentPath = PathUtils.parent(for: path, in: watchedFolder)
+        self.watchedFolder = watchedFolder
         self.modificationDate = modificationDate
         self.key = key
         self.needsUpdate = needsUpdate
@@ -39,14 +41,17 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
         && lhs.enoughCopies == rhs.enoughCopies
         && lhs.numberOfCopies == lhs.numberOfCopies
         && lhs.path == rhs.path
-        && lhs.parentWatchedFolderUUIDString == rhs.parentWatchedFolderUUIDString
+        && lhs.watchedFolder == rhs.watchedFolder
+        && lhs.parentPath == rhs.parentPath
         && lhs.key == rhs.key
         && lhs.isDir == rhs.isDir
     }
+    
     var hashValue: Int {
         return path.hashValue
     }
+    
     public var description: String {
-        return "PathStatus: tracked:\(isGitAnnexTracked) present:\(presentStatus) enough-copies:\(enoughCopies) number-of-copies:\(numberOfCopies) path:\(path) in:\(parentWatchedFolderUUIDString) last-modified:\(modificationDate) key:\(key) isDir: \(isDir) needsUpdate: \(needsUpdate)"
+        return "PathStatus: tracked:\(isGitAnnexTracked) present:\(String(describing: presentStatus)) enough-copies:\(String(describing: enoughCopies)) number-of-copies:\(String(describing: numberOfCopies)) path:\(path) in:\(watchedFolder) parentPath:\(String(describing: parentPath)) last-modified:\(modificationDate) key:\(String(describing: key)) isDir: \(isDir) needsUpdate: \(needsUpdate)"
     }
 }

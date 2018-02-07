@@ -13,7 +13,7 @@ enum Priority {
     case low
 }
 
-fileprivate class StatusRequest {
+fileprivate class StatusRequest: CustomStringConvertible {
     let path: String
     let watchedFolder: WatchedFolder
     let secondsOld: Double
@@ -29,6 +29,8 @@ fileprivate class StatusRequest {
         self.includeDirs = includeDirs
         self.priority = priority
     }
+    
+    public var description: String { return "StatusRequest: '\(path)' in \(watchedFolder) \(secondsOld) secondsOld, includeFiles=\(includeFiles) includeDirs=\(includeDirs) priority=\(priority)" }
 }
 
 class HandleStatusRequests {
@@ -117,7 +119,7 @@ class HandleStatusRequests {
             
             // Fresh Enough?
             // do we already have a new enough status update for this file in the database?
-            let statusOptional = queries.statusForPathV2Blocking(path: item.value.path)
+            let statusOptional = queries.statusForPathV2Blocking(path: item.value.path, in: item.value.watchedFolder)
             let oldestAllowableDate = (Date().timeIntervalSince1970 as Double) - item.value.secondsOld
             if let status = statusOptional, status.modificationDate > oldestAllowableDate, status.needsUpdate == false {
                 // OK, we already have this path in the database
@@ -162,9 +164,35 @@ class HandleStatusRequests {
                 // we have a skipped directory, save its status
                 // if it doesn't already exist, otherwise leave it alone
                 // since we didn't actually do anything
-                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path)
+                
+//                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path)
+//                if oldStatus == nil {
+//                    self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
+//                }
+                
+                // we have a skipped directory
+                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
+                
+                // no entry for directory, lets add one
                 if oldStatus == nil {
-                    self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
+                    self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: false /* we will update below */)
+                }
+                
+                // lets update, it is out of date
+                if oldStatus == nil || (oldStatus?.needsUpdate ?? true) {
+                    NSLog("Skipped dir, updating, \(r)")
+                    let children = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: r.path, in: r.watchedFolder)
+                    NSLog("children: \(children)")
+                    for child in children {
+                        if let _ = self.queries.statusForPathV2Blocking(path: child, in: r.watchedFolder) {
+                            // OK, we already have an entry for this child in the database
+                            // do nothing
+                        } else {
+                            NSLog("no entry for child: \(child) in \(r.watchedFolder)")
+                            // No entry exists, lets request one
+                            self.queries.addRequestV2Async(for: child, in: r.watchedFolder)
+                        }
+                    }
                 }
             }
             

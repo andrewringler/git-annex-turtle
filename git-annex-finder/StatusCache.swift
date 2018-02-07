@@ -18,30 +18,34 @@ class StatusCache {
         pathStringToPathStatusCache.countLimit = 1000
     }
     
-    func get(for path: String) -> PathStatus? {
+    func get(for path: String, in watchedFolder: WatchedFolder) -> PathStatus? {
         // In cache? Return it
-        if let status = pathStringToPathStatusCache.object(forKey: path as NSString) as PathStatus? {
+        if let status = pathStringToPathStatusCache.object(forKey: key(for: path, in: watchedFolder)) as PathStatus? {
             return status
         }
         return nil // no where to be found
     }
     
-    func getAndCheckDb(for path: String) -> PathStatus? {
+    func getAndCheckDb(for path: String, in watchedFolder: WatchedFolder) -> PathStatus? {
         // In cache? Return it
-        if let status = pathStringToPathStatusCache.object(forKey: path as NSString) as PathStatus? {
+        if let status = pathStringToPathStatusCache.object(forKey: key(for: path, in: watchedFolder)) as PathStatus? {
             return status
         }
         // Cache miss, In db? Add to cache and return it
         let queries = Queries(data: data)
-        if let status = queries.statusForPathV2Blocking(path: path) {
-            put(status: status, for: path)
+        if let status = queries.statusForPathV2Blocking(path: path, in: watchedFolder) {
+        put(status: status, for: path, in: watchedFolder)
             return status
         }
         
         return nil // no where to be found
     }
     
-    func put(status: PathStatus, for path: String) {
-        pathStringToPathStatusCache.setObject(status, forKey: path as NSString)
+    func put(status: PathStatus, for path: String, in watchedFolder: WatchedFolder) {
+        pathStringToPathStatusCache.setObject(status, forKey: key(for: path, in: watchedFolder))
+    }
+    
+    private func key(for path: String, in watchedFolder: WatchedFolder) -> NSString {
+        return PathUtils.absolutePath(for: path, in: watchedFolder) as NSString
     }
 }

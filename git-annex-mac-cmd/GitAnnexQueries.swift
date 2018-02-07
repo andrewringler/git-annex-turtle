@@ -9,6 +9,10 @@
 import Foundation
 
 class GitAnnexQueries {
+    // also see paths at https://stackoverflow.com/questions/41535451/how-to-access-the-terminals-path-variable-from-within-my-mac-app-it-seems-to
+    static let GIT_CMD = "/Applications/git-annex.app/Contents/MacOS/git"
+    static let GITANNEX_CMD = "/Applications/git-annex.app/Contents/MacOS/git-annex"
+    
     // TODO one queue per repository?
     //    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
@@ -108,6 +112,41 @@ class GitAnnexQueries {
         return ret
     }
     
+    class func createRepo(at path: String) -> Bool {
+        // is this folder even a directory?
+        if !directoryExistsAt(absolutePath: path) {
+            NSLog("'\(path)' is not a valid directory")
+            return false
+        }
+        
+        let createGitRepoResult = gitCommand(in: path, cmd: CommandString.initCmd)
+        if !createGitRepoResult.success {
+            NSLog("Could not create git repo in \(path)")
+            return false
+        }
+        
+        let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.initCmd)
+        if !initGitAnnexRepo.success {
+            NSLog("Could not init git annex repo in \(path)")
+            return false
+        }
+        
+        return true
+    }
+    
+    class func gitAnnexCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.rawValue)
+        let commandRun = "git-annex " + cmd.rawValue
+        
+        if status != 0 {
+            NSLog(commandRun)
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        
+        return (status == 0, error, output, commandRun)
+    }
     class func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: cmd.rawValue, path)
         let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
@@ -124,6 +163,18 @@ class GitAnnexQueries {
     class func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.rawValue, path)
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
+        
+        if status != 0 {
+            NSLog(commandRun)
+            NSLog("status: %@", String(status))
+            NSLog("output: %@", output)
+            NSLog("error: %@", error)
+        }
+        return (status == 0, error, output, commandRun)
+    }
+    class func gitCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git", args: cmd.rawValue)
+        let commandRun = "git " + cmd.rawValue
         
         if status != 0 {
             NSLog(commandRun)
@@ -216,7 +267,7 @@ class GitAnnexQueries {
                                 let presentStatus = presentVal ? Present.present : Present.absent
                                 let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
                                 
-                                return (error: false, pathStatus: PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: keyVal, needsUpdate: false))
+                                return (error: false, pathStatus: PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: keyVal, needsUpdate: false))
                             } else {
                                 //
                                 // FOLDER tracked by git-annex
@@ -231,13 +282,13 @@ class GitAnnexQueries {
                                     let localAnnexKeysVal = localAnnexKeys as? Int {
                                     if localAnnexKeysVal == annexedFilesInWorkingTreeVal {
                                         // all files are present
-                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
                                     } else if localAnnexKeysVal == 0 {
                                         // no files are present
-                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.absent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
                                     } else {
                                         // some files are present
-                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
+                                        return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
                                     }
                                 }
                                 
@@ -264,7 +315,7 @@ class GitAnnexQueries {
                 NSLog("unable to parse JSON: '", output, "'")
             }
             
-            return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, parentWatchedFolderUUIDString: watchedFolder.uuid.uuidString, modificationDate: modificationDate, key: nil, needsUpdate: false))
+            return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil, needsUpdate: false))
         }
         
         return (error: true, pathStatus: nil)
@@ -426,5 +477,25 @@ class GitAnnexQueries {
         NSLog("error: \(error)")
         
         return nil
+    }
+    
+    class func immediateChildrenNotIgnored(relativePath: String, in watchedFolder: WatchedFolder) -> [String] {
+        let bundle = Bundle(for: ShellScripts.self)
+        if let scriptPath: String = bundle.path(forResource: "childrenNotIgnored", ofType: "sh") {
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: relativePath, GIT_CMD, GITANNEX_CMD)
+            
+            if(status == 0){ // success
+                return output.filter { $0.count > 0 } // remove empty strings
+            } else {
+                NSLog("immediateChildrenNotIgnored(relativePath: \(relativePath), in: \(watchedFolder)")
+                NSLog("status: \(status)")
+                NSLog("output: \(output)")
+                NSLog("error: \(error)")
+            }
+        } else {
+            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
+        }
+        
+        return []
     }
 }

@@ -39,70 +39,58 @@ let databaseName = "git_annex_turtle_data_v1.sqlite"
 //    return "gitannex.beginobserving." + watchedFolder.uuid.uuidString + "."
 //}
 
-protocol Command {
-    var cmdString :String { get }
-    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String
-    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String
-}
-class GitAnnexCommand: Equatable, Hashable, Command {
-    let cmdString :String
-    private let dbPrefix :String
-    
-    init(cmdString :String, dbPrefix :String) {
-        self.cmdString = cmdString
-        self.dbPrefix = dbPrefix
-    }
-    
-    static func ==(lhs: GitAnnexCommand, rhs: GitAnnexCommand) -> Bool {
-        return lhs.cmdString == rhs.cmdString
-    }
-    var hashValue: Int {
-        return cmdString.hashValue
-    }
-    
-    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + watchedFolder.uuid.uuidString + "."
-    }
-    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + watchedFolder.uuid.uuidString + "." + path
-    }
-}
-struct GitAnnexCommands {
-    static let Get = GitAnnexCommand(cmdString: "get", dbPrefix: "gitannex.command.git-annex-get.")
-    static let Add = GitAnnexCommand(cmdString: "add", dbPrefix: "gitannex.command.git-annex-add.")
-    static let Drop = GitAnnexCommand(cmdString: "drop", dbPrefix: "gitannex.command.git-annex-drop.")
-    static let Unlock = GitAnnexCommand(cmdString: "unlock", dbPrefix: "gitannex.command.git-annex-unlock.")
-    static let Lock = GitAnnexCommand(cmdString: "lock", dbPrefix: "gitannex.command.git-annex-lock.")
-    
-    static let all = [Get, Add, Drop, Unlock, Lock]
-}
-class GitCommand: Equatable, Hashable, Command {
-    let cmdString :String
-    private let dbPrefix :String
-    
-    init(cmdString :String, dbPrefix :String) {
-        self.cmdString = cmdString
-        self.dbPrefix = dbPrefix
-    }
-    static func ==(lhs: GitCommand, rhs: GitCommand) -> Bool {
-        return lhs.cmdString == rhs.cmdString
-    }
-    var hashValue: Int {
-        return cmdString.hashValue
-    }
-    
-    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + watchedFolder.uuid.uuidString + "."
-    }
-    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String {
-        return dbPrefix + watchedFolder.uuid.uuidString + "." + path
-    }
-}
-struct GitCommands {
-    static let Add = GitCommand(cmdString: "add", dbPrefix: "gitannex.command.git-add.")
-    
-    static let all = [Add]
-}
+//protocol Command {
+//    var cmdString :String { get }
+//    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String
+//    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String
+//}
+//class GitAnnexCommand: Equatable, Hashable, Command {
+//    let cmdString :String
+//    private let dbPrefix :String
+//
+//    init(cmdString :String, dbPrefix :String) {
+//        self.cmdString = cmdString
+//        self.dbPrefix = dbPrefix
+//    }
+//
+//    static func ==(lhs: GitAnnexCommand, rhs: GitAnnexCommand) -> Bool {
+//        return lhs.cmdString == rhs.cmdString
+//    }
+//    var hashValue: Int {
+//        return cmdString.hashValue
+//    }
+//
+//    func dbPrefixWithUUID(in watchedFolder: WatchedFolder) -> String {
+//        return dbPrefix + watchedFolder.uuid.uuidString + "."
+//    }
+//    func dbPrefixWithUUID(for path: String, in watchedFolder: WatchedFolder) -> String {
+//        return dbPrefix + watchedFolder.uuid.uuidString + "." + path
+//    }
+//}
+//struct GitAnnexCommands {
+//    static let Get = GitAnnexCommand(cmdString: "get", dbPrefix: "gitannex.command.git-annex-get.")
+//    static let Add = GitAnnexCommand(cmdString: "add", dbPrefix: "gitannex.command.git-annex-add.")
+//    static let Drop = GitAnnexCommand(cmdString: "drop", dbPrefix: "gitannex.command.git-annex-drop.")
+//    static let Unlock = GitAnnexCommand(cmdString: "unlock", dbPrefix: "gitannex.command.git-annex-unlock.")
+//    static let Lock = GitAnnexCommand(cmdString: "lock", dbPrefix: "gitannex.command.git-annex-lock.")
+//
+//    static let all = [Get, Add, Drop, Unlock, Lock]
+//}
+//class GitCommand: Equatable, Hashable, Command {
+//    let cmdString :String
+//    private let dbPrefix :String
+//
+//    init(cmdString :String, dbPrefix :String) {
+//        self.cmdString = cmdString
+//        self.dbPrefix = dbPrefix
+//    }
+//    static func ==(lhs: GitCommand, rhs: GitCommand) -> Bool {
+//        return lhs.cmdString == rhs.cmdString
+//    }
+//    var hashValue: Int {
+//        return cmdString.hashValue
+//    }
+//}
 struct GitConfig {
     let name :String
 }
@@ -123,6 +111,27 @@ enum Present: String {
         case .partialPresent: return "Partially Present"
         }
     }
+    
+    static func &&(lhs: Present, rhs: Present) -> Present {
+        switch lhs {
+        case .partialPresent:
+            return .partialPresent
+        case .present:
+            switch rhs {
+            case .present:
+                return .present
+            case .absent, .partialPresent:
+                return .partialPresent
+            }
+        case .absent:
+            switch rhs {
+            case .absent:
+                return .absent
+            case .present, .partialPresent:
+                return .partialPresent
+            }
+        }
+    }
 }
 enum EnoughCopies: String {
     case enough = "enough"
@@ -132,6 +141,15 @@ enum EnoughCopies: String {
         switch self {
         case .enough: return "have enough"
         case .lacking: return "want more"
+        }
+    }
+    
+    static func &&(lhs: EnoughCopies, rhs: EnoughCopies) -> EnoughCopies {
+        switch lhs {
+        case .enough:
+            return rhs
+        case .lacking:
+            return .lacking
         }
     }
 }
@@ -150,7 +168,12 @@ enum GitAnnexJSON: String {
 }
 
 class PathUtils {
-    private static let CURRENT_DIR = "."
+    public static let CURRENT_DIR = "."
+    
+    class func isCurrent(_ path: String) -> Bool {
+        return path == CURRENT_DIR
+    }
+    
     class func path(for url: URL) -> String? {
         return (url as NSURL).path
     }
@@ -160,10 +183,17 @@ class PathUtils {
     }
     
     class func absolutePath(for relativePath: String, in watchedFolder: WatchedFolder) -> String {
-        if relativePath == CURRENT_DIR {
+        if isCurrent(relativePath) {
             return watchedFolder.pathString
         }
         return "\(watchedFolder.pathString)/\(relativePath)"
+    }
+    
+    class func relativePath(for url: URL, in watchedFolder: WatchedFolder) -> String? {
+        if let path = path(for: url) {
+            return relativePath(for: path, in: watchedFolder)
+        }
+        return nil
     }
     
     class func relativePath(for absolutePath: String, in watchedFolder: WatchedFolder) -> String? {
@@ -188,12 +218,34 @@ class PathUtils {
         return URL(fileURLWithPath: absolutePath(for: relativePath, in: watchedFolder))
     }
     
-    /*
-     // Get file contents in folder
-     // FileManager.default.contentsOfDirectory(atPath: (observingURL as NSURL).path!) {
-     //                                for file in filesToCheck {
-     //                                    let fullPath = observingURL.appendingPathComponent(file)
- */
+    // parent is this path, minus one component
+    class func parent(for relativePath: String, in watchedFolder: WatchedFolder) -> String? {
+        if isCurrent(relativePath) {
+            return nil // no parent, we are at the root
+        }
+        let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
+        var url = PathUtils.urlFor(absolutePath: absolutePath)
+        url.deleteLastPathComponent()
+        return PathUtils.relativePath(for: url, in: watchedFolder)
+    }
+    
+//    class func children(for relativePath: String, in watchedFolder: WatchedFolder) -> [String] {
+//        do {
+//            let absolutePath = self.absolutePath(for: relativePath, in: watchedFolder)
+//            return try FileManager.default.contentsOfDirectory(atPath: absolutePath).map {
+//                // we want relative paths, always relative to our watched folder
+//                // assume passed in relativePath already has this property
+//                if relativePath == CURRENT_DIR {
+//                    return $0
+//                }
+//                return "\(relativePath)/\($0)"
+//            }
+//        } catch {
+//            NSLog("Unable to retrieve child files for \(relativePath) in \(watchedFolder) \(error)")
+//        }
+//        
+//        return []
+//    }
 }
 
 enum CommandType: String {
@@ -209,4 +261,5 @@ enum CommandString: String {
     case drop = "drop"
     case unlock = "unlock"
     case lock = "lock"
+    case initCmd = "init"
 }

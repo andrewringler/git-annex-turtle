@@ -83,13 +83,13 @@ class FinderSync: FIFinderSync {
             for watchedFolder in self.watchedFolders {
                 let statuses: [PathStatus] = queries.allNonRequestStatusesV2Blocking(in: watchedFolder)
                 for status in statuses {
-                    if let cachedStatus = statusCache.get(for: status.path), cachedStatus == status {
+                    if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
                         // OK, this value is identical to the one in our cache, ignore
                     } else {
                         // updated value
                         //NSLog("updating to \(status) \(id())")
                         let url = PathUtils.url(for: status.path, in: watchedFolder)
-                        statusCache.put(status: status, for: status.path)
+                        statusCache.put(status: status, for: status.path, in: watchedFolder)
                         updateBadge(for: url, with: status)
                     }
                 }
@@ -163,14 +163,14 @@ class FinderSync: FIFinderSync {
                     }
                     
                     // already have the status? then use it
-                    if let status = self.statusCache.get(for: path) {
+                    if let status = self.statusCache.get(for: path, in: watchedFolder) {
                         self.updateBadge(for: url, with: status)
                         return
                     }
                     
                     // OK, status is not in the cache, maybe it is in the Db?
                     DispatchQueue.global(qos: .background).async {
-                        if let status = self.statusCache.getAndCheckDb(for: path) {
+                        if let status = self.statusCache.getAndCheckDb(for: path, in: watchedFolder) {
                             self.updateBadge(for: url, with: status)
                             return
                         }
@@ -210,7 +210,7 @@ class FinderSync: FIFinderSync {
                             for watchedFolder in watchedFolders {
                                 if absolutePath.starts(with: watchedFolder.pathString) {
                                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                                        statusOptional = statusCache.get(for: path)
+                                        statusOptional = statusCache.get(for: path, in: watchedFolder)
                                     } else {
                                         NSLog("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
                                     }

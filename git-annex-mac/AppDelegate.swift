@@ -95,6 +95,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         //
+        // Folder Updates
+        //
+        // a folder is ready to display badge icons for
+        // once all of its children have data computed
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.handleFolderUpdates()
+                sleep(1)
+            }
+        }
+        
+        //
         // Git Annex Directory Scanning
         //
         // scan our visible directories for file that we should re-calculate git-annex status for
@@ -280,6 +293,70 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                     
                     break
+                }
+            }
+        }
+    }
+    
+    // Check to see if any incomplete folders have
+    // completed their scans
+    private func handleFolderUpdates() {
+        let queries = Queries(data: data)
+        for watchedFolder in watchedFolders {
+            let foldersNeedingUpdates = queries.foldersIncompleteOrInvalidBlocking(in: watchedFolder)
+            /* For each folder that needs updating, lets
+             * see if we now have enough information to mark it as complete */
+            for folderNeedingUpdate in foldersNeedingUpdates {
+                NSLog("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
+                var enoughCopiesAllChildren: EnoughCopies?
+                var leastCopies: UInt8?
+                var presentAll: Present?
+                let statuses = queries.childStatusesOfBlocking(parentRelativePath: folderNeedingUpdate, in: watchedFolder)
+                let children = Set(GitAnnexQueries.immediateChildrenNotIgnored(relativePath: folderNeedingUpdate, in: watchedFolder))
+                let pathsForStatuses = Set(statuses.map { $0.path })
+                
+                // We are missing database entries for this folder
+                // lets update, then check this folder again later
+                let childrenWithoutEntries = children.subtracting(pathsForStatuses)
+                if childrenWithoutEntries.count > 0 {
+                    NSLog("Children of folder has changed \(folderNeedingUpdate) in \(watchedFolder) missing \(childrenWithoutEntries)")
+                    for child in childrenWithoutEntries {
+                        NSLog("Adding missing entry for \(child) in \(folderNeedingUpdate) in \(watchedFolder)")
+                        queries.addRequestV2Async(for: child, in: watchedFolder)
+                    }
+                    break // check this folder again later
+                }
+                
+                var complete = true
+                for status in statuses {
+                    if status.isGitAnnexTracked {
+                        if let numberOfCopies = status.numberOfCopies, let enoughCopies = status.enoughCopies, let present = status.presentStatus {
+                            if leastCopies == nil {
+                                leastCopies = numberOfCopies
+                            } else if let leastCopiesValue = leastCopies, numberOfCopies < leastCopiesValue {
+                                leastCopies = numberOfCopies
+                            }
+                            if enoughCopiesAllChildren == nil {
+                                enoughCopiesAllChildren = enoughCopies
+                            } else if let enoughCopiesAllChildrenValue = enoughCopiesAllChildren {
+                                enoughCopiesAllChildren = enoughCopiesAllChildrenValue && enoughCopies
+                            }
+                            if presentAll == nil {
+                                presentAll = present
+                            } else if let presentAllValue = presentAll {
+                                presentAll = presentAllValue && present
+                            }
+                        } else {
+                            complete = false
+                            break
+                        }
+                    }
+                }
+                
+                if complete, let enoughCopies = enoughCopiesAllChildren, let leastCopiesValue = leastCopies, let present = presentAll {
+                    NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(leastCopiesValue) \(present)")
+                    
+                    queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopiesValue, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
                 }
             }
         }

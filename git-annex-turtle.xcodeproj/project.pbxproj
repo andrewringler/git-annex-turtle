@@ -36,6 +36,14 @@
 		497D1FD020116EB200106566 /* FileEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FC520113F3300106566 /* FileEvent.swift */; };
 		497D1FD120116EB200106566 /* Witness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FC620113F3300106566 /* Witness.swift */; };
 		4981FE0B1DE61774002E6CB3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
+		49977D5220291D4B00FA9527 /* childrenNotIgnored.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49977D512029155000FA9527 /* childrenNotIgnored.sh */; };
+		49977D53202A0BE400FA9527 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		49977D54202A0D0400FA9527 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49977D57202A323600FA9527 /* gitAnnexQueriesTests.swift */; };
+		49977D59202A341200FA9527 /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
+		49977D5A202A37F100FA9527 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
+		49977D5B202A5A0200FA9527 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
+		49977D5C202A64BD00FA9527 /* childrenNotIgnored.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49977D512029155000FA9527 /* childrenNotIgnored.sh */; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
@@ -149,6 +157,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				49977D5220291D4B00FA9527 /* childrenNotIgnored.sh in CopyFiles */,
 				49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */,
 				49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */,
 			);
@@ -203,6 +212,8 @@
 		497D1FCA20114BF200106566 /* debounce-throttle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "debounce-throttle.swift"; sourceTree = "<group>"; };
 		497D1FCC20114F1800106566 /* WatchedFolderMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFolderMonitor.swift; sourceTree = "<group>"; };
 		4981FE0A1DE61774002E6CB3 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Config.swift; path = "git-annex-mac-cmd/Config.swift"; sourceTree = SOURCE_ROOT; };
+		49977D512029155000FA9527 /* childrenNotIgnored.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = childrenNotIgnored.sh; sourceTree = "<group>"; };
+		49977D57202A323600FA9527 /* gitAnnexQueriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gitAnnexQueriesTests.swift; sourceTree = "<group>"; };
 		499B44601DE544F00091E0E3 /* git-annex-finder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "git-annex-finder.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
@@ -381,6 +392,7 @@
 		490BCB941DE5444D00734FF4 /* git-annex-macTests */ = {
 			isa = PBXGroup;
 			children = (
+				49977D57202A323600FA9527 /* gitAnnexQueriesTests.swift */,
 				490BCB951DE5444D00734FF4 /* git_annex_macTests.swift */,
 				490BCB971DE5444D00734FF4 /* Info.plist */,
 			);
@@ -402,6 +414,7 @@
 				49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */,
 				49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */,
 				49178B9D201E92C400B98A46 /* ShellScripts.swift */,
+				49977D512029155000FA9527 /* childrenNotIgnored.sh */,
 			);
 			path = "shell-scripts";
 			sourceTree = "<group>";
@@ -844,6 +857,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49977D5C202A64BD00FA9527 /* childrenNotIgnored.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -942,7 +956,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49977D5B202A5A0200FA9527 /* PathStatus.swift in Sources */,
+				49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */,
+				49977D5A202A37F100FA9527 /* ShellScripts.swift in Sources */,
+				49977D54202A0D0400FA9527 /* WatchedFolder.swift in Sources */,
 				490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */,
+				49977D59202A341200FA9527 /* GitAnnexQueries.swift in Sources */,
+				49977D53202A0BE400FA9527 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
