@@ -789,6 +789,36 @@ class Queries {
         }
     }
     
+    func invalidateDirectory(path: String, in watchedFolder: WatchedFolder) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)' && \(PathRequestEntityAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+                let results = try privateMOC.fetch(fetchRequest)
+                if results.count > 0, let result = results.first  {
+                    result.setValue(NSNumber(value: true), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
+                } else {
+                    NSLog("invalidateDirectory: Error, invalid results from fetch '\(results)'")
+                }
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("invalidateDirectory: Failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("invalidateDirectory: Failure to save private context: \(error)")
+            }
+        }
+    }
+
     func submitCommandRequest(for path: String, in watchedFolder: WatchedFolder, commandType: CommandType, commandString: CommandString) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0

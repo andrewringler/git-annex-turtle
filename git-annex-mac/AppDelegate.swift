@@ -357,6 +357,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(leastCopiesValue) \(present)")
                     
                     queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopiesValue, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
+                    
+                    // Invalidate our parent, if we have one
+                    if let parent = PathUtils.parent(for: folderNeedingUpdate, in: watchedFolder) {
+                        queries.invalidateDirectory(path: parent, in: watchedFolder)
+                    }
                 }
             }
         }

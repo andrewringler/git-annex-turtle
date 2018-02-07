@@ -157,9 +157,16 @@ class HandleStatusRequests {
             if statusTuple.error {
                 NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
             } else if let status = statusTuple.pathStatus {
+                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
+                
                 // OK we have a new status, even if it didn't change
                 // update in the database so we have a new date modified
                 self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: r.watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
+                
+                // If status changed, invalidate immediate parent
+                if oldStatus != status, let parent = status.parentPath {
+                    self.queries.invalidateDirectory(path: parent, in: r.watchedFolder)
+                }
             } else {
                 // we have a skipped directory, save its status
                 // if it doesn't already exist, otherwise leave it alone
