@@ -251,10 +251,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         for path in paths {
-            // ignore non-visible paths
-            if let visible = visibleFolders?.isVisible(relativePath: path, in: watchedFolder), visible {
-                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: .low)
-            }
+            // TODO, we always care about all paths, right?
+            // since we need to potentially update paths for
+            // parents that are now visible
+//            if let visible = visibleFolders?.isVisible(relativePath: path, in: watchedFolder), visible {
+//            }
+            
+            handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: .low)
         }
     }
     
