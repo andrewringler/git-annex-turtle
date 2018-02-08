@@ -17,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
-    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-menubar-default"))
+    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "menubaricon-0"))
     let data = DataEntrypoint()
     
     var handleStatusRequests: HandleStatusRequests? = nil
