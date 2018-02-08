@@ -90,6 +90,7 @@ class HandleStatusRequests {
         
         // OK for each item, lets check if we should update it
         for item in oldestRequestFirst {
+            NSLog("Handling \(item.value.path) in \(item.value.watchedFolder.pathString)")
             sharedResource.lock()
             var watchedPaths = currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder]
             sharedResource.unlock()
@@ -102,10 +103,12 @@ class HandleStatusRequests {
                 // if it is high priority, we probably need to re-calculate
                 // so leave in the queue, and check on it later
                 if priority == .low {
+                    NSLog("Already updating, and low priority, remove from queue \(item.value.path) in \(item.value.watchedFolder.pathString)")
                     sharedResource.lock()
                     dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                     sharedResource.unlock()
                 }
+                NSLog("Already updating, ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
                 continue
             }
             
@@ -114,6 +117,7 @@ class HandleStatusRequests {
             if let paths = watchedPaths, paths.count >= maxConcurrentUpdatesPerWatchedFolder {
                 // too many concurrent updates for this WatchedFolder
                 // keep in queue and try again later
+                NSLog("Too many items in queue ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
                 continue
             }
             
@@ -125,6 +129,7 @@ class HandleStatusRequests {
                 // OK, we already have this path in the database
                 // and it is new enough, and it isn't marked as needing updating
                 // remove this request, it is not necessary
+                NSLog("Already new enough, delete \(item.value.path) in \(item.value.watchedFolder.pathString)")
                 sharedResource.lock()
                 dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                 sharedResource.unlock()
@@ -136,6 +141,8 @@ class HandleStatusRequests {
             // and we don't have a fresh enough copy in the database
             // and we have enough spare threads to actually do the request
             // so, we'll update it
+            NSLog("OK update \(item.value.path) in \(item.value.watchedFolder.pathString)")
+
             sharedResource.lock()
             // remove from queue
             dateAddedToStatusRequestQueue.removeValue(forKey: item.key)

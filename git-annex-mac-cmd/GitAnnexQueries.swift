@@ -23,10 +23,8 @@ class GitAnnexQueries {
         return exists && isDirectory.boolValue
     }
     public static func directoryExistsAt(relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
-        var isDirectory = ObjCBool(true)
-        let absolutePath = "\(watchedFolder.pathString)/\(relativePath)"
-        let exists = FileManager.default.fileExists(atPath: absolutePath, isDirectory: &isDirectory)
-        return exists && isDirectory.boolValue
+        let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
+        return directoryExistsAt(absolutePath: absolutePath)
     }
 
     /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
