@@ -18,6 +18,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "menubaricon-0"))
+    
+    var menubarIcons: [NSImage] = []
+    var menubarAnimationIndex: Int = 0
+    let menubarIconAnimationLock = NSLock()
+    var menubarAnimating: Bool = false
+
     let data = DataEntrypoint()
     
     var handleStatusRequests: HandleStatusRequests? = nil
@@ -31,11 +37,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var handledGitCommit = WatchedFolderToCommitHash()
     var handledAnnexCommit = WatchedFolderToCommitHash()
 
+    override init() {
+        for i in 0...16 {
+           menubarIcons.append(NSImage(named:NSImage.Name(rawValue: "menubaricon-\(String(i))"))!)
+        }
+        
+        super.init()
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let button = statusItem.button {
             button.image = gitAnnexTurtleLogo
             menuBarButton = button
         }
+        
         constructMenu(watchedFolders: []) // generate an empty menu stub
         visibleFolders = VisibleFolders(data: data, app: self)
         handleStatusRequests = HandleStatusRequests(queries: Queries(data: self.data))
@@ -103,6 +118,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleFolderUpdates()
+                sleep(1)
+            }
+        }
+        
+        //
+        // Animate menubar-icon
+        //
+        //
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                if let handlingRequests = self.handleStatusRequests?.handlingRequests(), handlingRequests {
+                    self.startAnimatingMenubarIcon()
+                } else {
+                    self.stopAnimatingMenubarIcon()
+                }
+                
                 sleep(1)
             }
         }
@@ -494,6 +525,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         return nil
+    }
+    
+    private func animateMenubarIcon() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let button = self.statusItem.button {
+                button.image = self.menubarIcons[self.menubarAnimationIndex]
+                self.menubarAnimationIndex = (self.menubarAnimationIndex + 1) % (self.menubarIcons.count - 1)
+                
+                // only stop animating after we have completed a full cycle
+                if self.menubarAnimationIndex == 0 {
+                    self.menubarIconAnimationLock.lock()
+                    if self.menubarAnimating == false {
+                        return // we are done
+                    }
+                    self.menubarIconAnimationLock.unlock()
+                }
+                
+                self.animateMenubarIcon() // continue animating
+            }
+        }
+    }
+    
+    private func startAnimatingMenubarIcon() {
+        menubarIconAnimationLock.lock()
+        if menubarAnimating == false {
+            menubarAnimating = true
+            animateMenubarIcon()
+        }
+        menubarIconAnimationLock.unlock()
+    }
+    
+    private func stopAnimatingMenubarIcon() {
+        menubarIconAnimationLock.lock()
+        menubarAnimating = false
+        menubarIconAnimationLock.unlock()
     }
 }
 

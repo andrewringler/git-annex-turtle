@@ -83,6 +83,12 @@ class HandleStatusRequests {
         }
     }
     
+    public func handlingRequests() -> Bool {
+        return currentlyUpdatingPathByWatchedFolder.count > 0 ||
+        dateAddedToStatusRequestQueueLowPriority.count > 0 ||
+        dateAddedToStatusRequestQueueHighPriority.count > 0
+    }
+    
     private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int, priority: Priority) {
         sharedResource.lock()
         let oldestRequestFirst = dateAddedToStatusRequestQueue.sorted(by: { $0.key < $1.key })
