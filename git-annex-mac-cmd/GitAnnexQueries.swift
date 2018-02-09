@@ -32,15 +32,9 @@ class GitAnnexQueries {
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
      */
     private class func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
-        // protect access to git annex, I don't think you can query it
-        // too heavily concurrently on the same repo, and plus I was getting
-        // too many open files warnings
-        // when I let all my processes access this method
-        
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
         var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
-        //        gitAnnexQueryQueue.sync {
         var output : [String] = []
         var error : [String] = []
         
@@ -101,11 +95,22 @@ class GitAnnexQueries {
         // even though the documentation clearly says it is not needed
         errFileHandle.closeFile()
         
-        task.waitUntilExit()
+//        task.waitUntilExit()
+        
+        let startTime = Date()
+        let maxTimeSeconds: Double = 30
+        while task.isRunning {
+            if Date().timeIntervalSince(startTime) > maxTimeSeconds {
+                NSLog("Timeout. running \(cmd) \(args) in \(workingDirectory)")
+                task.interrupt()
+                break
+            }
+            sleep(1)
+        }
+        
         let status = task.terminationStatus
         
         ret = (output, error, status)
-        //        }
         
         return ret
     }
@@ -491,7 +496,8 @@ class GitAnnexQueries {
                 NSLog("error: \(error)")
             }
         } else {
-            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
+//            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
+            fatalError("immediateChildrenNotIgnored: error, could not find shell script in bundle")
         }
         
         return []

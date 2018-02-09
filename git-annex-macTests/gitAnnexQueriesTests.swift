@@ -57,7 +57,27 @@ class gitAnnexQueriesTests: XCTestCase {
         let gitAddResult = GitAnnexQueries.gitAnnexCommand(for: file1Path, in: watchedFolder!.pathString, cmd: CommandString.add)
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
         
+        // Path in Root
         let children = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: PathUtils.CURRENT_DIR, in: watchedFolder!)
         XCTAssertEqual(Set(children), Set([file1Path]))
+        
+        // Nested Path
+        do {
+            try FileManager.default.createDirectory(at: PathUtils.url(for: "ok", in: watchedFolder!), withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            NSLog("Unable to create new directory 'ok' in \(watchedFolder)")
+        }
+        let file2Path = "ok/b.txt"
+        let file2 = PathUtils.url(for: file2Path, in: watchedFolder!)
+        do {
+            try "some text again".write(to: file2, atomically: false, encoding: .utf8)
+        }
+        catch {
+            XCTFail("unable to create file in repo")
+        }
+        let gitAddResult2 = GitAnnexQueries.gitAnnexCommand(for: file2Path, in: watchedFolder!.pathString, cmd: CommandString.add)
+        if !gitAddResult2.success { XCTFail("unable to add file \(gitAddResult2.error)")}
+        let children2 = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: "ok", in: watchedFolder!)
+        XCTAssertEqual(Set(children2), Set([file2Path]))
     }
 }

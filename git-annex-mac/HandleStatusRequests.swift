@@ -34,10 +34,15 @@ fileprivate class StatusRequest: CustomStringConvertible {
 }
 
 class HandleStatusRequests {
-    let maxConcurrentUpdatesPerWatchedFolderHighPriority = 10
+    let maxConcurrentUpdatesPerWatchedFolderHighPriority = 20
     let maxConcurrentUpdatesPerWatchedFolderLowPriority = 5
     let queries: Queries
     
+    fileprivate let lowPriorityQueue =
+        DispatchQueue(label: "com.andrewringler.git-annex-mac.LowPriority", attributes: .concurrent)
+    fileprivate let highPriorityQueue =
+        DispatchQueue(label: "com.andrewringler.git-annex-mac.HighPriority", attributes: .concurrent)
+
     // TODO store in database? these could get quite large?
     private var dateAddedToStatusRequestQueueHighPriority: [Double: StatusRequest] = [:]
     private var dateAddedToStatusRequestQueueLowPriority: [Double: StatusRequest] = [:]
@@ -68,15 +73,23 @@ class HandleStatusRequests {
     init(queries: Queries) {
         self.queries = queries
         
+        // High Priority
         DispatchQueue.global(qos: .background).async {
+            let limitConcurrentThreads = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
+            
             while true {
-                // High Priority, handle high priority requests first
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high, queue: self.highPriorityQueue, limitConcurrentThreads: limitConcurrentThreads)
                 
-                // Low Priority, handle low priority requests next
-                // if we still have some open threads available
-                // TODO, do we care about thread starvation for these?
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low)
+                sleep(1)
+            }
+        }
+        
+        // Low Priority
+        DispatchQueue.global(qos: .background).async {
+            let limitConcurrentThreads = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
+
+            while true {
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low, queue: self.lowPriorityQueue, limitConcurrentThreads: limitConcurrentThreads)
                 
                 sleep(1)
             }
@@ -89,7 +102,7 @@ class HandleStatusRequests {
         dateAddedToStatusRequestQueueHighPriority.count > 0
     }
     
-    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int, priority: Priority) {
+    private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int, priority: Priority, queue: DispatchQueue, limitConcurrentThreads: DispatchSemaphore) {
         sharedResource.lock()
         let oldestRequestFirst = dateAddedToStatusRequestQueue.sorted(by: { $0.key < $1.key })
         sharedResource.unlock()
@@ -118,14 +131,14 @@ class HandleStatusRequests {
                 continue
             }
             
-            // Queue Full?
-            // do we already have too many concurrent requests in this watched folder?
-            if let paths = watchedPaths, paths.count >= maxConcurrentUpdatesPerWatchedFolder {
-                // too many concurrent updates for this WatchedFolder
-                // keep in queue and try again later
-                NSLog("Too many items in queue ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
-                continue
-            }
+//            // Queue Full?
+//            // do we already have too many concurrent requests in this watched folder?
+//            if let paths = watchedPaths, paths.count >= maxConcurrentUpdatesPerWatchedFolder {
+//                // too many concurrent updates for this WatchedFolder
+//                // keep in queue and try again later
+//                NSLog("Too many items in queue ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
+//                break
+//            }
             
             // Fresh Enough?
             // do we already have a new enough status update for this file in the database?
@@ -160,12 +173,14 @@ class HandleStatusRequests {
                 currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder] = [item.value.path]
             }
             sharedResource.unlock()
-            updateStatusAsync(request: item.value)
+            
+            limitConcurrentThreads.wait()
+            updateStatusAsync(request: item.value, queue: queue, limitConcurrentThreads: limitConcurrentThreads)
         }
     }
     
-    private func updateStatusAsync(request r: StatusRequest) {
-        DispatchQueue.global(qos: .background).async {
+    private func updateStatusAsync(request r: StatusRequest, queue: DispatchQueue, limitConcurrentThreads: DispatchSemaphore) {
+        queue.async {
             let statusTuple = GitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
             if statusTuple.error {
                 NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
@@ -224,6 +239,8 @@ class HandleStatusRequests {
                 self.currentlyUpdatingPathByWatchedFolder[r.watchedFolder] = paths
             }
             self.sharedResource.unlock()
+            
+            limitConcurrentThreads.signal() // done, allow other threads to execute
         }
     }
 }
