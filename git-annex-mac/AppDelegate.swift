@@ -528,14 +528,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func animateMenubarIcon() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 0.3, qos: .background) {
             if let button = self.statusItem.button {
-                button.image = self.menubarIcons[self.menubarAnimationIndex]
+                DispatchQueue.main.async {
+                    button.image = self.menubarIcons[self.menubarAnimationIndex]
+                }
                 
                 // only stop animating after we have completed a full cycle
                 if self.menubarAnimationIndex == 0 {
                     self.menubarIconAnimationLock.lock()
                     if self.menubarAnimating == false {
+                        self.menubarIconAnimationLock.unlock()
                         return // we are done
                     }
                     self.menubarIconAnimationLock.unlock()
@@ -553,6 +556,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menubarIconAnimationLock.lock()
         if menubarAnimating == false {
             menubarAnimating = true
+            menubarIconAnimationLock.unlock()
             animateMenubarIcon()
         }
         menubarIconAnimationLock.unlock()
