@@ -531,7 +531,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             if let button = self.statusItem.button {
                 button.image = self.menubarIcons[self.menubarAnimationIndex]
-                self.menubarAnimationIndex = (self.menubarAnimationIndex + 1) % (self.menubarIcons.count - 1)
                 
                 // only stop animating after we have completed a full cycle
                 if self.menubarAnimationIndex == 0 {
@@ -541,6 +540,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                     self.menubarIconAnimationLock.unlock()
                 }
+                
+                // increment menubar icon animation
+                self.menubarAnimationIndex = (self.menubarAnimationIndex + 1) % (self.menubarIcons.count - 1)
                 
                 self.animateMenubarIcon() // continue animating
             }

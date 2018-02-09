@@ -75,10 +75,10 @@ class HandleStatusRequests {
         
         // High Priority
         DispatchQueue.global(qos: .background).async {
-            let limitConcurrentThreads = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
-            
+            let limitConcurrentThreadsHighPriority = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
+
             while true {
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high, queue: self.highPriorityQueue, limitConcurrentThreads: limitConcurrentThreads)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high, queue: self.highPriorityQueue, limitConcurrentThreads: limitConcurrentThreadsHighPriority)
                 
                 sleep(1)
             }
@@ -86,10 +86,10 @@ class HandleStatusRequests {
         
         // Low Priority
         DispatchQueue.global(qos: .background).async {
-            let limitConcurrentThreads = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
-
+            let limitConcurrentThreadsLowPriority = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
+            
             while true {
-                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low, queue: self.lowPriorityQueue, limitConcurrentThreads: limitConcurrentThreads)
+                self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low, queue: self.lowPriorityQueue, limitConcurrentThreads: limitConcurrentThreadsLowPriority)
                 
                 sleep(1)
             }
@@ -97,9 +97,14 @@ class HandleStatusRequests {
     }
     
     public func handlingRequests() -> Bool {
-        return currentlyUpdatingPathByWatchedFolder.count > 0 ||
-        dateAddedToStatusRequestQueueLowPriority.count > 0 ||
-        dateAddedToStatusRequestQueueHighPriority.count > 0
+        var isHandlingRequests: Bool = false
+        sharedResource.lock()
+        isHandlingRequests = currentlyUpdatingPathByWatchedFolder.reduce(0, { x, y in (x + y.value.count) }) > 0 ||
+            dateAddedToStatusRequestQueueLowPriority.count > 0 ||
+            dateAddedToStatusRequestQueueHighPriority.count > 0
+        sharedResource.unlock()
+        
+        return isHandlingRequests
     }
     
     private func handleSomeRequests(for dateAddedToStatusRequestQueue: inout [Double: StatusRequest], max maxConcurrentUpdatesPerWatchedFolder: Int, priority: Priority, queue: DispatchQueue, limitConcurrentThreads: DispatchSemaphore) {
@@ -166,6 +171,7 @@ class HandleStatusRequests {
             // remove from queue
             dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
             // mark as in progress
+            watchedPaths = currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder]
             if watchedPaths != nil {
                 watchedPaths!.append(item.value.path)
                 currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder] = watchedPaths!
@@ -174,7 +180,9 @@ class HandleStatusRequests {
             }
             sharedResource.unlock()
             
+            NSLog("wait() \(item.value.path) in \(item.value.watchedFolder.pathString)")
             limitConcurrentThreads.wait()
+            NSLog("enter() \(item.value.path) in \(item.value.watchedFolder.pathString)")
             updateStatusAsync(request: item.value, queue: queue, limitConcurrentThreads: limitConcurrentThreads)
         }
     }
@@ -237,9 +245,12 @@ class HandleStatusRequests {
             if var paths = watchedPaths, let index = paths.index(of: r.path) {
                 paths.remove(at: index)
                 self.currentlyUpdatingPathByWatchedFolder[r.watchedFolder] = paths
+            } else {
+                NSLog("Could not find path \(r.path) in \(self.currentlyUpdatingPathByWatchedFolder) for \(r.watchedFolder)")
             }
             self.sharedResource.unlock()
             
+            NSLog("release() \(r.path) in \(r.watchedFolder.pathString)")
             limitConcurrentThreads.signal() // done, allow other threads to execute
         }
     }
