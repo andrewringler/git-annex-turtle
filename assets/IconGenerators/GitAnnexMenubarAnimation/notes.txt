@@ -4,4 +4,3 @@
 - create movie from frames with Processing Movie Maker
 - preview in Quicktime with looping enabled, ended up having one extra frame,
   re-export with frames 0-16, made nice seemless loop :)!
-- crop to 44px (since this canvas size is too small for Processing)
