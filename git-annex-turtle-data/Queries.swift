@@ -141,7 +141,7 @@ class Queries {
             do {
                 // insert or update
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == %@", path)
                 let pathStatuses = try privateMOC.fetch(fetchRequest)
                 var entry: NSManagedObject? = nil
                 if pathStatuses.count > 0 {
@@ -230,7 +230,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)' && \(PathRequestEntityAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == %@ && \(PathRequestEntityAttributes.watchedFolderUUIDString) == %@", path, watchedFolder.uuid.uuidString)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 if let status = statuses.first {
@@ -295,7 +295,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathRequestEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathRequestEntityAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            fetchRequest.predicate = NSPredicate(format: "\(PathRequestEntityAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString)
             do {
                 let results = try privateMOC.fetch(fetchRequest)
                 
@@ -363,7 +363,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
@@ -402,7 +402,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && (\(PathStatusAttributes.numberOfCopies.rawValue) == \(UNKNOWN_COPIES) || \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true)))")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && (\(PathStatusAttributes.numberOfCopies.rawValue) == \(UNKNOWN_COPIES) || \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true)))", watchedFolder.uuid.uuidString)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
@@ -458,7 +458,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.parentPath.rawValue) == '\(parentRelativePath)'")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@ && \(PathStatusAttributes.parentPath.rawValue) == %@", watchedFolder.uuid.uuidString, parentRelativePath)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
@@ -497,7 +497,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isGitAnnexTracked.rawValue) == \(NSNumber(value: false))")
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.isGitAnnexTracked.rawValue) == \(NSNumber(value: false))", watchedFolder.uuid.uuidString)
             do {
                 let results = try privateMOC.fetch(fetchRequest)
                 for result in results {
@@ -535,7 +535,7 @@ class Queries {
             
             var predicates: [NSPredicate] = []
             for key in keys {
-                predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.gitAnnexKey.rawValue) == '\(key)'"))
+                predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@ && \(PathStatusAttributes.gitAnnexKey.rawValue) == %@", watchedFolder.uuid.uuidString, key))
             }
             fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
             
@@ -797,7 +797,7 @@ class Queries {
         privateMOC.performAndWait {
             do {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)' && \(PathRequestEntityAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)'")
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == %@ && \(PathRequestEntityAttributes.watchedFolderUUIDString) == %@", path, watchedFolder.uuid.uuidString)
                 let results = try privateMOC.fetch(fetchRequest)
                 if results.count > 0, let result = results.first  {
                     result.setValue(NSNumber(value: true), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
@@ -910,7 +910,7 @@ class Queries {
         privateMOC.perform {
             do {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
-                fetchRequest.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.pathString.rawValue) == '\(path)'")
+                fetchRequest.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.pathString.rawValue) == %@", path)
                 let results = try privateMOC.fetch(fetchRequest)
                 for result in results {
                     privateMOC.delete(result)
