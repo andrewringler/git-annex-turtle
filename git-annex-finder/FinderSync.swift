@@ -46,11 +46,12 @@ class FinderSync: FIFinderSync {
         // and I tried using observe on UserDefaults
         // none worked reliably, perhaps Finder Sync Extensions are designed to ignore/miss notifications?
         // or perhaps the Finder Sync extension is going into a background mode and not waking up?
-        //
+        // or perhaps Finder Sync extensions are meant to be transient, so can never
+        // really accept notifications from the system
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleDatabaseUpdatesIfAny()
-                sleep(1)
+                usleep(100000)
             }
         }
     }

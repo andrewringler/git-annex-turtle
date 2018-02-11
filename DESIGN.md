@@ -22,13 +22,12 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * a large root folder can take a long time to compute status for, this can get processor/disc intensive if we need to re-calculate every time any child is invalidated, perhaps we need a full scan of the entire repo and store information for every file, then track updates?
- * menu-bar icon should animate while performing actions. Menu should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
+ * Menu should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
+ * replace hard-coded absolute paths to git-annex installation with more graceful solution, probably should save user's path location in git-watch config, let them override, but automatically detect from ~/.bash_profile, and/or paths, see https://askubuntu.com/questions/59126/reload-bashs-profile-without-logging-out-and-back-in-again, https://stackoverflow.com/questions/41535451/how-to-access-the-terminals-path-variable-from-within-my-mac-app-it-seems-to
+ * save latest commit hashes in Db, start where we left off on restarts
  * Test with Assistant
  * Test with v6 repos
  * Test with git annex watch
- * save latest commit hashes in Db, start where we left off on restarts
- * replace hard-coded absolute paths to git-annex installation with more graceful solution, probably should save user's path location in git-watch config, let them override, but automatically detect from ~/.bash_profile, and/or paths, see https://askubuntu.com/questions/59126/reload-bashs-profile-without-logging-out-and-back-in-again, https://stackoverflow.com/questions/41535451/how-to-access-the-terminals-path-variable-from-within-my-mac-app-it-seems-to
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * bundle git-annex with turtle, or have some install script that will download it

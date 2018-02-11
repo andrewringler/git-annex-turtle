@@ -73,107 +73,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             updateListOfWatchedFoldersDebounce()
         }
         
-        //
-        // Command Requests
-        //
-        // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
-        //
         DispatchQueue.global(qos: .background).async {
+            // Main loop
             while true {
-                self.handleCommandRequests()
-                sleep(1)
-            }
-        }
-        
-        //
-        // Badge Icon Requests
-        //
-        // handle requests for updated badge icons from our Finder Sync extension
-        //
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleBadgeRequests()
-                sleep(1)
-            }
-        }
-        
-        //
-        // Visible Folder Updates
-        //
-        // update our list of visible folders
-        //
-        DispatchQueue.global(qos: .background).async {
-            while true {
+                // PERFORMANCE, trigger off a file system watch on the Db
                 self.visibleFolders?.updateListOfVisibleFolders()
-                sleep(1)
-            }
-        }
-        
-        //
-        // Folder Updates
-        //
-        // a folder is ready to display badge icons for
-        // once all of its children have data computed
-        //
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleFolderUpdates()
-                sleep(1)
-            }
-        }
-        
-        //
-        // Animate menubar-icon
-        //
-        //
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                if let handlingRequests = self.handleStatusRequests?.handlingRequests(), handlingRequests {
-                    self.startAnimatingMenubarIcon()
-                } else {
-                    self.stopAnimatingMenubarIcon()
-                }
-                
-                sleep(1)
-            }
-        }
-        
-        //
-        // Git Annex Directory Scanning
-        //
-        // scan our visible directories for file that we should re-calculate git-annex status for
-        // this will catch files if we miss File System API updates, since they are not guaranteed
-        //
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                for watchedFolder in self.watchedFolders {
-//                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: true, includeDirs: false)
-//                }
-//                sleep(15)
-//            }
-//        }
-//        // scan directories in a separate thread, since they can be slow
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                for watchedFolder in self.watchedFolders {
-//                    self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 12, includeFiles: false, includeDirs: true)
-//                }
-//                sleep(15)
-//            }
-//        }
 
-        //
-        // Finder Sync Extension
-        //
-        // launch or re-launch our Finder Sync extension
-        //
+                // PERFORMANCE, trigger off a file system watch on the Db
+                self.handleFolderUpdates()
+                
+                // PERFORMANCE, trigger directly from HandleStatusRequests class
+                self.handleAnimateMenubarIcon()
+
+                // PERFORMANCE, trigger off a file system watch on the Db
+                self.handleBadgeRequests()
+                
+                // PERFORMANCE, trigger off a file system watch on the Db
+                self.handleCommandRequests()
+
+                usleep(100000)
+            }
+        }
+
         DispatchQueue.global(qos: .background).async {
-            // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
-            NSLog("re-launching Finder Sync extension")
-            let task = Process()
-            task.launchPath = "/bin/bash"
-            task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
-            task.launch()
+            self.launchOrRelaunchFinderSyncExtension()
         }
     }
     
@@ -296,6 +219,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
     }
     
+    //
+    // Command Requests
+    //
+    // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
+    //
     private func handleCommandRequests() {
         let queries = Queries(data: self.data)
         let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
@@ -332,8 +260,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // Check to see if any incomplete folders have
-    // completed their scans
+    //
+    // Folder Updates
+    //
+    // a folder is ready to display badge icons
+    // once all of its children have their data computed
+    //
     private func handleFolderUpdates() {
         let queries = Queries(data: data)
         for watchedFolder in watchedFolders {
@@ -433,6 +365,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    //
+    // Badge Icon Requests
+    //
+    // handle requests for updated badge icons from our Finder Sync extension
+    //
     private func handleBadgeRequests() {
         for watchedFolder in self.watchedFolders {
             for path in Queries(data: data).allPathRequestsV2Blocking(in: watchedFolder) {
@@ -443,8 +380,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillTerminate(_ aNotification: Notification) {
         NSLog("quiting…")
-        
-        // Stop our Finder Sync extensions
+        stopFinderSyncExtension()
+    }
+    
+    //
+    // Finder Sync Extension
+    //
+    // launch or re-launch our Finder Sync extension
+    //
+    func launchOrRelaunchFinderSyncExtension() {
+        // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
+        NSLog("re-launching Finder Sync extension")
+        let task = Process()
+        task.launchPath = "/bin/bash"
+        task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
+        task.launch()
+    }
+    
+    // Stop our Finder Sync extensions
+    func stopFinderSyncExtension() {
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e ignore -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
@@ -525,6 +479,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         return nil
+    }
+    
+    //
+    // Animate menubar-icon
+    //
+    //
+    private func handleAnimateMenubarIcon() {
+        if let handlingRequests = handleStatusRequests?.handlingRequests(), handlingRequests {
+            startAnimatingMenubarIcon()
+        } else {
+            stopAnimatingMenubarIcon()
+        }
     }
     
     private func animateMenubarIcon() {

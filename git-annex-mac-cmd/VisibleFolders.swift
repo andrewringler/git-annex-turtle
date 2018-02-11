@@ -42,6 +42,11 @@ class VisibleFolders {
         return ret
     }
     
+    //
+    // Visible Folder Updates
+    //
+    // update our list of visible folders
+    //
     func updateListOfVisibleFolders() {
         let visibleFoldersTuples = Queries(data: data).getVisibleFoldersBlocking()
         var newVisibleFolders = Set<VisibleFolder>()
