@@ -126,4 +126,10 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertEqual(PathUtils.parent(for: "b/c/d.png", in: a), "b/c")
     }
 
+    func testGitAnnexBinAbsolutePath() {
+        XCTAssertEqual(GitAnnexQueries.gitAnnexBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git-annex")
+    }
+    func testGitBinAbsolutePath() {
+        XCTAssertEqual(GitAnnexQueries.gitBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git")
+    }
 }

@@ -26,7 +26,7 @@ class GitAnnexQueries {
         let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
         return directoryExistsAt(absolutePath: absolutePath)
     }
-
+    
     /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
@@ -95,7 +95,7 @@ class GitAnnexQueries {
         // even though the documentation clearly says it is not needed
         errFileHandle.closeFile()
         
-//        task.waitUntilExit()
+        //        task.waitUntilExit()
         
         let startTime = Date()
         let maxTimeSeconds: Double = 30
@@ -307,9 +307,9 @@ class GitAnnexQueries {
                             // we could do calckey, but this could get out of date
                             // if we don't monitor the folder for changes?
                             // TODO calculate location counts using readpresentkey?
-//                            if let calculatedKey = GitAnnexQueries.gitAnnexCalcKey(for: path, in: workingDirectory) {
-//
-//                            }
+                            //                            if let calculatedKey = GitAnnexQueries.gitAnnexCalcKey(for: path, in: workingDirectory) {
+                            //
+                            //                            }
                             // TODO
                         }
                     }
@@ -496,10 +496,44 @@ class GitAnnexQueries {
                 NSLog("error: \(error)")
             }
         } else {
-//            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
+            //            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
             fatalError("immediateChildrenNotIgnored: error, could not find shell script in bundle")
         }
         
         return []
+    }
+    
+    class func gitAnnexBinAbsolutePath() -> String? {
+        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID),  let workingDirectory = PathUtils.path(for: containerURL) {
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git-annex")
+            
+            if status == 0, output.count == 1 { // success
+                return output.first!
+            } else {
+                NSLog("gitAnnexBinAbsolutePath could not find git-annex bin")
+                NSLog("status: \(status)")
+                NSLog("output: \(output)")
+                NSLog("error: \(error)")
+            }
+        }
+        
+        return nil
+    }
+    
+    class func gitBinAbsolutePath() -> String? {
+        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID),  let workingDirectory = PathUtils.path(for: containerURL) {
+            let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git")
+            
+            if status == 0, output.count == 1 { // success
+                return output.first!
+            } else {
+                NSLog("gitBinAbsolutePath could not find git-annex bin")
+                NSLog("status: \(status)")
+                NSLog("output: \(output)")
+                NSLog("error: \(error)")
+            }
+        }
+        
+        return nil
     }
 }
