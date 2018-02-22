@@ -134,22 +134,65 @@ class git_annex_turtleTests: XCTestCase {
     }
     
     func testParseConfigisTurtleSection() {
-        XCTAssertTrue(TurtleConfigV1.isTurtleSection(line: "[turtle]"))
+        XCTAssertTrue(TurtleConfigV1.isTurtleSection("[turtle]"))
     }
     func testParseConfigisTurtleSectionFalse() {
-        XCTAssertFalse(TurtleConfigV1.isTurtleSection(line: "[turtley]"))
+        XCTAssertFalse(TurtleConfigV1.isTurtleSection("[turtley]"))
     }
     func testParseConfigTurtleMonitorSectionTrueNoName() {
         let expected: (turtleMonitorSection: Bool, name: String?) = (turtleMonitorSection: true, name: nil)
-        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection(line: "[turtle-monitor]")
+        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection("[turtle-monitor]")
         XCTAssertTrue(equalsT(expected,actual), "actual: \(actual)")
     }
     func testParseConfigTurtleMonitorSectionTrueName() {
         let expected: (turtleMonitorSection: Bool, name: String?) = (turtleMonitorSection: true, name: "a nice name")
-        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection(line: "[turtle-monitor \"a nice name\"]")
+        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection("[turtle-monitor \"a nice name\"]")
         XCTAssertTrue(equalsT(expected,actual), "actual: \(actual)")
     }
-
+    func testParseConfigTurtleGitAnnexBin() {
+        let config: [String] = """
+        [turtle]
+        git-annex-bin = /Applications/git-annex.app/Contents/MacOS/git-annex
+        """.components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: nil, monitoredRepo: [])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
+    func testParseConfigTurtleSection() {
+        let config: [String] = """
+        [turtle]
+        git-annex-bin = /Applications/git-annex.app/Contents/MacOS/git-annex
+        git-bin = /Applications/git-annex.app/Contents/MacOS/git
+        """.components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
+    func testParseConfigTurtleSectionSpaces() {
+        // some wierd spacing that should be ignored
+        let config: [String] = "[turtle]\n    git-annex-bin   =/Applications/git-annex.app/Contents/MacOS/git-annex  \ngit-bin=        /Applications/git-annex.app/Contents/MacOS/git ".components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
 
     func testParseConfigValid() {
         let config: [String] = """
