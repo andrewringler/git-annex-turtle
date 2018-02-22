@@ -10,7 +10,7 @@ Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) f
 Download and install git-annex-turtle.
 
 ### Usage
-Click the git-annex-turtle Menubar icon, then click `Watch a repository`, select a git-annex repository to watch.
+Click the git-annex-turtle Menubar icon, then click `Preferences…`, then click `+` to add a new git-annex repository to watch.
 
 You are now all set. Open your git-annex repository in Apple Finder to see updated badge icons. Right click (control-click) on a file or folder to see git-annex specific context menus.
 
@@ -28,8 +28,8 @@ The Apple Finder Sync Extension only allows one app to register per folder, so o
 `~/Library/Group Containers/group.com.andrewringler.git-annex-mac.sharedgroup`
 App Group location for sqlite database.
 
- `~/.config/git-annex/turtle-watch`
-List of UNIX-style folder paths for git-annex-turtle to watch. Update manually or with the GUI. One folder per line.
+ `~/.config/git-annex/turtle-monitor`
+List of UNIX-style folder paths for git-annex-turtle to watch. Update manually or with the GUI. One folder per line. NOTE: currently adding and removing repos via the GUI will clobber any comments or unknown lines you have added manually to this file.
  
 
 ## Name

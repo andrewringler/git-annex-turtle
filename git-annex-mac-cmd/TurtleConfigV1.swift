@@ -14,6 +14,11 @@ let contextMenusMissingDefault = false
 let trackFolderStatusMissingDefault = false
 let trackFileStatusMissingDefault = false
 
+let finderIntegrationNewEntryDefault = true
+let contextMenusNewEntryDefault = true
+let trackFolderStatusNewEntryDefault = true
+let trackFileStatusNewEntryDefault = true
+
 fileprivate class TurtleConfigMonitoredRepoMutableV1: CustomStringConvertible {
     var name: String? = nil
     
@@ -69,6 +74,27 @@ struct TurtleConfigMonitoredRepoV1 {
     let contextMenus: Bool
     let trackFolderStatus: Bool
     let trackFileStatus: Bool
+    
+    public func toFileString() -> String {
+        var s: String = ""
+        if name != nil {
+            s += "[\(sectionType.turtleMonitor.rawValue) \"\(name!)\"]\n"
+        } else {
+            s += "[\(sectionType.turtleMonitor.rawValue)]\n"
+        }
+        s += "\(turtleSectionMonitorKeyValueName.path.rawValue) = \(path)\n"
+        
+        s += "\(turtleSectionMonitorKeyValueName.finderIntegration.rawValue) = \(String(finderIntegration))\n"
+        s += "\(turtleSectionMonitorKeyValueName.contextMenus.rawValue) = \(String(contextMenus))\n"
+        s += "\(turtleSectionMonitorKeyValueName.trackFolderStatus.rawValue) = \(String(trackFolderStatus))\n"
+        s += "\(turtleSectionMonitorKeyValueName.trackFileStatus.rawValue) = \(String(trackFileStatus))\n"
+
+        return s
+    }
+    
+    static func fromPathWithDefaults(_ path: String) -> TurtleConfigMonitoredRepoV1 {
+        return TurtleConfigMonitoredRepoV1(name: nil, path: path, finderIntegration: finderIntegrationNewEntryDefault, contextMenus: contextMenusNewEntryDefault, trackFolderStatus: trackFolderStatusNewEntryDefault, trackFileStatus: trackFileStatusNewEntryDefault)
+    }
 }
 extension TurtleConfigMonitoredRepoV1: Equatable, Hashable {
     static func == (lhs: TurtleConfigMonitoredRepoV1, rhs: TurtleConfigMonitoredRepoV1) -> Bool {
@@ -78,6 +104,22 @@ extension TurtleConfigMonitoredRepoV1: Equatable, Hashable {
     var hashValue: Int {
         return path.hashValue
     }
+}
+
+enum sectionType: String {
+    case turtle = "turtle"
+    case turtleMonitor = "turtle-monitor"
+}
+enum turtleSectionKeyValueName: String {
+    case gitAnnexBin = "git-annex-bin"
+    case gitBin = "git-bin"
+}
+enum turtleSectionMonitorKeyValueName: String {
+    case path = "path"
+    case finderIntegration = "finder-integration"
+    case contextMenus = "context-menus"
+    case trackFolderStatus = "track-folder-status"
+    case trackFileStatus = "track-file-status"
 }
 
 struct TurtleConfigV1 {
@@ -108,30 +150,43 @@ struct TurtleConfigV1 {
 //    static let keyValuePairRegex = "[\\s]*(.+)[\\s]*\\=\"?(.+)\"?[\\s]*"
     static let keyValuePairRegex = "^[\\s]*([a-z\\-]+)[\\s]*\\=[\\s]*\"?(.+?)\"?[\\s]*$"
 
-    enum sectionType {
-        case turtle
-        case turtleMonitor
+    public func repoPaths() -> [String] {
+        return monitoredRepo.map { $0.path }
     }
-    enum turtleSectionKeyValueName: String {
-        case gitAnnexBin = "git-annex-bin"
-        case gitBin = "git-bin"
+    
+    public func removeRepo(_ repo: String) -> TurtleConfigV1 {
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo.filter { $0.path != repo })
     }
-    enum turtleSectionMonitorKeyValueName: String {
-        case path = "path"
-        case finderIntegration = "finder-integration"
-        case contextMenus = "context-menus"
-        case trackFolderStatus = "track-folder-status"
-        case trackFileStatus = "track-file-status"
+    public func addRepo(_ repo: String) -> TurtleConfigV1 {
+        var newMonitoredRepo = monitoredRepo
+        newMonitoredRepo.insert(TurtleConfigMonitoredRepoV1.fromPathWithDefaults(repo))
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: newMonitoredRepo)
+    }
+
+    public func toFileString() -> String {
+        var s: String = ""
+        if gitBin != nil || gitAnnexBin != nil {
+            s += "[\(sectionType.turtle.rawValue)]\n"
+            if gitAnnexBin != nil {
+                s += "\(turtleSectionKeyValueName.gitAnnexBin) = \(gitAnnexBin!)"
+            }
+            if gitBin != nil {
+                s += "\(turtleSectionKeyValueName.gitBin) = \(gitBin!)"
+            }
+        }
+        
+        for repo in monitoredRepo {
+            s += "\n"
+            s += repo.toFileString()
+        }
+        
+        return s
     }
     
     public static func parse(from config: [String]) -> TurtleConfigV1? {
         var turtleConfig = TurtleConfigMutableV1()
         var repo: TurtleConfigMonitoredRepoMutableV1?
         var section: sectionType?
-        
-        if config.count < 2 {
-            return nil
-        }
         
         let configLines = config.filter({ $0.count > 0 }) // remove empty lines
         

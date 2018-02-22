@@ -254,7 +254,72 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertNil(TurtleConfigV1.parse(from: ["invalid configuration file"]))
     }
     
+    func testConfigEmpty() {
+        if let configDir = createTmpDir() {
+          let config = Config(dataPath: "\(configDir)/turtle-monitor")
+          XCTAssertEqual(config.dataPath, "\(configDir)/turtle-monitor")
+          return
+        }
+        XCTFail()
+    }
+    func testConfigWatchRepo() {
+        let repo = "/anewrepo"
+        if let configDir = createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo))
+            XCTAssertEqual(config.listWatchedRepos(), [repo])
+            return
+        }
+        XCTFail()
+    }
+    func testConfigWatchTwoRepos() {
+        let repo1 = "/anewrepo"
+        let repo2 = "/anewrepo2"
+        
+        if let configDir = createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1))
+            XCTAssertTrue(config.watchRepo(repo: repo2))
+            
+            XCTAssertEqual(Set(config.listWatchedRepos()), Set([repo1, repo2]))
+            return
+        }
+        XCTFail()
+    }
+    func testConfigRemoveARepo() {
+        let repo1 = "/anewrepo"
+        let repo2 = "/anewrepo2"
+        
+        if let configDir = createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1))
+            XCTAssertTrue(config.watchRepo(repo: repo2))
+            
+            XCTAssertEqual(Set(config.listWatchedRepos()), Set([repo1, repo2]))
+            
+            XCTAssertTrue(config.stopWatchingRepo(repo: repo1))
+            XCTAssertEqual(config.listWatchedRepos(), [repo2])
+
+            return
+        }
+        XCTFail()
+    }
+
     func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
         return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
+    }
+    func createTmpDir() -> String? {
+        do {
+            let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
+            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+            if let path = PathUtils.path(for: directoryURL) {
+                return path
+            }
+        } catch {
+            XCTFail("unable to create a new temp folder \(error)")
+            return nil
+        }
+        XCTFail("unable to create a new temp folder")
+        return nil
     }
 }

@@ -53,8 +53,6 @@ class VisibleFolders {
         for visibleFolderTuple in visibleFoldersTuples {
             if let parent = app.watchedFolderFrom(uuid: visibleFolderTuple.watchedFolderParentUUID) {
                 newVisibleFolders.insert(VisibleFolder(relativePath: visibleFolderTuple.path, parent: parent))
-            } else {
-                NSLog("updateListOfVisibleFolders: could not find WatchedFolder for \(visibleFolderTuple)")
             }
         }
         lock.lock()

@@ -35,45 +35,66 @@ class Config {
         self.init(dataPath: "\(NSHomeDirectory())/.config/git-annex/turtle-monitor")
     }
     
-    func watchRepo(repo: String) {
-        var currentRepos = listWatchedRepos()
-        currentRepos.append(repo)
-        let towrite = currentRepos.joined(separator: "\n")
-        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
-        os.open()
-        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
-        os.close()
-        if success == -1 {
-            print("Unable to add repository to configuration file at \(configFile)")
-            print(os.streamError!.localizedDescription)
-            exit(-1)
+    func watchRepo(repo: String) -> Bool {
+        if let config = readConfig() {
+            let newConfig = config.addRepo(repo)
+            let towrite = newConfig.toFileString()
+
+            let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+            os.open()
+            let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+            os.close()
+            if success == -1 {
+                NSLog("watchRepo: Unable to add repository to configuration file at \(configFile)")
+                NSLog(os.streamError!.localizedDescription)
+                return false
+            }
+            return true
         }
+        NSLog("watchRepo: unable to read config")
+        return false
     }
     
-    func stopWatchingRepo(repo: String) {
-        let currentRepos = listWatchedRepos().filter { $0 != repo } // remove repo
-        let towrite = currentRepos.joined(separator: "\n")
-        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
-        os.open()
-        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
-        os.close()
-        if success == -1 {
-            print("Unable to remove repository '\(repo)' to configuration file at '\(configFile)'")
-            print(os.streamError!.localizedDescription)
-            exit(-1)
+    func stopWatchingRepo(repo: String) -> Bool {
+        if let config = readConfig() {
+            let newConfig = config.removeRepo(repo)
+            let towrite = newConfig.toFileString()
+            
+            let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+            os.open()
+            let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+            os.close()
+            if success == -1 {
+                NSLog("Unable to remove repository '\(repo)' to configuration file at '\(configFile)'")
+                NSLog(os.streamError!.localizedDescription)
+                return false
+            }
+            return true
         }
+        NSLog("stopWatchingRepo: unable to read config")
+        return false
     }
     
     func listWatchedRepos() -> [String] {
+        if let config = readConfig() {
+            return config.repoPaths()
+        }
+        
+        NSLog("Unable to list watched repos from config file at \(configFile)")
+        return []
+    }
+    
+    fileprivate func readConfig() -> TurtleConfigV1? {
         do {
             let data = try String(contentsOfFile: configFile, encoding: .utf8)
-            var repos = data.components(separatedBy: .newlines)
-            repos = repos.filter { $0.count > 0 } // remove empty strings
-            return repos
+            if let config = TurtleConfigV1.parse(from: data.components(separatedBy: .newlines)) {
+                return config
+            }
         } catch {
-            print("Unable to list watched repos from config file at \(configFile)")
-            print(error)
-            exit(-1)
+            NSLog("Unable to read config at \(configFile) \(error)")
+            return nil
         }
+        NSLog("Unable to read config at \(configFile)")
+        return nil
     }
 }
