@@ -132,4 +132,60 @@ class git_annex_turtleTests: XCTestCase {
     func testGitBinAbsolutePath() {
         XCTAssertEqual(GitAnnexQueries.gitBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git")
     }
+    
+    func testParseConfigisTurtleSection() {
+        XCTAssertTrue(TurtleConfigV1.isTurtleSection(line: "[turtle]"))
+    }
+    func testParseConfigisTurtleSectionFalse() {
+        XCTAssertFalse(TurtleConfigV1.isTurtleSection(line: "[turtley]"))
+    }
+    func testParseConfigTurtleMonitorSectionTrueNoName() {
+        let expected: (turtleMonitorSection: Bool, name: String?) = (turtleMonitorSection: true, name: nil)
+        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection(line: "[turtle-monitor]")
+        XCTAssertTrue(equalsT(expected,actual), "actual: \(actual)")
+    }
+    func testParseConfigTurtleMonitorSectionTrueName() {
+        let expected: (turtleMonitorSection: Bool, name: String?) = (turtleMonitorSection: true, name: "a nice name")
+        let actual: (turtleMonitorSection: Bool, name: String?) = TurtleConfigV1.turtleMonitorSection(line: "[turtle-monitor \"a nice name\"]")
+        XCTAssertTrue(equalsT(expected,actual), "actual: \(actual)")
+    }
+
+
+    func testParseConfigValid() {
+        let config: [String] = """
+        [turtle]
+        git-annex-bin = /Applications/git-annex.app/Contents/MacOS/git-annex
+        git-bin = /Applications/git-annex.app/Contents/MacOS/git
+        
+        [turtle-monitor "another remote yeah.hmm"]
+        path = /Users/Shared/anotherremote
+        finder-integration = true
+        context-menus = true
+        track-folder-status = true
+        track-file-status = true
+        [turtle-monitor]
+        path = /Users/Shared/another remote2
+        finder-integration = false
+        context-menus = false
+        track-folder-status = true
+        track-file-status = true
+        """.components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [TurtleConfigMonitoredRepoV1(name: "another remote yeah.hmm", path: "/Users/Shared/anotherremote", finderIntegration: true, contextMenus: true, trackFolderStatus: true, trackFileStatus: true),TurtleConfigMonitoredRepoV1(name: nil, path: "/Users/Shared/another remote2", finderIntegration: false, contextMenus: false, trackFolderStatus: true, trackFileStatus: true)])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
+    
+    func testParseConfigInValid() {
+        XCTAssertNil(TurtleConfigV1.parse(from: ["invalid configuration file"]))
+    }
+    
+    func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
+        return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
+    }
 }

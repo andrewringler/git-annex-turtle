@@ -82,6 +82,10 @@
 		49EFD2032007BFCA005742DB /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
 		49EFD2042007BFD6005742DB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		49EFD2052007C45C005742DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
+		49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F058AB203E225F00157DFB /* TurtleConfigV1.swift */; };
+		49F058AD203E23CF00157DFB /* TurtleConfigV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F058AB203E225F00157DFB /* TurtleConfigV1.swift */; };
+		49F058AE203E245700157DFB /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
+		49F058AF203E24C400157DFB /* TurtleConfigV1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F058AB203E225F00157DFB /* TurtleConfigV1.swift */; };
 		49F0ECC9200E51D000C8BBCB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECC8200E51D000C8BBCB /* AppDelegate.swift */; };
 		49F0ECCB200E51D000C8BBCB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECCA200E51D000C8BBCB /* ViewController.swift */; };
 		49F0ECCE200E51D000C8BBCB /* git_annex_turtle_data.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECCC200E51D000C8BBCB /* git_annex_turtle_data.xcdatamodeld */; };
@@ -238,6 +242,7 @@
 		49EFD1EC2006CEF7005742DB /* git_annex_preferencesUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_preferencesUITests.swift; sourceTree = "<group>"; };
 		49EFD1EE2006CEF7005742DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		49EFD1FF2007BFB1005742DB /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		49F058AB203E225F00157DFB /* TurtleConfigV1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleConfigV1.swift; sourceTree = "<group>"; };
 		49F0ECC6200E51D000C8BBCB /* git-annex-turtle-data.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-turtle-data.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49F0ECC8200E51D000C8BBCB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		49F0ECCA200E51D000C8BBCB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -456,6 +461,7 @@
 				497D1FC420113F3300106566 /* EventStream.swift */,
 				497D1FC520113F3300106566 /* FileEvent.swift */,
 				497D1FC620113F3300106566 /* Witness.swift */,
+				49F058AB203E225F00157DFB /* TurtleConfigV1.swift */,
 			);
 			path = "git-annex-mac-cmd";
 			sourceTree = "<group>";
@@ -934,6 +940,7 @@
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
+				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
 				497D1FC820113F3300106566 /* FileEvent.swift in Sources */,
 				49F0ECFC200E5F5E00C8BBCB /* Queries.swift in Sources */,
 				497D1FCB20114BF200106566 /* debounce-throttle.swift in Sources */,
@@ -958,9 +965,11 @@
 			files = (
 				49977D5B202A5A0200FA9527 /* PathStatus.swift in Sources */,
 				49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */,
+				49F058AF203E24C400157DFB /* TurtleConfigV1.swift in Sources */,
 				49977D5A202A37F100FA9527 /* ShellScripts.swift in Sources */,
 				49977D54202A0D0400FA9527 /* WatchedFolder.swift in Sources */,
 				490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */,
+				49F058AE203E245700157DFB /* Config.swift in Sources */,
 				49977D59202A341200FA9527 /* GitAnnexQueries.swift in Sources */,
 				49977D53202A0BE400FA9527 /* Constants.swift in Sources */,
 			);
@@ -1006,6 +1015,7 @@
 				49635EF62019244100AB95E5 /* PathStatus.swift in Sources */,
 				49EF626E200E70B6002D1585 /* DataEntrypoint.swift in Sources */,
 				49178B9F201E931200B98A46 /* ShellScripts.swift in Sources */,
+				49F058AD203E23CF00157DFB /* TurtleConfigV1.swift in Sources */,
 				495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */,
 				49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */,
 				49EF6271200E75D7002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
@@ -1194,6 +1204,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1240,6 +1251,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -1288,7 +1300,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle.app/Contents/MacOS/git-annex-turtle";
 			};
 			name = Debug;
@@ -1302,7 +1314,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle.app/Contents/MacOS/git-annex-turtle";
 			};
 			name = Release;
@@ -1315,7 +1327,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 				TEST_TARGET_NAME = "git-annex-mac";
 			};
 			name = Debug;
@@ -1328,7 +1340,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 				TEST_TARGET_NAME = "git-annex-mac";
 			};
 			name = Release;
@@ -1367,7 +1379,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -1375,7 +1387,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
