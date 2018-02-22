@@ -12,11 +12,9 @@ class Config {
     var configFile: String
     let dataPath: String
     
-    init() {
-        // Create configuration file
-        // at ~/.config/git-annex/turtle-watch
-        // to store list of git-annex directories to watch
-        dataPath = "\(NSHomeDirectory())/.config/git-annex/turtle-watch"
+    init(dataPath: String) {
+        self.dataPath = dataPath
+        
         if (!FileManager.default.fileExists(atPath: dataPath)) {
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
             if success {
@@ -28,6 +26,13 @@ class Config {
         } else {
             configFile = dataPath
         }
+    }
+    
+    convenience init() {
+        // Create configuration file
+        // at ~/.config/git-annex/turtle-monitor
+        // to store list of git-annex directories to watch
+        self.init(dataPath: "\(NSHomeDirectory())/.config/git-annex/turtle-monitor")
     }
     
     func watchRepo(repo: String) {

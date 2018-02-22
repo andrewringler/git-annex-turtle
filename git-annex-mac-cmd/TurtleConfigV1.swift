@@ -101,6 +101,8 @@ struct TurtleConfigV1 {
      * track-folder-status = true
      * track-file-status = true
      */
+    // see https://developer.apple.com/documentation/foundation/nsregularexpression for syntax
+    static let whitespace = "^[\\s]*$"
     static let turtleSectionRegex = "^[\\s]*\\[turtle\\][\\s]*$"
     static let turtleMonitorSectionRegex = "^[\\s]*\\[turtle-monitor(?:[\\s]+\"(.*)\")?\\][\\s]*$"
 //    static let keyValuePairRegex = "[\\s]*(.+)[\\s]*\\=\"?(.+)\"?[\\s]*"
@@ -134,9 +136,9 @@ struct TurtleConfigV1 {
         let configLines = config.filter({ $0.count > 0 }) // remove empty lines
         
         for line in configLines {
-            if line.starts(with: "#") || line.starts(with: ";") {
-                // https://git-scm.com/docs/git-config#_syntax
-                // ignore comments
+            // https://git-scm.com/docs/git-config#_syntax
+            // ignore comments and blank lines
+            if line.starts(with: "#") || line.starts(with: ";") || line.firstMatchThenGroups(for: whitespace).count == 1 {
                 continue
             }
             

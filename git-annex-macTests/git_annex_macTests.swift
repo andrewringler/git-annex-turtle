@@ -209,6 +209,17 @@ class git_annex_turtleTests: XCTestCase {
         }
     }
 
+    func testParseConfigEmpty() {
+        let config: [String] = "   \n\t\t    \n \n   ".components(separatedBy: CharacterSet.newlines)
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [])
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
+    
     func testParseConfigValid() {
         let config: [String] = """
         [turtle]
