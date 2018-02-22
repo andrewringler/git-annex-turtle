@@ -46,10 +46,10 @@ fileprivate class TurtleConfigMutableV1: CustomStringConvertible {
     init() {}
     
     func build() -> TurtleConfigV1? {
-        var repos: [TurtleConfigMonitoredRepoV1] = []
+        var repos = Set<TurtleConfigMonitoredRepoV1>()
         for repoBuilder in monitoredRepo {
             if let repo = repoBuilder.build() {
-                repos.append(repo)
+                repos.insert(repo)
             } else {
                 NSLog("Invalid repo \(repoBuilder) for config \(self)")
                 return nil
@@ -70,14 +70,13 @@ struct TurtleConfigMonitoredRepoV1 {
     let trackFolderStatus: Bool
     let trackFileStatus: Bool
 }
-extension TurtleConfigMonitoredRepoV1: Equatable {
+extension TurtleConfigMonitoredRepoV1: Equatable, Hashable {
     static func == (lhs: TurtleConfigMonitoredRepoV1, rhs: TurtleConfigMonitoredRepoV1) -> Bool {
-        return lhs.name == rhs.name &&
-        lhs.path == rhs.path &&
-        lhs.finderIntegration == rhs.finderIntegration &&
-        lhs.contextMenus == rhs.contextMenus &&
-        lhs.trackFolderStatus == rhs.trackFolderStatus &&
-        lhs.trackFileStatus == rhs.trackFileStatus
+        return lhs.path == rhs.path
+    }
+    
+    var hashValue: Int {
+        return path.hashValue
     }
 }
 
@@ -87,7 +86,7 @@ struct TurtleConfigV1 {
     let gitBin: String?
     
     // Monitored Repos Config
-    let monitoredRepo: [TurtleConfigMonitoredRepoV1]
+    let monitoredRepo: Set<TurtleConfigMonitoredRepoV1>
     
     /* Parse a config like:
      *
@@ -141,83 +140,90 @@ struct TurtleConfigV1 {
                 continue
             }
             
-            // we are still looking for the first section
+            if isTurtleSection(line) {
+                // switching sections?, save turtle monitor
+                if section == .turtleMonitor {
+                    turtleConfig.monitoredRepo.append(repo!)
+                }
+                
+                section = .turtle
+                continue
+            }
+            
+            let turtleMonitor = turtleMonitorSection(line)
+            if turtleMonitor.turtleMonitorSection {
+                // starting a new turtle monitor section?, save the old one
+                if section == .turtleMonitor {
+                    turtleConfig.monitoredRepo.append(repo!)
+                }
+                
+                section = .turtleMonitor
+                repo = TurtleConfigMonitoredRepoMutableV1()
+                repo?.name = turtleMonitor.name
+                continue
+            }
+            
+            // first non-comment line, should be a section
             if section == nil {
-                if isTurtleSection(line) {
-                    section = .turtle
-                    continue
-                }
-                
-                let turtleMonitor = turtleMonitorSection(line)
-                if turtleMonitor.turtleMonitorSection {
-                    section = .turtleMonitor
-                    repo = TurtleConfigMonitoredRepoMutableV1()
-                    repo?.name = turtleMonitor.name
-                    continue
-                }
-                
                 NSLog("Invalid config, expecting section at line: \(line) for config: \(config)")
                 return nil
-            } else {
-                // OK, looking for a key = value pair, or a new section
-                
-                // is keyValue Pair?
-                let keyValuePair = line.firstMatchThenGroups(for: keyValuePairRegex)
-                if keyValuePair.count == 3 {
-                    let key = keyValuePair[1]
-                    let value = keyValuePair[2]
-                    switch section! {
-                    case .turtle:
-                        if let name = turtleSectionKeyValueName(rawValue: key) {
-                            switch name {
-                            case .gitAnnexBin:
-                                turtleConfig.gitAnnexBin = value
-                            case .gitBin:
-                                turtleConfig.gitBin = value
-                            }
-                            continue
+            }
+
+            // looking for a key = value pair
+            let keyValuePair = line.firstMatchThenGroups(for: keyValuePairRegex)
+            if keyValuePair.count == 3 {
+                let key = keyValuePair[1]
+                let value = keyValuePair[2]
+                switch section! {
+                case .turtle:
+                    if let name = turtleSectionKeyValueName(rawValue: key) {
+                        switch name {
+                        case .gitAnnexBin:
+                            turtleConfig.gitAnnexBin = value
+                        case .gitBin:
+                            turtleConfig.gitBin = value
                         }
-                        NSLog("Invalid key = value pair for [turtle] section at line: \(line) for config: \(config)")
-                        return nil
-                    case .turtleMonitor:
-                        if let name = turtleSectionMonitorKeyValueName(rawValue: key) {
-                            do {
-                                switch name {
-                                case .path:
-                                    repo?.path = value
-                                case .finderIntegration:
-                                    repo?.finderIntegration = try Bool(value)
-                                case .contextMenus:
-                                    repo?.contextMenus = try Bool(value)
-                                case .trackFolderStatus:
-                                    repo?.trackFolderStatus = try Bool(value)
-                                case .trackFileStatus:
-                                    repo?.trackFileStatus = try Bool(value)
-                                }
-                            } catch {
-                                NSLog("Invalid key = value pair at line: \(line) for config: \(config)")
-                                return nil
-                            }
-                            continue
-                        }
-                        NSLog("Invalid key = value pair for [turtle-monitor] section at line: \(line) for config: \(config)")
-                        return nil
+                        continue
                     }
-                    
-                    NSLog("Unknown attribute name at line: \(line) for config: \(config)")
+                    NSLog("Invalid key = value pair for [turtle] section at line: \(line) for config: \(config)")
+                    return nil
+                case .turtleMonitor:
+                    if let name = turtleSectionMonitorKeyValueName(rawValue: key) {
+                        do {
+                            switch name {
+                            case .path:
+                                repo?.path = value
+                            case .finderIntegration:
+                                repo?.finderIntegration = try Bool(value)
+                            case .contextMenus:
+                                repo?.contextMenus = try Bool(value)
+                            case .trackFolderStatus:
+                                repo?.trackFolderStatus = try Bool(value)
+                            case .trackFileStatus:
+                                repo?.trackFileStatus = try Bool(value)
+                            }
+                        } catch {
+                            NSLog("Invalid key = value pair at line: \(line) for config: \(config)")
+                            return nil
+                        }
+                        continue
+                    }
+                    NSLog("Invalid key = value pair for [turtle-monitor] section at line: \(line) for config: \(config)")
                     return nil
                 }
                 
-                // is new section?
-                
-                NSLog("Invalid config, expecting key = value pair or new section for line: \(line) with config: \(config)")
+                NSLog("Unknown attribute name at line: \(line) for config: \(config)")
                 return nil
             }
-            
-            NSLog("Invalid lines before the first section \(config)")
+                
+            NSLog("Invalid config, expecting key = value pair or new section for line: \(line) with config: \(config)")
             return nil
         }
 
+        if section == .turtleMonitor {
+            turtleConfig.monitoredRepo.append(repo!)
+        }
+        
         return turtleConfig.build()
     }
     
@@ -242,6 +248,7 @@ extension TurtleConfigV1: Equatable {
             lhs.monitoredRepo == rhs.monitoredRepo
     }
 }
+
 
 // http://samwize.com/2016/07/21/how-to-capture-multiple-groups-in-a-regex-with-swift/
 // https://stackoverflow.com/questions/27880650/swift-extract-regex-matches

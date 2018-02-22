@@ -193,6 +193,21 @@ class git_annex_turtleTests: XCTestCase {
             XCTAssertEqual(expected, actualConfig)
         }
     }
+    func testParseConfigTurtleSectionRepo() {
+        let config: [String] = """
+        [turtle-monitor]
+        path = /therepo
+        """.components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false)])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
 
     func testParseConfigValid() {
         let config: [String] = """
