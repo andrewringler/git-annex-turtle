@@ -64,7 +64,12 @@ class FullScan {
                 return
             }
 
+            // update status of all files
             updateStatusBlocking(in: watchedFolder)
+            
+            // update status of all folders in Db
+            FolderTracking.handleFolderUpdates(watchedFolders: [watchedFolder], queries: queries, gitAnnexQueries: gitAnnexQueries)
+
             break // done scanning
         }
         
@@ -74,16 +79,20 @@ class FullScan {
         sharedResource.unlock()
     }
     
-    private func enumerateAllFileChildren(relativePath: String, watchedFolder: WatchedFolder) -> Set<String> {
+    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> Set<String> {
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: relativePath, in: watchedFolder)
         
         var fileChildren = Set<String>()
         
         if isDir {
+            // Add an incomplete entry in the database, that we will clean up later
+            // once all children have been populated
+            queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: relativePath, key: nil, in: watchedFolder, isDir: true, needsUpdate: false /* UNUSED? */)
+            
             let allChildren = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: relativePath, in: watchedFolder))
             
             for child in allChildren {
-                for fileChild in enumerateAllFileChildren(relativePath: child, watchedFolder: watchedFolder) {
+                for fileChild in enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder) {
                     fileChildren.insert(fileChild)
                 }
             }
@@ -96,7 +105,7 @@ class FullScan {
     }
     
     private func updateStatusBlocking(in watchedFolder: WatchedFolder) {
-        let files = enumerateAllFileChildren(relativePath: PathUtils.CURRENT_DIR, watchedFolder: watchedFolder)
+        let files = enumerateAllFileChildrenAndQueueDirectories(relativePath: PathUtils.CURRENT_DIR, watchedFolder: watchedFolder)
         
         for file in files {
             var statusTuple: (error: Bool, pathStatus: PathStatus?)?

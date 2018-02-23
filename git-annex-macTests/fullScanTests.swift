@@ -69,6 +69,22 @@ class fullScanTests: XCTestCase {
         } else {
             XCTFail("could not retrieve status for \(file3)")
         }
+        
+        if let statusSubdirA = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
+            XCTAssertEqual(statusSubdirA.presentStatus, Present.present)
+            XCTAssertEqual(statusSubdirA.isDir, true)
+            XCTAssertEqual(statusSubdirA.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for 'subdirA'")
+        }
+        
+        if let wholeRepo = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(wholeRepo.presentStatus, Present.present)
+            XCTAssertEqual(wholeRepo.isDir, true)
+            XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for whole repo")
+        }
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {
