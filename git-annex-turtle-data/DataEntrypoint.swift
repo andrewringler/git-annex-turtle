@@ -11,24 +11,20 @@ import Cocoa
 import CoreData
 
 class DataEntrypoint {
-    let storeURL: URL
+    let persistentContainer: NSPersistentContainer
     
-    init(storeURL: URL) {
-        self.storeURL = storeURL
+    init(persistentContainer: NSPersistentContainer) {
+        self.persistentContainer = persistentContainer
     }
     
     convenience init() {
-        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
-            fatalError("Error loading model from bundle")
-        }
-        self.init(storeURL: newStoreURL)
+        self.init(persistentContainer: DataEntrypoint.createPersistentContainer())
     }
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        // https://stackoverflow.com/a/42554741/8671834
+    private static func createPersistentContainer() -> NSPersistentContainer {
         let momdName = "git_annex_turtle_data"
-        guard let model = Bundle(for: type(of: self)).url(forResource: momdName, withExtension:"momd") else {
+
+        guard let model = Bundle(identifier: "com.andrewringler.git-annex-turtle-data")?.url(forResource: momdName, withExtension:"momd") else {
             fatalError("Error loading default model from bundle")
         }
         guard let mom = NSManagedObjectModel(contentsOf: model) else {
@@ -44,10 +40,11 @@ class DataEntrypoint {
         let container = NSPersistentContainer(name: momdName, managedObjectModel: mom)
         // https://useyourloaf.com/blog/easier-core-data-setup-with-persistent-containers/
         
-//        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-//        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
-//            fatalError("Error loading model from bundle")
-//        }
+        // https://stackoverflow.com/a/42554741/8671834
+        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+        guard let storeURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
+            fatalError("Error loading model from bundle")
+        }
         let description = NSPersistentStoreDescription(url: storeURL)
         container.persistentStoreDescriptions = [description]
         
@@ -68,7 +65,7 @@ class DataEntrypoint {
             }
         })
         return container
-    }()
+    }
     
     @IBAction func saveAction(_ sender: AnyObject?) {
         // Performs the save action for the application, which is to send the save: message to the application's managed object context. Any encountered errors are presented to the user.

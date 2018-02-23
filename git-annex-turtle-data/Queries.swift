@@ -133,7 +133,7 @@ class Queries {
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+       // moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
