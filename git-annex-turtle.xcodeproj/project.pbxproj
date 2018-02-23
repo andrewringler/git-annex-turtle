@@ -755,7 +755,6 @@
 					490BCB901DE5444D00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
 						LastSwiftMigration = 0830;
-						TestTargetID = 490BCB811DE5444C00734FF4;
 					};
 					490BCB9B1DE5444D00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -1294,28 +1293,24 @@
 		490BCBA91DE5444D00734FF4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "git-annex-macTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle.app/Contents/MacOS/git-annex-turtle";
 			};
 			name = Debug;
 		};
 		490BCBAA1DE5444D00734FF4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "git-annex-macTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle.app/Contents/MacOS/git-annex-turtle";
 			};
 			name = Release;
 		};
