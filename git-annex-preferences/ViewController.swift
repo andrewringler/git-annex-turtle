@@ -65,7 +65,7 @@ class ViewController: NSViewController {
             if let chosenURL: URL = folderChooseDialog.url {
                 if let path :String = PathUtils.path(for: chosenURL) {
                     // valid git-annex folder?
-                    if let _ = GitAnnexQueries.gitGitAnnexUUID(in: path) {
+                    if appDelegate != nil, let _ = appDelegate!.gitAnnexQueries.gitGitAnnexUUID(in: path) {
                         Config().watchRepo(repo: path)
                     } else {
                         dialogInvalidGitAnnexDirectory(path: path)

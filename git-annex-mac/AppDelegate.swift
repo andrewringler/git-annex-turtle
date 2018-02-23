@@ -25,7 +25,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var menubarAnimating: Bool = false
 
     let data = DataEntrypoint()
-    
+    let gitAnnexQueries: GitAnnexQueries
+
     var handleStatusRequests: HandleStatusRequests? = nil
     var watchedFolders = Set<WatchedFolder>()
     var menuBarButton :NSStatusBarButton?
@@ -41,6 +42,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         for i in 0...16 {
            menubarIcons.append(NSImage(named:NSImage.Name(rawValue: "menubaricon-\(String(i))"))!)
         }
+        let config = Config()
+        if let gitAnnexBin = config.gitAnnexBin(), let gitBin = config.gitBin() {
+            gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: gitAnnexBin, gitCmd: gitBin)
+        } else {
+            // TODO put notice in menubar icon
+            // allow user to set paths or install
+            NSLog("Could not find binary paths for git and git-annex, quitting")
+            exit(-1)
+        }
         
         super.init()
     }
@@ -53,7 +63,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         constructMenu(watchedFolders: []) // generate an empty menu stub
         visibleFolders = VisibleFolders(data: data, app: self)
-        handleStatusRequests = HandleStatusRequests(queries: Queries(data: self.data))
+        handleStatusRequests = HandleStatusRequests(queries: Queries(data: self.data), gitAnnexQueries: gitAnnexQueries)
         
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: self)
@@ -108,7 +118,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // assume it is a valid git-annex folder and start watching it
         var newWatchedFolders = Set<WatchedFolder>()
         for watchedFolder in config.listWatchedRepos() {
-            if let uuid = GitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
+            if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
                 newWatchedFolders.insert(WatchedFolder(uuid: uuid, pathString: watchedFolder))
             } else {
                 // TODO let the user know this?
@@ -174,7 +184,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          * - add/drop for a path
          */
         if let lastGitCommit = lastGitCommitOptional {
-            var gitPaths = GitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: lastGitCommit, in: watchedFolder)
+            var gitPaths = gitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: lastGitCommit, in: watchedFolder)
             // convert relative git paths to absolute paths
 //            gitPaths = gitPaths.map { "\(watchedFolder.pathString)/\($0)" }
             paths += gitPaths
@@ -184,7 +194,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          * - location updates for file content
          */
         if let lastAnnexCommit = lastAnnexCommitOptional {
-            let keysChanged = GitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: lastAnnexCommit, in: watchedFolder)
+            let keysChanged = gitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: lastAnnexCommit, in: watchedFolder)
             let newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
             paths += newPaths
             
@@ -233,7 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
                     // Is this a Git Annex Command?
                     if commandRequest.commandType.isGitAnnex {
-                        let status = GitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             // git-annex has very nice error message, use them as-is
                             self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
@@ -245,7 +255,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     
                     // Is this a Git Command?
                     if commandRequest.commandType.isGit {
-                        let status = GitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                         } else {
@@ -278,7 +288,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 var leastCopies: UInt8?
                 var presentAll: Present?
                 let statuses = queries.childStatusesOfBlocking(parentRelativePath: folderNeedingUpdate, in: watchedFolder)
-                let children = Set(GitAnnexQueries.immediateChildrenNotIgnored(relativePath: folderNeedingUpdate, in: watchedFolder))
+                let children = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: folderNeedingUpdate, in: watchedFolder))
                 let pathsForStatuses = Set(statuses.map { $0.path })
                 
                 // We are missing database entries for this folder
@@ -346,7 +356,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // master branch (IE git files)
             // grab latest commit hash, if we don't already have one
             if !handledGitCommit.contains(for: watchedFolder) {
-                if let gitGitCommitHash = GitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder) {
+                if let gitGitCommitHash = gitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder) {
                     handledGitCommit.put(value: gitGitCommitHash, for: watchedFolder)
                 } else {
                     NSLog("Error: could not find latest commit on master branch for watchedFolder: \(watchedFolder)")
@@ -356,7 +366,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // git-annex branch (IE git-annex location tracking)
             // grab latest commit hash, if we don't already have one
             if !handledAnnexCommit.contains(for: watchedFolder) {
-                if let gitAnnexCommitHash = GitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
+                if let gitAnnexCommitHash = gitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
                     handledAnnexCommit.put(value: gitAnnexCommitHash, for: watchedFolder)
                 } else {
                     NSLog("Error: could not find latest git-annex branch commit for watchedFolder: \(watchedFolder)")

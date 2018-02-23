@@ -20,12 +20,14 @@ class Config {
             if success {
                 configFile = dataPath
             } else {
-                print("Unable to create configuration file at \(dataPath)")
+                NSLog("Unable to create configuration file at \(dataPath)")
                 exit(-1)
             }
         } else {
             configFile = dataPath
         }
+        
+        setupPaths()
     }
     
     convenience init() {
@@ -35,21 +37,46 @@ class Config {
         self.init(dataPath: "\(NSHomeDirectory())/.config/git-annex/turtle-monitor")
     }
     
+    fileprivate func setupPaths() {
+        let gitBin = self.gitBin()
+        let gitAnnexBin = self.gitAnnexBin()
+
+        if gitBin == nil {
+            if let newGitBin = GitAnnexQueries.gitBinAbsolutePath() {
+                _ = setGitBin(gitBin: newGitBin)
+            }
+        }
+        if gitAnnexBin == nil {
+            if let newGitAnnexBin = GitAnnexQueries.gitAnnexBinAbsolutePath() {
+                _ = setGitAnnexBin(gitAnnexBin: newGitAnnexBin)
+            }
+        }
+    }
+    
+    func setGitBin(gitBin: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setGitBin(gitBin))
+        }
+        NSLog("setGitBin: unable to read config")
+        return false
+    }
+    func setGitAnnexBin(gitAnnexBin: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setGitAnnexBin(gitAnnexBin))
+        }
+        NSLog("setGitAnnexBin: unable to read config")
+        return false
+    }
+    func gitBin() -> String? {
+        return readConfig()?.gitBin
+    }
+    func gitAnnexBin() -> String? {
+        return readConfig()?.gitAnnexBin
+    }
+
     func watchRepo(repo: String) -> Bool {
         if let config = readConfig() {
-            let newConfig = config.addRepo(repo)
-            let towrite = newConfig.toFileString()
-
-            let os = OutputStream(toFileAtPath: self.configFile, append: false)!
-            os.open()
-            let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
-            os.close()
-            if success == -1 {
-                NSLog("watchRepo: Unable to add repository to configuration file at \(configFile)")
-                NSLog(os.streamError!.localizedDescription)
-                return false
-            }
-            return true
+            return writeConfig(config.addRepo(repo))
         }
         NSLog("watchRepo: unable to read config")
         return false
@@ -57,19 +84,7 @@ class Config {
     
     func stopWatchingRepo(repo: String) -> Bool {
         if let config = readConfig() {
-            let newConfig = config.removeRepo(repo)
-            let towrite = newConfig.toFileString()
-            
-            let os = OutputStream(toFileAtPath: self.configFile, append: false)!
-            os.open()
-            let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
-            os.close()
-            if success == -1 {
-                NSLog("Unable to remove repository '\(repo)' to configuration file at '\(configFile)'")
-                NSLog(os.streamError!.localizedDescription)
-                return false
-            }
-            return true
+            return writeConfig(config.removeRepo(repo))
         }
         NSLog("stopWatchingRepo: unable to read config")
         return false
@@ -96,5 +111,19 @@ class Config {
         }
         NSLog("Unable to read config at \(configFile)")
         return nil
+    }
+    
+    fileprivate func writeConfig(_ newConfig: TurtleConfigV1) -> Bool {
+        let towrite = newConfig.toFileString()
+        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+        os.open()
+        let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
+        os.close()
+        if success == -1 {
+            NSLog("writeConfig: unable to write new config=\(self) to '\(configFile)'")
+            NSLog(os.streamError!.localizedDescription)
+            return false
+        }
+        return true
     }
 }

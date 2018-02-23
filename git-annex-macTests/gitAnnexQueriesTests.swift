@@ -10,17 +10,21 @@ import XCTest
 
 class gitAnnexQueriesTests: XCTestCase {
     var watchedFolder: WatchedFolder?
+    var gitAnnexQueries: GitAnnexQueries?
     
     override func setUp() {
         super.setUp()
 
+        let config = Config()
+        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
+        
         // Create git annex repo in TMP dir
         do {
             let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
             let path = PathUtils.path(for: directoryURL)!
             try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-            XCTAssertTrue(GitAnnexQueries.createRepo(at: path), "could not initialize repository at \(path)")
-            if let uuid = GitAnnexQueries.gitGitAnnexUUID(in: path) {
+            XCTAssertTrue(gitAnnexQueries!.createRepo(at: path), "could not initialize repository at \(path)")
+            if let uuid = gitAnnexQueries!.gitGitAnnexUUID(in: path) {
                 watchedFolder = WatchedFolder(uuid: uuid, pathString: path)
             } else {
                 XCTFail("could not retrieve UUID for folder \(path)")
@@ -54,11 +58,11 @@ class gitAnnexQueriesTests: XCTestCase {
             XCTFail("unable to create file in repo")
         }
         
-        let gitAddResult = GitAnnexQueries.gitAnnexCommand(for: file1Path, in: watchedFolder!.pathString, cmd: CommandString.add)
+        let gitAddResult = gitAnnexQueries!.gitAnnexCommand(for: file1Path, in: watchedFolder!.pathString, cmd: CommandString.add)
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
         
         // Path in Root
-        let children = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: PathUtils.CURRENT_DIR, in: watchedFolder!)
+        let children = gitAnnexQueries!.immediateChildrenNotIgnored(relativePath: PathUtils.CURRENT_DIR, in: watchedFolder!)
         XCTAssertEqual(Set(children), Set([file1Path]))
         
         // Nested Path
@@ -75,9 +79,9 @@ class gitAnnexQueriesTests: XCTestCase {
         catch {
             XCTFail("unable to create file in repo")
         }
-        let gitAddResult2 = GitAnnexQueries.gitAnnexCommand(for: file2Path, in: watchedFolder!.pathString, cmd: CommandString.add)
+        let gitAddResult2 = gitAnnexQueries!.gitAnnexCommand(for: file2Path, in: watchedFolder!.pathString, cmd: CommandString.add)
         if !gitAddResult2.success { XCTFail("unable to add file \(gitAddResult2.error)")}
-        let children2 = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: "ok", in: watchedFolder!)
+        let children2 = gitAnnexQueries!.immediateChildrenNotIgnored(relativePath: "ok", in: watchedFolder!)
         XCTAssertEqual(Set(children2), Set([file2Path]))
     }
 }

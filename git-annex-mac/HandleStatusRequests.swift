@@ -36,7 +36,9 @@ fileprivate class StatusRequest: CustomStringConvertible {
 class HandleStatusRequests {
     let maxConcurrentUpdatesPerWatchedFolderHighPriority = 20
     let maxConcurrentUpdatesPerWatchedFolderLowPriority = 5
+    
     let queries: Queries
+    let gitAnnexQueries: GitAnnexQueries
     
     fileprivate let lowPriorityQueue =
         DispatchQueue(label: "com.andrewringler.git-annex-mac.LowPriority", attributes: .concurrent)
@@ -70,8 +72,9 @@ class HandleStatusRequests {
         sharedResource.unlock()
     }
     
-    init(queries: Queries) {
+    init(queries: Queries, gitAnnexQueries: GitAnnexQueries) {
         self.queries = queries
+        self.gitAnnexQueries = gitAnnexQueries
         
         // High Priority
         DispatchQueue.global(qos: .background).async {
@@ -189,7 +192,7 @@ class HandleStatusRequests {
     
     private func updateStatusAsync(request r: StatusRequest, queue: DispatchQueue, limitConcurrentThreads: DispatchSemaphore) {
         queue.async {
-            let statusTuple = GitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
+            let statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
             if statusTuple.error {
                 NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
             } else if let status = statusTuple.pathStatus {
@@ -224,7 +227,7 @@ class HandleStatusRequests {
                 // lets update, it is out of date
                 if oldStatus == nil || (oldStatus?.needsUpdate ?? true) {
                     NSLog("Skipped dir, updating, \(r)")
-                    let children = GitAnnexQueries.immediateChildrenNotIgnored(relativePath: r.path, in: r.watchedFolder)
+                    let children = self.gitAnnexQueries.immediateChildrenNotIgnored(relativePath: r.path, in: r.watchedFolder)
                     NSLog("children: \(children)")
                     for child in children {
                         if let _ = self.queries.statusForPathV2Blocking(path: child, in: r.watchedFolder) {

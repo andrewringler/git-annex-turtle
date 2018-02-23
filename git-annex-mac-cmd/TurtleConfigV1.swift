@@ -162,16 +162,23 @@ struct TurtleConfigV1 {
         newMonitoredRepo.insert(TurtleConfigMonitoredRepoV1.fromPathWithDefaults(repo))
         return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: newMonitoredRepo)
     }
+    public func setGitBin(_ newGitBin: String) -> TurtleConfigV1 {
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: newGitBin, monitoredRepo: monitoredRepo)
+    }
+    public func setGitAnnexBin(_ newGitAnnexBin: String) -> TurtleConfigV1 {
+        return TurtleConfigV1(gitAnnexBin: newGitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo)
+    }
 
+    
     public func toFileString() -> String {
         var s: String = ""
         if gitBin != nil || gitAnnexBin != nil {
             s += "[\(sectionType.turtle.rawValue)]\n"
             if gitAnnexBin != nil {
-                s += "\(turtleSectionKeyValueName.gitAnnexBin) = \(gitAnnexBin!)"
+                s += "\(turtleSectionKeyValueName.gitAnnexBin.rawValue) = \(gitAnnexBin!)\n"
             }
             if gitBin != nil {
-                s += "\(turtleSectionKeyValueName.gitBin) = \(gitBin!)"
+                s += "\(turtleSectionKeyValueName.gitBin.rawValue) = \(gitBin!)\n"
             }
         }
         

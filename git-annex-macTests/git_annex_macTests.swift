@@ -304,6 +304,24 @@ class git_annex_turtleTests: XCTestCase {
         }
         XCTFail()
     }
+    func testConfigGitBin() {
+        if let configDir = createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.setGitBin(gitBin: "/usr/bin/git"))
+            XCTAssertEqual(config.gitBin(), "/usr/bin/git")
+            return
+        }
+        XCTFail()
+    }
+    func testConfigGitAnnexBin() {
+        if let configDir = createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.setGitAnnexBin(gitAnnexBin: "/usr/bin/git-annex"))
+            XCTAssertEqual(config.gitAnnexBin(), "/usr/bin/git-annex")
+            return
+        }
+        XCTFail()
+    }
 
     func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
         return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
