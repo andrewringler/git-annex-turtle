@@ -207,14 +207,12 @@ class FinderSync: FIFinderSync {
             if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
                 for obj: URL in items {
                     if let absolutePath = PathUtils.path(for: obj) {
-                        if watchedFolders.count == 1 {
-                            for watchedFolder in watchedFolders {
-                                if absolutePath.starts(with: watchedFolder.pathString) {
-                                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                                        statusOptional = statusCache.get(for: path, in: watchedFolder)
-                                    } else {
-                                        NSLog("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
-                                    }
+                        for watchedFolder in watchedFolders {
+                            if absolutePath.starts(with: watchedFolder.pathString) {
+                                if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                                    statusOptional = statusCache.get(for: path, in: watchedFolder)
+                                } else {
+                                    NSLog("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
                                 }
                             }
                         }
