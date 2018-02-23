@@ -11,6 +11,20 @@ import Cocoa
 import CoreData
 
 class DataEntrypoint {
+    let storeURL: URL
+    
+    init(storeURL: URL) {
+        self.storeURL = storeURL
+    }
+    
+    convenience init() {
+        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
+            fatalError("Error loading model from bundle")
+        }
+        self.init(storeURL: newStoreURL)
+    }
+    
     lazy var persistentContainer: NSPersistentContainer = {
         // https://stackoverflow.com/a/42554741/8671834
         let momdName = "git_annex_turtle_data"
@@ -30,11 +44,11 @@ class DataEntrypoint {
         let container = NSPersistentContainer(name: momdName, managedObjectModel: mom)
         // https://useyourloaf.com/blog/easier-core-data-setup-with-persistent-containers/
         
-        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
-            fatalError("Error loading model from bundle")
-        }
-        let description = NSPersistentStoreDescription(url: newStoreURL)
+//        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+//        guard let newStoreURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
+//            fatalError("Error loading model from bundle")
+//        }
+        let description = NSPersistentStoreDescription(url: storeURL)
         container.persistentStoreDescriptions = [description]
         
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in

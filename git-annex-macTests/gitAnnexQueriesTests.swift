@@ -9,54 +9,33 @@
 import XCTest
 
 class gitAnnexQueriesTests: XCTestCase {
+    var configDir: String?
     var watchedFolder: WatchedFolder?
     var gitAnnexQueries: GitAnnexQueries?
     
     override func setUp() {
         super.setUp()
 
-        let config = Config()
+        configDir = TestingUtil.createTmpDir()
+        let config = Config(dataPath: "\(configDir!)/turtle-monitor")
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
         
         // Create git annex repo in TMP dir
-        do {
-            let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
-            let path = PathUtils.path(for: directoryURL)!
-            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-            XCTAssertTrue(gitAnnexQueries!.createRepo(at: path), "could not initialize repository at \(path)")
-            if let uuid = gitAnnexQueries!.gitGitAnnexUUID(in: path) {
-                watchedFolder = WatchedFolder(uuid: uuid, pathString: path)
-            } else {
-                XCTFail("could not retrieve UUID for folder \(path)")
-            }
-        } catch {
-            XCTFail("unable to create a new git annex repo in temp folder \(error)")
-        }
+        let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
+        let path = PathUtils.path(for: directoryURL)!
+        
+        watchedFolder = TestingUtil.createInitGitAnnexRepo(at: path, gitAnnexQueries: gitAnnexQueries!)!
     }
     
     override func tearDown() {
         super.tearDown()
         
-        // Remove tmp dir
-        if let path = watchedFolder?.pathString {
-            let directory = PathUtils.urlFor(absolutePath: path)
-            do {
-                try FileManager.default.removeItem(at: directory)
-            } catch {
-                NSLog("Unable to cleanup folder after tests \(path)")
-            }
-        }
+        TestingUtil.removeDir(configDir)
     }
 
     func testChildren() {
         let file1Path = "a.txt"
-        let file1 = PathUtils.url(for: file1Path, in: watchedFolder!)
-        do {
-            try "some text".write(to: file1, atomically: false, encoding: .utf8)
-        }
-        catch {
-            XCTFail("unable to create file in repo")
-        }
+        TestingUtil.writeToFile(content: "some text", to: file1Path, in: watchedFolder!)
         
         let gitAddResult = gitAnnexQueries!.gitAnnexCommand(for: file1Path, in: watchedFolder!.pathString, cmd: CommandString.add)
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
@@ -65,20 +44,11 @@ class gitAnnexQueriesTests: XCTestCase {
         let children = gitAnnexQueries!.immediateChildrenNotIgnored(relativePath: PathUtils.CURRENT_DIR, in: watchedFolder!)
         XCTAssertEqual(Set(children), Set([file1Path]))
         
-        // Nested Path
-        do {
-            try FileManager.default.createDirectory(at: PathUtils.url(for: "ok", in: watchedFolder!), withIntermediateDirectories: true, attributes: nil)
-        } catch {
-            NSLog("Unable to create new directory 'ok' in \(watchedFolder)")
-        }
+        TestingUtil.createDir(dir: "ok", in: watchedFolder!) // nested path
+        
         let file2Path = "ok/b.txt"
-        let file2 = PathUtils.url(for: file2Path, in: watchedFolder!)
-        do {
-            try "some text again".write(to: file2, atomically: false, encoding: .utf8)
-        }
-        catch {
-            XCTFail("unable to create file in repo")
-        }
+        TestingUtil.writeToFile(content: "some text again", to: file2Path, in: watchedFolder!)
+
         let gitAddResult2 = gitAnnexQueries!.gitAnnexCommand(for: file2Path, in: watchedFolder!.pathString, cmd: CommandString.add)
         if !gitAddResult2.success { XCTFail("unable to add file \(gitAddResult2.error)")}
         let children2 = gitAnnexQueries!.immediateChildrenNotIgnored(relativePath: "ok", in: watchedFolder!)

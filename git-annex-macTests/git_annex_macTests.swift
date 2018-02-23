@@ -255,7 +255,7 @@ class git_annex_turtleTests: XCTestCase {
     }
     
     func testConfigEmpty() {
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
           let config = Config(dataPath: "\(configDir)/turtle-monitor")
           XCTAssertEqual(config.dataPath, "\(configDir)/turtle-monitor")
           return
@@ -264,7 +264,7 @@ class git_annex_turtleTests: XCTestCase {
     }
     func testConfigWatchRepo() {
         let repo = "/anewrepo"
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.watchRepo(repo: repo))
             XCTAssertEqual(config.listWatchedRepos(), [repo])
@@ -276,7 +276,7 @@ class git_annex_turtleTests: XCTestCase {
         let repo1 = "/anewrepo"
         let repo2 = "/anewrepo2"
         
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.watchRepo(repo: repo1))
             XCTAssertTrue(config.watchRepo(repo: repo2))
@@ -290,7 +290,7 @@ class git_annex_turtleTests: XCTestCase {
         let repo1 = "/anewrepo"
         let repo2 = "/anewrepo2"
         
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.watchRepo(repo: repo1))
             XCTAssertTrue(config.watchRepo(repo: repo2))
@@ -305,7 +305,7 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigGitBin() {
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.setGitBin(gitBin: "/usr/bin/git"))
             XCTAssertEqual(config.gitBin(), "/usr/bin/git")
@@ -314,7 +314,7 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigGitAnnexBin() {
-        if let configDir = createTmpDir() {
+        if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.setGitAnnexBin(gitAnnexBin: "/usr/bin/git-annex"))
             XCTAssertEqual(config.gitAnnexBin(), "/usr/bin/git-annex")
@@ -325,19 +325,5 @@ class git_annex_turtleTests: XCTestCase {
 
     func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
         return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
-    }
-    func createTmpDir() -> String? {
-        do {
-            let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
-            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-            if let path = PathUtils.path(for: directoryURL) {
-                return path
-            }
-        } catch {
-            XCTFail("unable to create a new temp folder \(error)")
-            return nil
-        }
-        XCTFail("unable to create a new temp folder")
-        return nil
     }
 }
