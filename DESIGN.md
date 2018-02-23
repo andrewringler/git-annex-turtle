@@ -24,9 +24,11 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 ## TODO
  * deploy to github
  * get tests running on https://travis-ci.org/
- * Menu should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
- * replace hard-coded absolute paths to git-annex installation with more graceful solution, probably should save user's path location in git-watch config, let them override, but automatically detect from ~/.bash_profile, and/or paths, see https://askubuntu.com/questions/59126/reload-bashs-profile-without-logging-out-and-back-in-again, https://stackoverflow.com/questions/41535451/how-to-access-the-terminals-path-variable-from-within-my-mac-app-it-seems-to
+ * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
+ * Menubar window should show list of remote transfers 
  * save latest commit hashes in Db, start where we left off on restarts
+ * let user view/set git and git-annex binary paths from GUI
+ * let user view/set per repo git-annex-turtle settings from GUI
  * Test with Assistant
  * Test with v6 repos
  * Test with git annex watch
