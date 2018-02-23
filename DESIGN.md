@@ -22,6 +22,7 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
+ * re design full-scan, workflow, simplify, not working well on large repos
  * deploy to github
  * get tests running on https://travis-ci.org/
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
