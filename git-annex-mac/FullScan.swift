@@ -38,6 +38,8 @@ class FullScan {
     func stopFullScan(watchedFolder: WatchedFolder) {
         guard running else { return }
 
+        NSLog("Stopping full scan for \(watchedFolder)")
+        
         sharedResource.lock()
         scanning.remove(watchedFolder)
         sharedResource.unlock()
@@ -53,23 +55,51 @@ class FullScan {
         return ret
     }
     
+    public func shouldStop(_ watchedFolder: WatchedFolder) -> Bool {
+        var shouldStop = false
+        sharedResource.lock()
+        shouldStop = !scanning.contains(watchedFolder)
+        sharedResource.unlock()
+        return shouldStop
+    }
+    
     private func scan(_ watchedFolder: WatchedFolder) {
         while running {
-            // Stop requested for our repo?
-            var shouldStop = false
-            sharedResource.lock()
-            shouldStop = !scanning.contains(watchedFolder)
-            sharedResource.unlock()
-            if shouldStop {
-                return
-            }
-
-            // update status of all files
-            updateStatusBlocking(in: watchedFolder)
+            // Store the current git commit hashes before starting our full scan
+            // so we can perform incremental scans, from this point
+            // IE, we only want to ever do a full scan one time per repo
             
-            // update status of all folders in Db
-            FolderTracking.handleFolderUpdates(watchedFolders: [watchedFolder], queries: queries, gitAnnexQueries: gitAnnexQueries)
+            // OK to be nil
+            let gitGitCommitHash = gitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder)
 
+            // git annex init creates 1+ commits in the git-annex branch
+            // so there should always be at least one git annex commit
+            if let gitAnnexCommitHash = gitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
+                NSLog("Starting full scan for \(watchedFolder)")
+                
+                // update status of all files
+                if !updateStatusBlocking(in: watchedFolder) {
+                    NSLog("Stop requested. Stopped scanning early for \(watchedFolder)")
+                    break
+                }
+                
+                // update status of all folders in Db for this repo
+                if !FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, fullScan: self) {
+                    NSLog("Stop requested. Stopped scanning early for \(watchedFolder)")
+                    break
+                }
+                
+                // OK, we have completed a full scan successfully, store the git and git-annex
+                // commit hashes we saved off before the scan, so we can continue performing
+                // incremental updates for this repo
+                queries.updateLatestHandledCommit(gitCommitHash: gitGitCommitHash, gitAnnexCommitHash: gitAnnexCommitHash, in: watchedFolder)
+                
+                NSLog("Completed full scan for \(watchedFolder)")
+            } else {
+                NSLog("Could not find any commits on the git-annex branch, this should not happen, stopping full scan for \(watchedFolder)")
+                break
+            }
+            
             break // done scanning
         }
         
@@ -79,7 +109,11 @@ class FullScan {
         sharedResource.unlock()
     }
     
-    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> Set<String> {
+    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> (success: Bool, children: Set<String>) {
+        if shouldStop(watchedFolder) {
+            return (success: false, children: Set<String>())
+        }
+        
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: relativePath, in: watchedFolder)
         
         var fileChildren = Set<String>()
@@ -92,8 +126,14 @@ class FullScan {
             let allChildren = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: relativePath, in: watchedFolder))
             
             for child in allChildren {
-                for fileChild in enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder) {
-                    fileChildren.insert(fileChild)
+                let childrenForChild = enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder)
+                
+                if childrenForChild.success {
+                    for fileChild in childrenForChild.children {
+                        fileChildren.insert(fileChild)
+                    }
+                } else {
+                    return (success: false, children: Set<String>())
                 }
             }
         } else {
@@ -101,13 +141,21 @@ class FullScan {
             fileChildren.insert(relativePath)
         }
         
-        return fileChildren
+        return (success: true, children: fileChildren)
     }
     
-    private func updateStatusBlocking(in watchedFolder: WatchedFolder) {
-        let files = enumerateAllFileChildrenAndQueueDirectories(relativePath: PathUtils.CURRENT_DIR, watchedFolder: watchedFolder)
+    private func updateStatusBlocking(in watchedFolder: WatchedFolder) -> Bool {
+        let allFileChildren = enumerateAllFileChildrenAndQueueDirectories(relativePath: PathUtils.CURRENT_DIR, watchedFolder: watchedFolder)
         
-        for file in files {
+        if !allFileChildren.success {
+            return false // terminated early
+        }
+        
+        for file in allFileChildren.children {
+            if shouldStop(watchedFolder) {
+                return false
+            }
+            
             var statusTuple: (error: Bool, pathStatus: PathStatus?)?
             if (Thread.isMainThread) {
                 statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
@@ -129,6 +177,8 @@ class FullScan {
                 NSLog("FullScan, error trying to get status for '\(file)' in \(watchedFolder) \(statusTuple?.error ?? nil)")
             }
         }
+        
+        return true // completed successfully
     }
     
     deinit {

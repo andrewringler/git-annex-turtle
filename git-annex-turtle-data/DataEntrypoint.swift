@@ -11,20 +11,22 @@ import Cocoa
 import CoreData
 
 class DataEntrypoint {
-    let persistentContainer: NSPersistentContainer
+    lazy var persistentContainer: NSPersistentContainer = {
+       return DataEntrypoint.createPersistentContainer()
+    }()
     
     init(persistentContainer: NSPersistentContainer) {
         self.persistentContainer = persistentContainer
     }
     
-    convenience init() {
-        self.init(persistentContainer: DataEntrypoint.createPersistentContainer())
+    init() {
+        // nothing to do
     }
     
     private static func createPersistentContainer() -> NSPersistentContainer {
         let momdName = "git_annex_turtle_data"
 
-        guard let model = Bundle(identifier: "com.andrewringler.git-annex-turtle-data")?.url(forResource: momdName, withExtension:"momd") else {
+        guard let model = Bundle(for: DataEntrypoint.self).url(forResource: momdName, withExtension:"momd") else {
             fatalError("Error loading default model from bundle")
         }
         guard let mom = NSManagedObjectModel(contentsOf: model) else {

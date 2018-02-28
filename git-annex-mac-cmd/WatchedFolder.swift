@@ -11,6 +11,11 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     let uuid: UUID
     let pathString: String
     
+    private enum CodingKeys: String, CodingKey {
+        case uuid
+        case pathString
+    }
+    
     init(uuid: UUID, pathString: String) {
         self.uuid = uuid
         self.pathString = pathString

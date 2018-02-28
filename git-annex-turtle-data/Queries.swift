@@ -10,6 +10,14 @@
 import Cocoa
 import CoreData
 
+let HandledCommitEntityName = "HandledCommitEntity"
+enum HandledCommitAttributes: String {
+    case watchedFolderUUIDString = "watchedFolderUUIDString"
+    case gitAnnexCommitHash = "gitAnnexCommitHash"
+    case gitCommitHash = "gitCommitHash"
+}
+let NO_COMMIT_HASH = "-"
+
 let PathStatusEntityName = "PathStatusEntity"
 enum PathStatusAttributes: String {
     case watchedFolderUUIDString = "watchedFolderUUIDString"
@@ -133,7 +141,7 @@ class Queries {
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-       // moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
 
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
@@ -141,7 +149,7 @@ class Queries {
             do {
                 // insert or update
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == %@", path)
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString.rawValue) == %@ && \(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@", path, watchedFolder.uuid.uuidString)
                 let pathStatuses = try privateMOC.fetch(fetchRequest)
                 var entry: NSManagedObject? = nil
                 if pathStatuses.count > 0 {
@@ -789,6 +797,83 @@ class Queries {
         }
     }
     
+    func updateLatestHandledCommit(gitCommitHash: String?, gitAnnexCommitHash: String?, in watchedFolder: WatchedFolder) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        let gitCommitHashDb = gitCommitHash != nil ? gitCommitHash! : NO_COMMIT_HASH
+        let gitAnnexCommitHashDb = gitAnnexCommitHash != nil ? gitAnnexCommitHash! : NO_COMMIT_HASH
+
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: HandledCommitEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(HandledCommitAttributes.watchedFolderUUIDString.rawValue) == %@", watchedFolder.uuid.uuidString)
+
+                let results = try privateMOC.fetch(fetchRequest)
+                if results.count > 0, let result = results.first  {
+                    result.setValue(gitCommitHashDb, forKeyPath: HandledCommitAttributes.gitCommitHash.rawValue)
+                    result.setValue(gitAnnexCommitHashDb, forKeyPath: HandledCommitAttributes.gitAnnexCommitHash.rawValue)
+                } else if results.count == 0 {
+                    // Add new record
+                    if let entity = NSEntityDescription.entity(forEntityName: HandledCommitEntityName, in: privateMOC) {
+                        let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                        
+                        newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: HandledCommitAttributes.watchedFolderUUIDString.rawValue)
+                        newPathRow.setValue(gitCommitHashDb, forKeyPath: HandledCommitAttributes.gitCommitHash.rawValue)
+                        newPathRow.setValue(gitAnnexCommitHashDb, forKeyPath: HandledCommitAttributes.gitAnnexCommitHash.rawValue)
+                    } else {
+                        NSLog("Could not create entity for \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)' in \(watchedFolder)")
+                    }
+                } else {
+                    NSLog("Error, invalid results from fetch results='\(results)' \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)'")
+                }
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("Failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("Failure to save private context: \(error)")
+            }
+        }
+    }
+    
+    func getLatestCommits(for watchedFolder: WatchedFolder) -> (gitCommitHash: String?, gitAnnexCommitHash: String?) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        
+        var ret: (gitCommitHash: String?, gitAnnexCommitHash: String?) = (gitCommitHash: nil, gitAnnexCommitHash: nil)
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: HandledCommitEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(HandledCommitAttributes.watchedFolderUUIDString.rawValue) == %@", watchedFolder.uuid.uuidString)
+                
+                let results = try privateMOC.fetch(fetchRequest)
+                if results.count > 0, let result = results.first,
+                    let gitCommitHash = result.value(forKeyPath: HandledCommitAttributes.gitCommitHash.rawValue) as? String,
+                    let gitAnnexCommitHash = result.value(forKeyPath: HandledCommitAttributes.gitAnnexCommitHash.rawValue) as? String
+                {
+                    let gitCommitHashOptional: String? = gitCommitHash != NO_COMMIT_HASH ? gitCommitHash : nil
+                    let gitAnnexCommitHashOptional: String? = gitAnnexCommitHash != NO_COMMIT_HASH ? gitAnnexCommitHash : nil
+                    ret = (gitCommitHash: gitCommitHashOptional, gitAnnexCommitHash: gitAnnexCommitHashOptional)
+                }
+            } catch {
+                fatalError("Failure to get results private context: \(error)")
+            }
+        }
+        
+        return ret
+    }
+    
     func invalidateDirectory(path: String, in watchedFolder: WatchedFolder) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -802,7 +887,7 @@ class Queries {
                 if results.count > 0, let result = results.first  {
                     result.setValue(NSNumber(value: true), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
                 } else {
-                    NSLog("invalidateDirectory: Error, invalid results from fetch '\(results)'")
+                    NSLog("invalidateDirectory: unable to update entry for path=\(path) in \(watchedFolder) ")
                 }
                 
                 try privateMOC.save()

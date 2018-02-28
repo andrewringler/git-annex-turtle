@@ -9,6 +9,7 @@
 import Foundation
 
 class GitAnnexQueries {
+    public static let NO_GIT_COMMITS = "NO GIT COMMIT YET"
     let gitCmd: String
     let gitAnnexCmd: String
     

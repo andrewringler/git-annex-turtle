@@ -6,6 +6,16 @@
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
+    <entity name="HandledCommitEntity" representedClassName="HandledCommitEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="gitAnnexCommitHash" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="gitCommitHash" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="watchedFolderUUIDString"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
     <entity name="PathRequestEntity" representedClassName="PathRequestEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
@@ -64,5 +74,6 @@
         <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
         <element name="VisibleFoldersEntity" positionX="-54" positionY="36" width="128" height="75"/>
         <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>
+        <element name="HandledCommitEntity" positionX="-54" positionY="63" width="128" height="90"/>
     </elements>
 </model>
