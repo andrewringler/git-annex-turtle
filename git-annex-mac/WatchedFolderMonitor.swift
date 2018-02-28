@@ -10,7 +10,7 @@ import Foundation
 
 class WatchedFolderMonitor {
     let watchedFolder: WatchedFolder
-    public let fileMonitor: Witness
+    let fileMonitor: Witness
     
     init(watchedFolder: WatchedFolder, app: AppDelegate) {
         self.watchedFolder = watchedFolder

@@ -36,10 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferencesWindow: NSWindow? = nil
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
-    var testWatch: Witness? = nil
     var visibleFolders: VisibleFolders? = nil
-//    var handledGitCommit = WatchedFolderToCommitHash()
-//    var handledAnnexCommit = WatchedFolderToCommitHash()
 
     override init() {
         for i in 0...16 {
@@ -94,6 +91,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
+        // Badge requests
+//        DispatchQueue.global(qos: .background).async {
+//            while true {
+//                self.handleBadgeRequests()
+//                usleep(100000)
+//            }
+//        }
+        
         // Main loop
         DispatchQueue.global(qos: .background).async {
             while true {
@@ -102,7 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // Handle folder updates, for any folder that is not doing a full scan
                 for watchedFolder in self.watchedFolders {
                     if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
-                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries, fullScan: self.fullScan)
+                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries, fullScan: nil)
                     }
                 }
 
@@ -129,11 +134,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
                 
-                // TODO add back in
-                // do we need to handle badge requests separately?
-                // send these as high priority?
-//                self.handleBadgeRequests()
-                
                 usleep(100000)
             }
         }
@@ -156,11 +156,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0.1) { events in
             updateListOfWatchedFoldersDebounce()
         }
-        
-        // TODO experiment
-//        testWatch = Witness(paths: ["/Users/Shared/anotherremote"], flags: .FileEvents, latency: 0.1) { events in
-//            NSLog("Got some events for anotherremote \(events)")
-//        }
     }
     
     // Start a full scan for any folder with no git annex commit information

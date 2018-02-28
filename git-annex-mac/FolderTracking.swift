@@ -15,7 +15,7 @@ class FolderTracking {
     // a folder is ready to display badge icons
     // once all of its children have their data computed
     //
-    public static func handleFolderUpdates(watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries, fullScan: FullScan) -> Bool {
+    public static func handleFolderUpdates(watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries, fullScan: FullScan?) -> Bool {
         let foldersNeedingUpdates = queries.foldersIncompleteOrInvalidBlocking(in: watchedFolder)
         
         /* For each folder that needs updating, lets
@@ -28,7 +28,7 @@ class FolderTracking {
             $0 != PathUtils.CURRENT_DIR ||
             count("/", in: $0) > count("/", in: $1) }
         for folderNeedingUpdate in sortedByLongestPath {
-            if fullScan.shouldStop(watchedFolder) {
+            if fullScan?.shouldStop(watchedFolder) ?? false {
                 return false
             }
             
@@ -55,7 +55,7 @@ class FolderTracking {
             if childrenWithoutEntries.count > 0 {
                 NSLog("Children of folder has changed \(folderNeedingUpdate) in \(watchedFolder) missing \(childrenWithoutEntries)")
                 for child in childrenWithoutEntries {
-                    if fullScan.shouldStop(watchedFolder) {
+                    if fullScan?.shouldStop(watchedFolder) ?? false {
                         return false
                     }
 
