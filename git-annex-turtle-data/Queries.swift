@@ -102,47 +102,47 @@ class Queries {
     // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
     // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/Concurrency.html
     
-//    func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder:
-//        WatchedFolder) {
-//        let moc = data.persistentContainer.viewContext
-//        moc.stalenessInterval = 0
-//
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            do {
-//                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
-//                let pathStatuses = try privateMOC.fetch(fetchRequest)
-//                if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
-//                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
-//                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
-//                } else {
-//                    NSLog("Error, more than one record for path='\(path)'")
-//                }
-//
-//                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
-//
-//                try privateMOC.save()
-//                moc.performAndWait {
-//                    do {
-//                        try moc.save()
-//                    } catch {
-//                        fatalError("Failure to save main context: \(error)")
-//                    }
-//                }
-//            } catch {
-//                fatalError("Failure to save private context: \(error)")
-//            }
-//        }
-//    }
+    //    func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder:
+    //        WatchedFolder) {
+    //        let moc = data.persistentContainer.viewContext
+    //        moc.stalenessInterval = 0
+    //
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            do {
+    //                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
+    //                let pathStatuses = try privateMOC.fetch(fetchRequest)
+    //                if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
+    //                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
+    //                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+    //                } else {
+    //                    NSLog("Error, more than one record for path='\(path)'")
+    //                }
+    //
+    //                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+    //
+    //                try privateMOC.save()
+    //                moc.performAndWait {
+    //                    do {
+    //                        try moc.save()
+    //                    } catch {
+    //                        fatalError("Failure to save main context: \(error)")
+    //                    }
+    //                }
+    //            } catch {
+    //                fatalError("Failure to save private context: \(error)")
+    //            }
+    //        }
+    //    }
     
     func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -199,11 +199,63 @@ class Queries {
         }
     }
     
+    // Skip checks to see if path is already in DB since this
+    // is triggered from a fullscan, assume we have no entries
+    func updateStatusForPathV2BatchBlocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for paths: [String], key: String?, in watchedFolder:
+        WatchedFolder, isDir: Bool, needsUpdate: Bool) -> Bool {
+        var success = true
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                for path in paths {
+                    if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: privateMOC) {
+                        let pathStatus = NSManagedObject(entity: entity, insertInto: privateMOC)
+                        pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+                        
+                        pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
+                        pathStatus.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
+                        pathStatus.setValue(enoughCopies?.rawValue, forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue)
+                        pathStatus.setValue(numberOfCopiesAsDouble(from: numberOfCopies), forKeyPath: PathStatusAttributes.numberOfCopies.rawValue)
+                        pathStatus.setValue(presentStatus?.rawValue, forKeyPath: PathStatusAttributes.presentStatus.rawValue)
+                        pathStatus.setValue(NSNumber(value: isGitAnnexTracked), forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue)
+                        pathStatus.setValue(key, forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue)
+                        pathStatus.setValue(NSNumber(value: isDir), forKeyPath: PathStatusAttributes.isDir.rawValue)
+                        pathStatus.setValue(NSNumber(value: needsUpdate), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
+                        let parent = PathUtils.parent(for: path, in: watchedFolder)
+                        pathStatus.setValue(parent, forKeyPath: PathStatusAttributes.parentPath.rawValue)
+                    } else {
+                        NSLog("updateStatusForPathV2Blocking: Could not create entity for \(PathStatusEntityName)")
+                        success = false
+                        return
+                    }
+                }
+                
+                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+                
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                    } catch {
+                        fatalError("updateStatusForPathV2Blocking: Failure to save main context: \(error)")
+                    }
+                }
+            } catch {
+                fatalError("updateStatusForPathV2Blocking: Failure to save private context: \(error)")
+            }
+        }
+        return success
+    }
+    
     func addRequestV2Async(for path: String, in watchedFolder: WatchedFolder) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.perform {
@@ -248,7 +300,7 @@ class Queries {
                         let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
                         let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
                         let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
-                        {
+                    {
                         
                         // optional properties
                         let key = status.value(forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue) as? String
@@ -256,7 +308,7 @@ class Queries {
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                            ret = PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate)
+                        ret = PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate)
                     } else {
                         NSLog("statusForPathV2Blocking: unable to fetch entry for status=\(status)")
                     }
@@ -269,29 +321,29 @@ class Queries {
         return ret
     }
     
-//    func statusForPathBlocking(path: String) -> Status? {
-//        var ret: Status?
-//
-//        let moc = data.persistentContainer.viewContext
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//                if let firstStatus = statuses.first {
-//                    if let statusString = firstStatus.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String {
-//                        ret = Status.status(from: statusString)
-//                    }
-//                }
-//            } catch {
-//                fatalError("Failure fetch statuses: \(error)")
-//            }
-//        }
-//
-//        return ret
-//    }
+    //    func statusForPathBlocking(path: String) -> Status? {
+    //        var ret: Status?
+    //
+    //        let moc = data.persistentContainer.viewContext
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
+    //            do {
+    //                let statuses = try privateMOC.fetch(fetchRequest)
+    //                if let firstStatus = statuses.first {
+    //                    if let statusString = firstStatus.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String {
+    //                        ret = Status.status(from: statusString)
+    //                    }
+    //                }
+    //            } catch {
+    //                fatalError("Failure fetch statuses: \(error)")
+    //            }
+    //        }
+    //
+    //        return ret
+    //    }
     
     func allPathRequestsV2Blocking(in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
@@ -335,33 +387,33 @@ class Queries {
         return paths
     }
     
-//    func allPathsOlderThanBlocking(in watchedFolder: WatchedFolder, secondsOld: Double) -> [String] {
-//        var paths: [String] = []
-//
-//        let moc = data.persistentContainer.viewContext
-//        moc.stalenessInterval = 0
-//
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            let olderThan: Double = (Date().timeIntervalSince1970 as Double) - secondsOld
-//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.modificationDate) <= \(olderThan)")
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//
-//                for status in statuses {
-//                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-//                        paths.append(pathString)
-//                    }
-//                }
-//            } catch let error as NSError {
-//                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
-//            }
-//        }
-//
-//        return paths
-//    }
+    //    func allPathsOlderThanBlocking(in watchedFolder: WatchedFolder, secondsOld: Double) -> [String] {
+    //        var paths: [String] = []
+    //
+    //        let moc = data.persistentContainer.viewContext
+    //        moc.stalenessInterval = 0
+    //
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //            let olderThan: Double = (Date().timeIntervalSince1970 as Double) - secondsOld
+    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.modificationDate) <= \(olderThan)")
+    //            do {
+    //                let statuses = try privateMOC.fetch(fetchRequest)
+    //
+    //                for status in statuses {
+    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
+    //                        paths.append(pathString)
+    //                    }
+    //                }
+    //            } catch let error as NSError {
+    //                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
+    //            }
+    //        }
+    //
+    //        return paths
+    //    }
     
     func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
         var paths: [PathStatus] = []
@@ -430,33 +482,33 @@ class Queries {
         return paths
     }
     
-//    func foldersThatNeedUpdatesBlocking(in watchedFolder: WatchedFolder) -> [String] {
-//        var paths: [String] = []
-//
-//        let moc = data.persistentContainer.viewContext
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true))")
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//                for status in statuses {
-//                    // required properties
-//                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String
-//                    {
-//                        paths.append(path)
-//                    } else {
-//                        NSLog("foldersThatNeedUpdatesBlocking: unable to fetch entry for status=\(status)")
-//                    }
-//                }
-//            } catch {
-//                fatalError("foldersThatNeedUpdatesBlocking: Failure fetch statuses: \(error)")
-//            }
-//        }
-//
-//        return paths
-//    }
+    //    func foldersThatNeedUpdatesBlocking(in watchedFolder: WatchedFolder) -> [String] {
+    //        var paths: [String] = []
+    //
+    //        let moc = data.persistentContainer.viewContext
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true))")
+    //            do {
+    //                let statuses = try privateMOC.fetch(fetchRequest)
+    //                for status in statuses {
+    //                    // required properties
+    //                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String
+    //                    {
+    //                        paths.append(path)
+    //                    } else {
+    //                        NSLog("foldersThatNeedUpdatesBlocking: unable to fetch entry for status=\(status)")
+    //                    }
+    //                }
+    //            } catch {
+    //                fatalError("foldersThatNeedUpdatesBlocking: Failure fetch statuses: \(error)")
+    //            }
+    //        }
+    //
+    //        return paths
+    //    }
     
     func childStatusesOfBlocking(parentRelativePath: String, in watchedFolder: WatchedFolder) -> [PathStatus] {
         var paths: [PathStatus] = []
@@ -476,15 +528,15 @@ class Queries {
                         let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
                         let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
                         let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
-                        {
-
+                    {
+                        
                         // optional properties
                         let key = status.value(forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue) as? String
                         let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
                         let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
                         let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
                         
-                            paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
+                        paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
                     } else {
                         NSLog("childStatusesOf: unable to fetch entry for status=\(status)")
                     }
@@ -511,7 +563,7 @@ class Queries {
                 for result in results {
                     // required properties
                     if let path = result.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String {
-
+                        
                         paths.append(path)
                     } else {
                         NSLog("allNonTrackedPathsBlocking: unable to parse result in \(watchedFolder)")
@@ -565,67 +617,67 @@ class Queries {
         return paths
     }
     
-//    func allNonRequestStatusesBlocking(in watchedFolder: WatchedFolder) -> [(path: String, status: String)] {
-//        var paths: [(path: String, status: String)] = []
-//
-//        let moc = data.persistentContainer.viewContext
-//        moc.stalenessInterval = 0
-//
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) != '\(Status.request.rawValue)'")
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//
-//                for status in statuses {
-//                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String,
-//                        let statusString = status.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String
-//                    {
-//                        paths.append((path: pathString, status: statusString))
-//                    } else {
-//                        NSLog("Could not retrieve path and status for entity '\(status)'")
-//                    }
-//                }
-//            } catch let error as NSError {
-//                NSLog("Could not fetch allNonRequestStatuses. \(error), \(error.userInfo)")
-//            }
-//        }
-//
-//        return paths
-//    }
+    //    func allNonRequestStatusesBlocking(in watchedFolder: WatchedFolder) -> [(path: String, status: String)] {
+    //        var paths: [(path: String, status: String)] = []
+    //
+    //        let moc = data.persistentContainer.viewContext
+    //        moc.stalenessInterval = 0
+    //
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) != '\(Status.request.rawValue)'")
+    //            do {
+    //                let statuses = try privateMOC.fetch(fetchRequest)
+    //
+    //                for status in statuses {
+    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String,
+    //                        let statusString = status.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String
+    //                    {
+    //                        paths.append((path: pathString, status: statusString))
+    //                    } else {
+    //                        NSLog("Could not retrieve path and status for entity '\(status)'")
+    //                    }
+    //                }
+    //            } catch let error as NSError {
+    //                NSLog("Could not fetch allNonRequestStatuses. \(error), \(error.userInfo)")
+    //            }
+    //        }
+    //
+    //        return paths
+    //    }
     
-//    func allStatusesBlocking() -> [String] {
-//        var ret: [String] = []
-//
-//        let moc = data.persistentContainer.viewContext
-//        moc.stalenessInterval = 0
-//
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//
-//                for status in statuses {
-//                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-//                        ret.append(pathString)
-//                    }
-//                }
-//            } catch let error as NSError {
-//                NSLog("Could not fetch. \(error), \(error.userInfo)")
-//            }
-//        }
-//
-//        return ret
-//    }
+    //    func allStatusesBlocking() -> [String] {
+    //        var ret: [String] = []
+    //
+    //        let moc = data.persistentContainer.viewContext
+    //        moc.stalenessInterval = 0
+    //
+    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    //        privateMOC.parent = moc
+    //        privateMOC.performAndWait {
+    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+    //            do {
+    //                let statuses = try privateMOC.fetch(fetchRequest)
+    //
+    //                for status in statuses {
+    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
+    //                        ret.append(pathString)
+    //                    }
+    //                }
+    //            } catch let error as NSError {
+    //                NSLog("Could not fetch. \(error), \(error.userInfo)")
+    //            }
+    //        }
+    //
+    //        return ret
+    //    }
     
     func updateWatchedFoldersBlocking(to newListOfWatchedFolders: [WatchedFolder]) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -704,7 +756,7 @@ class Queries {
         
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -803,14 +855,14 @@ class Queries {
         
         let gitCommitHashDb = gitCommitHash != nil ? gitCommitHash! : NO_COMMIT_HASH
         let gitAnnexCommitHashDb = gitAnnexCommitHash != nil ? gitAnnexCommitHash! : NO_COMMIT_HASH
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
             do {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: HandledCommitEntityName)
                 fetchRequest.predicate = NSPredicate(format: "\(HandledCommitAttributes.watchedFolderUUIDString.rawValue) == %@", watchedFolder.uuid.uuidString)
-
+                
                 let results = try privateMOC.fetch(fetchRequest)
                 if results.count > 0, let result = results.first  {
                     result.setValue(gitCommitHashDb, forKeyPath: HandledCommitAttributes.gitCommitHash.rawValue)
@@ -903,7 +955,7 @@ class Queries {
             }
         }
     }
-
+    
     func submitCommandRequest(for path: String, in watchedFolder: WatchedFolder, commandType: CommandType, commandString: CommandString) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -919,7 +971,7 @@ class Queries {
                     newPathRow.setValue(commandString.rawValue, forKeyPath: CommandRequestsAttributes.commandString.rawValue)
                     newPathRow.setValue(commandType.rawValue, forKeyPath: CommandRequestsAttributes.commandType.rawValue)
                     newPathRow.setValue(path, forKeyPath: CommandRequestsAttributes.pathString.rawValue)
-
+                    
                 } else {
                     NSLog("Could not create entity for \(PathStatusEntityName)")
                 }
@@ -985,7 +1037,7 @@ class Queries {
         
         return ret
     }
-
+    
     func removeVisibleFolderAsync(for path: String) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -1045,7 +1097,7 @@ class Queries {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-
+        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
         privateMOC.parent = moc

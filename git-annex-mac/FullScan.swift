@@ -110,75 +110,114 @@ class FullScan {
         sharedResource.unlock()
     }
     
-    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> (success: Bool, children: Set<String>) {
-        if shouldStop(watchedFolder) {
-            return (success: false, children: Set<String>())
-        }
-        
-        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: relativePath, in: watchedFolder)
-        
-        var fileChildren = Set<String>()
-        
-        if isDir {
-            // Add an incomplete entry in the database, that we will clean up later
-            // once all children have been populated
-            queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: relativePath, key: nil, in: watchedFolder, isDir: true, needsUpdate: false /* UNUSED? */)
-            
-            let allChildren = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: relativePath, in: watchedFolder))
-            
-            for child in allChildren {
-                let childrenForChild = enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder)
-                
-                if childrenForChild.success {
-                    for fileChild in childrenForChild.children {
-                        fileChildren.insert(fileChild)
-                    }
-                } else {
-                    return (success: false, children: Set<String>())
-                }
-            }
-        } else {
-            // file
-            fileChildren.insert(relativePath)
-        }
-        
-        return (success: true, children: fileChildren)
-    }
-    
+//    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> (success: Bool, children: (files: Set<String>, dirs: Set<String>)) {
+//        if shouldStop(watchedFolder) {
+//        return (success: false, children: (files: Set<String>(), dirs: Set<String>()))
+//        }
+//
+//        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: relativePath, in: watchedFolder)
+//
+//        var fileChildren = Set<String>()
+//        var dirChildren = Set<String>()
+//
+//        if isDir {
+//            // Dir
+//            dirChildren.insert(relativePath)
+//            let allChildren = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: relativePath, in: watchedFolder))
+//
+//            for child in allChildren {
+//                let childrenForChild = enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder)
+//
+//                if childrenForChild.success {
+//                    childrenForChild.children.files.forEach { fileChildren.insert($0) }
+//                    childrenForChild.children.dirs.forEach { dirChildren.insert($0) }
+//                } else {
+//                    return (success: false, children: (files: Set<String>(), dirs: Set<String>()))
+//                }
+//            }
+//        } else {
+//            // File
+//            fileChildren.insert(relativePath)
+//        }
+//
+//        return (success: true, children: (files: fileChildren, dirs: dirChildren))
+//    }
+   
     private func updateStatusBlocking(in watchedFolder: WatchedFolder) -> Bool {
-        let allFileChildren = enumerateAllFileChildrenAndQueueDirectories(relativePath: PathUtils.CURRENT_DIR, watchedFolder: watchedFolder)
-        
-        if !allFileChildren.success {
-            return false // terminated early
+        let allChildren = PathUtils.children(in: watchedFolder)        
+
+        //
+        // Directories
+        //
+        // we don't need to scan directories, just add an empty record in the database
+        // so its status information can be filled in as his children are filled in
+        //
+        // chunks: https://stackoverflow.com/a/38156873/8671834
+        //
+        let dirs = Array(allChildren.dirs)
+        let chunkSize = 1000
+        let chunks: [[String]] = stride(from: 0, to: dirs.count, by: chunkSize).map {
+            let end = dirs.endIndex
+            let chunkEnd = dirs.index($0, offsetBy: chunkSize, limitedBy: end) ?? end
+            return Array(dirs[$0..<chunkEnd])
         }
-        
-        for file in allFileChildren.children {
+        for chunk in chunks {
             if shouldStop(watchedFolder) {
                 return false
             }
             
-            var statusTuple: (error: Bool, pathStatus: PathStatus?)?
-            if (Thread.isMainThread) {
-                statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
-            } else {
-                DispatchQueue.main.sync {
-                    statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
-                }
-            }
-            
-            if statusTuple?.error == false, let status = statusTuple?.pathStatus {
-                if (Thread.isMainThread) {
-                    self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-                } else {
-                    DispatchQueue.main.sync {
-                        self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-                    }
-                }
-            } else {
-                NSLog("FullScan, error trying to get status for '\(file)' in \(watchedFolder) \(statusTuple?.error ?? nil)")
+            if queries.updateStatusForPathV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: chunk, key: nil, in: watchedFolder, isDir: true, needsUpdate: false /* UNUSED? */) == false {
+                return false
             }
         }
         
+        
+        //
+        // Files
+        //
+        // calculate git-annex status information for each file
+        //
+        let updateStatusQueue =
+            DispatchQueue(label: "com.andrewringler.git-annex-mac.FullScanUpdateStatusQueue-\(watchedFolder.uuid.uuidString)", attributes: .concurrent)
+        let maxConcurrency = DispatchSemaphore(value: 100)
+        let processingOfAllChildrenGroup = DispatchGroup()
+        
+        for file in allChildren.files {
+            if shouldStop(watchedFolder) {
+                return false
+            }
+            
+            maxConcurrency.wait()
+            processingOfAllChildrenGroup.enter()
+            updateStatusQueue.async {
+                var statusTuple: (error: Bool, pathStatus: PathStatus?)?
+                if (Thread.isMainThread) {
+                    statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
+                } else {
+                    DispatchQueue.main.sync {
+                        statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
+                    }
+                }
+                
+                if statusTuple?.error == false, let status = statusTuple?.pathStatus {
+                    if (Thread.isMainThread) {
+                        self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
+                    } else {
+                        DispatchQueue.main.sync {
+                            self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
+                        }
+                    }
+                } else {
+                    let error: String = String(statusTuple?.error ?? false)
+                    NSLog("FullScan, error trying to get status for '\(file)' in \(watchedFolder) \(error)")
+                }
+                
+                processingOfAllChildrenGroup.leave()
+                maxConcurrency.signal()
+            }
+        }
+        
+        processingOfAllChildrenGroup.wait() // wait for all asynchronous status updates to complete
         return true // completed successfully
     }
     

@@ -12,6 +12,7 @@ class fullScanTests: XCTestCase {
     var fullScan: FullScan?
     var testDir: String?
     var repo1: WatchedFolder?
+    var repo2: WatchedFolder?
     var queries: Queries?
     var gitAnnexQueries: GitAnnexQueries?
     
@@ -30,6 +31,7 @@ class fullScanTests: XCTestCase {
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
+        repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)
     }
     
     override func tearDown() {
@@ -39,6 +41,9 @@ class fullScanTests: XCTestCase {
     }
 
     func testFullScan() {
+        //
+        // Repo 1
+        //
         let file1 = "a.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
@@ -49,11 +54,23 @@ class fullScanTests: XCTestCase {
         TestingUtil.createDir(dir: "subdirA", in: repo1!)
         TestingUtil.gitAnnexCreateAndAdd(content: "file3 content", to: file3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
+        //
+        // Repo 2
+        //
+        let file4 = "a.txt"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file4 content", to: file4, in: repo2!, gitAnnexQueries: gitAnnexQueries!)
+        let file5 = "b.txt"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file5 content", to: file5, in: repo2!, gitAnnexQueries: gitAnnexQueries!)
+        
+        // Start a full scan on both repos
         fullScan!.startFullScan(watchedFolder: repo1!)
+        fullScan!.startFullScan(watchedFolder: repo2!)
+        
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)
         waitForExpectations(timeout: 30, handler: nil)
-        
+
+        // Repo 1
         if let status1 = queries!.statusForPathV2Blocking(path: file1, in: repo1!) {
             XCTAssertEqual(status1.presentStatus, Present.present)
         } else {
@@ -83,7 +100,27 @@ class fullScanTests: XCTestCase {
             XCTAssertEqual(wholeRepo.isDir, true)
             XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
         } else {
-            XCTFail("could not retrieve folder status for whole repo")
+            XCTFail("could not retrieve folder status for whole repo1")
+        }
+        
+        
+        // Repo 2
+        if let status4 = queries!.statusForPathV2Blocking(path: file4, in: repo2!) {
+            XCTAssertEqual(status4.presentStatus, Present.present)
+        } else {
+            XCTFail("could not retrieve status for \(file4)")
+        }
+        if let status5 = queries!.statusForPathV2Blocking(path: file5, in: repo2!) {
+            XCTAssertEqual(status5.presentStatus, Present.present)
+        } else {
+            XCTFail("could not retrieve status for \(file5)")
+        }
+        if let wholeRepo = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo2!) {
+            XCTAssertEqual(wholeRepo.presentStatus, Present.present)
+            XCTAssertEqual(wholeRepo.isDir, true)
+            XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for whole repo2")
         }
     }
     
@@ -94,5 +131,6 @@ class fullScanTests: XCTestCase {
     
     func doneScanning() -> Bool {
         return fullScan!.isScanning(watchedFolder: repo1!) == false
+        && fullScan!.isScanning(watchedFolder: repo2!) == false
     }
 }

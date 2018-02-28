@@ -478,7 +478,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DispatchQueue.main.async {
             let menu = NSMenu()
             
-            menu.addItem(NSMenuItem(title: "git-annex-turtle is observing:", action: nil, keyEquivalent: ""))
+            menu.addItem(NSMenuItem(title: "git-annex-turtle is monitoring:", action: nil, keyEquivalent: ""))
             if watchedFolders.count > 0 {
                 for watching in watchedFolders {
                     var watchingStringTruncated = watching.pathString

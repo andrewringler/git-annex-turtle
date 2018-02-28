@@ -229,23 +229,56 @@ class PathUtils {
         return PathUtils.relativePath(for: url, in: watchedFolder)
     }
     
-//    class func children(for relativePath: String, in watchedFolder: WatchedFolder) -> [String] {
-//        do {
-//            let absolutePath = self.absolutePath(for: relativePath, in: watchedFolder)
-//            return try FileManager.default.contentsOfDirectory(atPath: absolutePath).map {
-//                // we want relative paths, always relative to our watched folder
-//                // assume passed in relativePath already has this property
-//                if relativePath == CURRENT_DIR {
-//                    return $0
+    class func children(in watchedFolder: WatchedFolder) -> (files: [String], dirs: [String]) {
+        var files: [String] = []
+        var dirs: [String] = []
+//        let url = urlFor(absolutePath: watchedFolder.pathString)
+//        if let dirEnumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [URLResourceKey.isDirectoryKey, URLResourceKey.pathKey, URLResourceKey.nameKey], options: [], errorHandler: { (url, error) -> Bool in
+//            return  }) {
+//            for file in dirEnumerator {
+//                if let fileURL = file as? URL {
+//                    if let path = PathUtils.relativePath(for: fileURL, in: watchedFolder) {
+//                        if !path.starts(with: ".git/") /* ignore root level git directory */ {
+//                            if fileURL.hasDirectoryPath {
+//                                dirs.append(path)
+//                            } else {
+//                                files.append(path)
+//                            }
+//                        }
+//                    }
 //                }
-//                return "\(relativePath)/\($0)"
 //            }
-//        } catch {
-//            NSLog("Unable to retrieve child files for \(relativePath) in \(watchedFolder) \(error)")
+//        } else {
+//            NSLog("directoryEnumerator error at \(url) \(error)")
 //        }
-//        
-//        return []
-//    }
+        do {
+            for path in try FileManager.default.subpathsOfDirectory(atPath: watchedFolder.pathString) {
+                if path != ".git" && !path.starts(with: ".git/") /* ignore root level git directory */ {
+                    if PathUtils.directoryExistsAt(relativePath: path, in: watchedFolder) {
+                        dirs.append(path)
+                    } else {
+                        files.append(path)
+                    }
+                }
+            }
+            dirs.append(CURRENT_DIR)
+        } catch {
+            NSLog("Unable to enumerate files in \(watchedFolder)")
+        }
+        
+        return (files: files, dirs: dirs)
+    }
+    
+    // https://gist.github.com/brennanMKE/a0a2ee6aa5a2e2e66297c580c4df0d66
+    private class func directoryExistsAt(absolutePath: String) -> Bool {
+        var isDirectory = ObjCBool(true)
+        let exists = FileManager.default.fileExists(atPath: absolutePath, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
+    }
+    class func directoryExistsAt(relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+        let absolutePath = self.absolutePath(for: relativePath, in: watchedFolder)
+        return PathUtils.directoryExistsAt(absolutePath: absolutePath)
+    }
 }
 
 enum CommandType: String {
