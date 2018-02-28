@@ -38,10 +38,11 @@ class FullScan {
     func stopFullScan(watchedFolder: WatchedFolder) {
         guard running else { return }
 
-        NSLog("Stopping full scan for \(watchedFolder)")
-        
         sharedResource.lock()
-        scanning.remove(watchedFolder)
+        if scanning.contains(watchedFolder) {
+            NSLog("Stopping full scan for \(watchedFolder)")
+            scanning.remove(watchedFolder)
+        }
         sharedResource.unlock()
     }
 

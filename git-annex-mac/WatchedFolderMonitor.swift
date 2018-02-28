@@ -10,25 +10,23 @@ import Foundation
 
 class WatchedFolderMonitor {
     let watchedFolder: WatchedFolder
-    let fileMonitor: Witness
+    public let fileMonitor: Witness
     
     init(watchedFolder: WatchedFolder, app: AppDelegate) {
         self.watchedFolder = watchedFolder
         let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
         let checkForGitAnnexUpdatesDebounce = debounce2(delay: .milliseconds(120), queue: queue, action: app.checkForGitAnnexUpdates)
+
+        let watchPath = "\(watchedFolder.pathString)"
+        NSLog("Setting up file system watch for '\(watchPath)'")
         
-//        let watchPath = "\(watchedFolder.pathString)"
-        NSLog("Setting up file system watch for \(watchedFolder.pathString)")
-        fileMonitor = Witness(paths: [watchedFolder.pathString], flags: .FileEvents, latency: 0.1) { events
+        fileMonitor = Witness(paths: [watchPath], flags: .FileEvents, latency: 0.1) { events
             in
             var shouldUpdate = false
             for event in events {
                 if event.path.contains(".git/annex/misctmp") ||
                     event.path.contains(".git/annex/mergedrefs") ||
                     event.path.contains(".git/annex/tmp")
-//                if event.path.contains("./git/annex/misctmp") ||
-//                    event.path.contains("./git/annex/mergedrefs") ||
-//                    event.path.contains("./git/annex/tmp")
                 {
                     // ignore, these can change just by read-only querying git-annex
                 } else {

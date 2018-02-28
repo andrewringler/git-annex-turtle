@@ -36,6 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var preferencesWindow: NSWindow? = nil
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
+    var testWatch: Witness? = nil
     var visibleFolders: VisibleFolders? = nil
 //    var handledGitCommit = WatchedFolderToCommitHash()
 //    var handledAnnexCommit = WatchedFolderToCommitHash()
@@ -114,7 +115,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let handledCommits = self.queries.getLatestCommits(for: watchedFolder)
                     if handledCommits.gitAnnexCommitHash != nil, (self.fileSystemMonitors.filter{ $0.watchedFolder == watchedFolder }).count == 0 {
                         // Setup filesystem watch
-                        self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                        // must happen on main thread for Apple File System Events API to work
+                        if (Thread.isMainThread) {
+                            self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                        } else {
+                            DispatchQueue.main.sync {
+                                self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                            }
+                        }
                         
                         // Look for updates now, in case we have missed some, while setting up this watch
                         self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 0)
@@ -148,6 +156,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0.1) { events in
             updateListOfWatchedFoldersDebounce()
         }
+        
+        // TODO experiment
+//        testWatch = Witness(paths: ["/Users/Shared/anotherremote"], flags: .FileEvents, latency: 0.1) { events in
+//            NSLog("Got some events for anotherremote \(events)")
+//        }
     }
     
     // Start a full scan for any folder with no git annex commit information
