@@ -191,22 +191,10 @@ class FullScan {
             processingOfAllChildrenGroup.enter()
             updateStatusQueue.async {
                 var statusTuple: (error: Bool, pathStatus: PathStatus?)?
-                if (Thread.isMainThread) {
-                    statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
-                } else {
-                    DispatchQueue.main.sync {
-                        statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
-                    }
-                }
+                statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
                 
                 if statusTuple?.error == false, let status = statusTuple?.pathStatus {
-                    if (Thread.isMainThread) {
-                        self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-                    } else {
-                        DispatchQueue.main.sync {
-                            self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-                        }
-                    }
+                    self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
                 } else {
                     let error: String = String(statusTuple?.error ?? false)
                     NSLog("FullScan, error trying to get status for '\(file)' in \(watchedFolder) \(error)")
