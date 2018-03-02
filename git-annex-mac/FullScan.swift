@@ -179,7 +179,7 @@ class FullScan {
         //
         let updateStatusQueue =
             DispatchQueue(label: "com.andrewringler.git-annex-mac.FullScanUpdateStatusQueue-\(watchedFolder.uuid.uuidString)", attributes: .concurrent)
-        let maxConcurrency = DispatchSemaphore(value: 100)
+        let maxConcurrency = DispatchSemaphore(value: 10)
         let processingOfAllChildrenGroup = DispatchGroup()
         
         for file in allChildren.files {

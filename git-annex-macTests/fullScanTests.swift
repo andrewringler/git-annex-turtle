@@ -124,6 +124,44 @@ class fullScanTests: XCTestCase {
         }
     }
     
+    // 10 files     6.44 seconds
+    // 100 files    46.75 seconds
+    // 1000 files   509.81 seconds
+    func testLargeRepoPerformance() {
+        let numFiles = 1000
+        for i in 1...numFiles {
+            let file = "file-\(i).txt"
+            TestingUtil.gitAnnexCreateAndAdd(content: "\(file) content", to: file, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+
+        }
+        
+        let startTime = Date()
+        fullScan!.startFullScan(watchedFolder: repo1!)
+        
+        let done = NSPredicate(format: "doneScanning == true")
+        expectation(for: done, evaluatedWith: self, handler: nil)
+        waitForExpectations(timeout: 3000, handler: nil)
+        NSLog("Full scan took \(Date().timeIntervalSince(startTime)) seconds.")
+        
+        // Repo 1
+        for i in 1...numFiles {
+            let file = "file-\(i).txt"
+            if let status = queries!.statusForPathV2Blocking(path: file, in: repo1!) {
+                XCTAssertEqual(status.presentStatus, Present.present)
+            } else {
+                XCTFail("could not retrieve status for \(file)")
+            }
+        }
+        
+        if let wholeRepo = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(wholeRepo.presentStatus, Present.present)
+            XCTAssertEqual(wholeRepo.isDir, true)
+            XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for whole repo1")
+        }
+    }
+    
     lazy var managedObjectModel: NSManagedObjectModel = {
         let managedObjectModel = NSManagedObjectModel.mergedModel(from: [Bundle(for: type(of: self))] )!
         return managedObjectModel
