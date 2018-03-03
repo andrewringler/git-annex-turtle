@@ -165,10 +165,34 @@ enum GitAnnexJSON: String {
     case note = "note"
     case whereis = "whereis"
     case key = "key"
+    case here = "here"
 }
 
 class PathUtils {
     public static let CURRENT_DIR = "."
+    
+    // https://gist.github.com/jweinst1/319e0cd35213e8eff0ab
+    //counts a specific letter in a string
+    class func count(_ char:Character, in str:String) -> Int {
+        let letters = Array(str); var count = 0
+        for letter in letters {
+            if letter == char {
+                count += 1
+            }
+        }
+        return count
+    }
+
+    class func sortedDeepestDirFirst(_ paths: [String]) -> [String] {
+        return paths.sorted {
+            if $0 == PathUtils.CURRENT_DIR {
+                return false
+            }
+            if $1 == PathUtils.CURRENT_DIR {
+                return true
+            }
+            return count("/", in: $0) > count("/", in: $1) }
+    }
     
     class func isCurrent(_ path: String) -> Bool {
         return path == CURRENT_DIR
@@ -194,6 +218,32 @@ class PathUtils {
             return relativePath(for: path, in: watchedFolder)
         }
         return nil
+    }
+    
+    class func createTmpDir() -> String? {
+        do {
+            let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
+            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+            if let path = PathUtils.path(for: directoryURL) {
+                return path
+            }
+        } catch {
+            NSLog("unable to create a new temp folder \(error)")
+            return nil
+        }
+        NSLog("unable to create a new temp folder")
+        return nil
+    }
+    
+    class func removeDir(_ absolutePath: String?) {
+        if let path = absolutePath {
+            let directory = PathUtils.urlFor(absolutePath: path)
+            do {
+                try FileManager.default.removeItem(at: directory)
+            } catch {
+                NSLog("Unable to cleanup folder \(path)")
+            }
+        }
     }
     
     class func relativePath(for absolutePath: String, in watchedFolder: WatchedFolder) -> String? {
@@ -295,4 +345,7 @@ enum CommandString: String {
     case unlock = "unlock"
     case lock = "lock"
     case initCmd = "init"
+    case numCopies = "numcopies"
 }
+
+

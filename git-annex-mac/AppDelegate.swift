@@ -107,7 +107,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // Handle folder updates, for any folder that is not doing a full scan
                 for watchedFolder in self.watchedFolders {
                     if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
-                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries, fullScan: nil)
+                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries)
                     }
                 }
 

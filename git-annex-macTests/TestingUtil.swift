@@ -67,6 +67,49 @@ class TestingUtil {
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
     }
     
+    static let maxThreads = 20
+    class func createAndAddFiles(numFiles: Int, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) -> [String] {
+        // create subfolders
+        createDir(dir: "a", in: watchedFolder)
+        createDir(dir: "b", in: watchedFolder)
+        createDir(dir: "c", in: watchedFolder)
+        
+        // enumate file names
+        let files: [String] = Array(1...numFiles).map {
+            let folder: String = {
+                switch $0 % 4 {
+                case 0:
+                    return "a/"
+                case 1:
+                    return "b/"
+                case 2:
+                    return "c/"
+                default:
+                    return "" // root
+                }
+            }($0)
+            return "\(folder)file-\($0).txt"
+        }
+        let queue = DispatchQueue(label: "com.andrewringler.git-annexmac.testing-\(watchedFolder.uuid.uuidString)", attributes: .concurrent)
+        let maxConcurrency = DispatchSemaphore(value: maxThreads)
+        let group = DispatchGroup()
+        
+        for file in files {
+            maxConcurrency.wait()
+            group.enter()
+            queue.async {
+                writeToFile(content: "\(file) content", to: file, in: watchedFolder)
+                group.leave()
+                maxConcurrency.signal()
+            }
+        }
+        
+        group.wait()
+        gitAnnexAdd(file: ".", in: watchedFolder, gitAnnexQueries: gitAnnexQueries)
+        
+        return files
+    }
+    
     class func gitAnnexCreateAndAdd(content: String, to fileName: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) {
         writeToFile(content: content, to: fileName, in: watchedFolder)
         gitAnnexAdd(file: fileName, in: watchedFolder, gitAnnexQueries: gitAnnexQueries)

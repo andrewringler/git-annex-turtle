@@ -18,10 +18,6 @@ class GitAnnexQueries {
         self.gitCmd = gitCmd
     }
     
-    // also see paths at https://stackoverflow.com/questions/41535451/how-to-access-the-terminals-path-variable-from-within-my-mac-app-it-seems-to
-//    static let GIT_CMD = "/Applications/git-annex.app/Contents/MacOS/git"
-//    static let GITANNEX_CMD = "/Applications/git-annex.app/Contents/MacOS/git-annex"
-    
     // TODO one queue per repository?
     //    static let gitAnnexQueryQueue = DispatchQueue(label: "com.andrewringler.git-annex-mac.shellcommandqueue")
     
@@ -54,25 +50,25 @@ class GitAnnexQueries {
             return ret
         }
         
-        let task = Process()
-        task.launchPath = cmd
-        task.currentDirectoryPath = workingDirectory
-        task.arguments = args
+//        let task = Process()
+//        task.launchPath = cmd
+//        task.currentDirectoryPath = workingDirectory
+//        task.arguments = args
         
         // TODO wrap commands in a shell (that is likely to exist) to avoid uncatchable errors
         // IE if workingDirectory does not exist we cannot catch that error
         // uncatchable runtime exceptions
         // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
-        //            let task = Process()
-        //            task.launchPath = "/bin/bash"
-        //            task.currentDirectoryPath = workingDirectory
-        //            var bashCmd :[String] = [cmd]
-        //            for arg: String in args {
-        //                bashCmd.append(arg)
-        //            }
-        //            let bashCmdString: String = "cd '" + workingDirectory + "';" +
-        //            let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
-        //            task.arguments = bashArgs
+        let task = Process()
+        task.launchPath = "/bin/bash"
+        task.currentDirectoryPath = workingDirectory
+        var bashCmd :[String] = [cmd]
+        for arg: String in args {
+            bashCmd.append(arg)
+        }
+//        let bashCmdString: String = "cd '" + workingDirectory + "';" +
+        let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
+        task.arguments = bashArgs
         //            NSLog("How does this look? %@", bashArgs)
         
         let outpipe = Pipe()
@@ -160,7 +156,7 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue, path)
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue, "\"\(path)\"")
         let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
         
         if status != 0 {
@@ -173,7 +169,7 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue, path)
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue, "\"\(path)\"")
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         
         if status != 0 {
@@ -222,6 +218,86 @@ class GitAnnexQueries {
         }
         return nil
     }
+    
+    func gitAnnexSetNumCopies(numCopies: Int, in watchedFolder: WatchedFolder) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        return gitAnnexCommand(for: String(numCopies), in: watchedFolder.pathString, cmd: .numCopies)
+    }
+    
+    func gitAnnexAllFilesLackingCopies(in watchedFolder: WatchedFolder) -> Set<String>? {
+        if let dir = PathUtils.createTmpDir() {
+            let file = "allfileslackingcopies.txt"
+            let resultsFileAbsolutePath = "\(dir)/\(file)"
+            
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, args: "find", "--fast", "--lackingcopies=1", ">\"\(resultsFileAbsolutePath)\"")
+            
+            if status == 0 {
+                // TODO use a trie
+                var allFilesLackingCopies = Set<String>()
+                let s = StreamReader(url: PathUtils.urlFor(absolutePath: resultsFileAbsolutePath))
+                while let line = s?.nextLine() {
+                    allFilesLackingCopies.insert(line)
+                }
+                PathUtils.removeDir(dir)
+                return allFilesLackingCopies
+            } else {
+                NSLog("error gitAnnexAllFilesLackingCopies, watchedFolder in \(watchedFolder)")
+                NSLog("status: %@", String(status))
+                NSLog("output: %@", output)
+                NSLog("error: %@", error)
+            }
+        }
+        NSLog("Error: gitAnnexAllFilesLackingCopies, could not create temporary directory")
+        return nil
+    }
+
+    func gitAnnexWhereisAllFiles(in watchedFolder: WatchedFolder) -> String? {
+        if let dir = PathUtils.createTmpDir() {
+            let file = "whereisallfiles.json"
+            let resultsFileAbsolutePath = "\(dir)/\(file)"
+            
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", ".", ">\"\(resultsFileAbsolutePath)\"")
+
+            if status == 0 {
+                return resultsFileAbsolutePath
+            } else {
+                NSLog("watchedFolder in \(watchedFolder)")
+                NSLog("status: %@", String(status))
+                NSLog("output: %@", output)
+                NSLog("error: %@", error)
+            }
+        }
+        return nil
+    }
+    
+    func parseWhereis(for line: String, in watchedFolder: WatchedFolder, modificationDate: Double, filesWithCopiesLacking: Set<String>) -> PathStatus? {
+        do {
+            let data: Data = (line as NSString).data(using: String.Encoding.utf8.rawValue)!
+            let json = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
+            
+            if let dictionary = json as? [String: Any] {
+                if let success = dictionary[GitAnnexJSON.success.rawValue] as? Bool,
+                    success == true,
+                    let file = dictionary[GitAnnexJSON.file.rawValue] as? String,
+                    let key = dictionary[GitAnnexJSON.key.rawValue] as? String,
+                    let whereis = dictionary[GitAnnexJSON.whereis.rawValue] as? [[String: Any]] {
+                    let numberOfCopies = UInt8(whereis.count)
+                    let lackingCopies = filesWithCopiesLacking.contains(file)
+                    // at least one whereis entry should have a here:true entry
+                    let present: Bool = whereis.reduce(false, { a, b in a || b[GitAnnexJSON.here.rawValue] as? Bool ?? false})
+                    let presentStatus = present ? Present.present : Present.absent
+                    let enoughCopies = lackingCopies ?? true ? EnoughCopies.lacking : EnoughCopies.enough
+                    
+                    return PathStatus(isDir: false, isGitAnnexTracked: true, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: file, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: false)
+                }
+            }
+        } catch {
+            NSLog("Error parseWhereis: could not figure out a status given line = '\(line)' for \(watchedFolder) \(error)")
+            return nil
+        }
+        NSLog("Error parseWhereis: could not figure out a status given line = '\(line)' for \(watchedFolder)")
+        return nil
+    }
+    
     func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         NSLog("git-annex info \(path)")
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
@@ -237,7 +313,7 @@ class GitAnnexQueries {
             }
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", args: "--json", "--fast", "info", path)
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "info", "\"\(path)\"")
         
         if status != 0 {
             NSLog("gitAnnexPathInfo for path='\(path)' in='\(workingDirectory)'")
@@ -338,7 +414,7 @@ class GitAnnexQueries {
      * contained within the directory
      */
     func gitAnnexNumberOfCopies(for path: String, in workingDirectory: String) -> UInt8? {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", path)
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", "\"\(path)\"")
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
@@ -394,7 +470,7 @@ class GitAnnexQueries {
      * this can be slow, guard when you call this on directories
      */
     func gitAnnexLackingCopies(for path: String, in workingDirectory: String) -> Bool? {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "--lackingcopies=1", "find", path)
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "--lackingcopies=1", "find", "\"\(path)\"")
         
         // if command didnt return an error, count the lines returned
         if(status == 0){

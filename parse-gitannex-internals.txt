@@ -79,3 +79,18 @@ git annex calckey <filename>
 equals a known key, then the content has not yet changed, so we can use whatever
 value is in the database, maybe…? although this would be out of date after a sync
 so perhaps we need to then do
+
+
+
+====== other perf
+Storing whereis data for 63701 files is fairly quick
+
+$ time git annex whereis --json --fast > /tmp/allfiles.txt
+
+real	11m4.866s
+user	8m52.124s
+sys	2m1.407s
+$ cat /tmp/allfiles.txt | wc -l
+   63701
+$ ls -lah /tmp/allfiles.txt 
+-rw-r--r--  1 andrew  wheel    55M Mar  2 14:20 /tmp/allfiles.txt

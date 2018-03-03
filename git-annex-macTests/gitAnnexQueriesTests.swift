@@ -54,4 +54,18 @@ class gitAnnexQueriesTests: XCTestCase {
         let children2 = gitAnnexQueries!.immediateChildrenNotIgnored(relativePath: "ok", in: watchedFolder!)
         XCTAssertEqual(Set(children2), Set([file2Path]))
     }
+    
+    func testGitAnnexAllFilesLackingCopiesLacking() {
+        TestingUtil.gitAnnexCreateAndAdd(content: "hello", to: "file1.txt", in: watchedFolder!, gitAnnexQueries: gitAnnexQueries!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "hello again", to: "file2.txt", in: watchedFolder!, gitAnnexQueries: gitAnnexQueries!)
+        gitAnnexQueries!.gitAnnexCommand(for: "2", in: watchedFolder!.pathString, cmd: .numCopies)
+        let filesLackingCopies = gitAnnexQueries!.gitAnnexAllFilesLackingCopies(in: watchedFolder!)
+        XCTAssertEqual(filesLackingCopies, Set(["file1.txt", "file2.txt"]))
+    }
+    func testGitAnnexAllFilesLackingCopiesNotLacking() {
+        TestingUtil.gitAnnexCreateAndAdd(content: "hello", to: "file1.txt", in: watchedFolder!, gitAnnexQueries: gitAnnexQueries!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "hello again", to: "file2.txt", in: watchedFolder!, gitAnnexQueries: gitAnnexQueries!)
+        let filesLackingCopies = gitAnnexQueries!.gitAnnexAllFilesLackingCopies(in: watchedFolder!)
+        XCTAssertEqual(filesLackingCopies, [])
+    }
 }

@@ -38,6 +38,10 @@
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="presentStatus" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderUUIDString" optional="YES" attributeType="String" syncable="YES"/>
+        <fetchIndex name="folderUpdates">
+            <fetchIndexElement property="parentPath" type="Binary" order="ascending"/>
+            <fetchIndexElement property="watchedFolderUUIDString" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="pathString"/>
@@ -69,11 +73,11 @@
     </entity>
     <elements>
         <element name="CommandRequestsEntity" positionX="-45" positionY="27" width="128" height="105"/>
+        <element name="HandledCommitEntity" positionX="-54" positionY="63" width="128" height="90"/>
         <element name="PathRequestEntity" positionX="-45" positionY="63" width="128" height="75"/>
         <element name="PathStatusEntity" positionX="-63" positionY="-18" width="128" height="210"/>
         <element name="UpdatesEntity" positionX="-63" positionY="9" width="128" height="60"/>
         <element name="VisibleFoldersEntity" positionX="-54" positionY="36" width="128" height="75"/>
         <element name="WatchedFolderEntity" positionX="-63" positionY="9" width="128" height="75"/>
-        <element name="HandledCommitEntity" positionX="-54" positionY="63" width="128" height="90"/>
     </elements>
 </model>

@@ -323,6 +323,16 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
 
+    func testSortedByLongestPath() {
+        let paths = ["a/a/b", "a", ".", "d/e", "a/b/c/d"]
+        let sorted = PathUtils.sortedDeepestDirFirst(paths)
+        XCTAssertEqual(sorted, ["a/b/c/d", "a/a/b", "d/e", "a", "."])
+        
+        let paths2 = [".", "a", "d/e", "a/b/c/d", "a/a/b"]
+        let sorted2 = PathUtils.sortedDeepestDirFirst(paths2)
+        XCTAssertEqual(sorted2, ["a/b/c/d", "a/a/b", "d/e", "a", "."])
+    }
+    
     func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
         return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
     }
