@@ -28,6 +28,10 @@ class BadgeIcons {
     // directory with all absent files, we haven't counted known copies yet
     private let absentUnknownCopies = NSImage(named:NSImage.Name(rawValue: "OutlineGray12x12"))!
     
+    // directory that is empty, or contains only empty directories, or contains only
+    // git files (not annexed files)
+    private let emptyOrNotAnnexFolder = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12"))!
+    
     // file or directory that is present, has n-copies
     // and this amount is greater than or equal to user's numcopies setting
     private let present1CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_1"))!
@@ -81,6 +85,7 @@ class BadgeIcons {
         finderSyncController.setBadgeImage(unknownStateInGitAnnex, label: "Unknown" , forBadgeIdentifier: unknownStateInGitAnnex.name()!.rawValue)
         finderSyncController.setBadgeImage(notTracked, label: "Not Tracked" , forBadgeIdentifier: notTracked.name()!.rawValue)
         finderSyncController.setBadgeImage(zeroCopies, label: "Zero Copies" , forBadgeIdentifier: zeroCopies.name()!.rawValue)
+        finderSyncController.setBadgeImage(emptyOrNotAnnexFolder, label: "Empty or Not Annexed" , forBadgeIdentifier: emptyOrNotAnnexFolder.name()!.rawValue)
         finderSyncController.setBadgeImage(partialPresentUnknownCopies, label: "Partially Present Unknown Copies" , forBadgeIdentifier: partialPresentUnknownCopies.name()!.rawValue)
         finderSyncController.setBadgeImage(presentUnknownCopies, label: "Present Unknown Copies" , forBadgeIdentifier: presentUnknownCopies.name()!.rawValue)
         finderSyncController.setBadgeImage(absentUnknownCopies, label: "Absent Unknown Copies" , forBadgeIdentifier: absentUnknownCopies.name()!.rawValue)
@@ -125,6 +130,11 @@ class BadgeIcons {
         // still calculating…
         if status.presentStatus == nil, status.numberOfCopies == nil {
             return unknownStateInGitAnnex.name()!.rawValue
+        }
+        
+        // empty directory, or filled with not annex files
+        if status.isEmptyFolder() {
+            return emptyOrNotAnnexFolder.name()!.rawValue
         }
         
         // no copies
