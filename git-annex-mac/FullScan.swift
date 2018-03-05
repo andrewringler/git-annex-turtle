@@ -166,7 +166,7 @@ class FullScan {
                 return false
             }
             
-            if queries.updateStatusForPathV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: chunk, key: nil, in: watchedFolder, isDir: true, needsUpdate: false /* UNUSED? */) == false {
+            if queries.updateStatusForPathV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: chunk, key: nil, in: watchedFolder, isDir: true, needsUpdate: true) == false {
                 return false
             }
         }

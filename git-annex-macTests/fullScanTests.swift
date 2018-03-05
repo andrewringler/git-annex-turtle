@@ -45,7 +45,7 @@ class fullScanTests: XCTestCase {
         // Repo 1
         //
         // set num copies to 2, so all files will be lacking
-        gitAnnexQueries!.gitAnnexSetNumCopies(numCopies: 2, in: repo1!)
+        XCTAssertTrue(gitAnnexQueries!.gitAnnexSetNumCopies(numCopies: 2, in: repo1!).success)
         let file1 = "a name with spaces.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
@@ -71,6 +71,12 @@ class fullScanTests: XCTestCase {
         let file7 = "b.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "file7 content", to: file7, in: repo2!, gitAnnexQueries: gitAnnexQueries!)
         
+        TestingUtil.createDir(dir: "anEmptyDir", in: repo2!)
+
+        TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs", in: repo2!)
+        TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs/a", in: repo2!)
+        TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs/b", in: repo2!)
+        
         // Start a full scan on both repos
         fullScan!.startFullScan(watchedFolder: repo1!)
         fullScan!.startFullScan(watchedFolder: repo2!)
@@ -83,18 +89,21 @@ class fullScanTests: XCTestCase {
         if let status1 = queries!.statusForPathV2Blocking(path: file1, in: repo1!) {
             XCTAssertEqual(status1.presentStatus, Present.present)
             XCTAssertEqual(status1.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status1.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file1)")
         }
         if let status2 = queries!.statusForPathV2Blocking(path: file2, in: repo1!) {
             XCTAssertEqual(status2.presentStatus, Present.present)
             XCTAssertEqual(status2.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status2.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file2)")
         }
         if let status3 = queries!.statusForPathV2Blocking(path: file3, in: repo1!) {
             XCTAssertEqual(status3.presentStatus, Present.present)
             XCTAssertEqual(status3.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status3.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file3)")
         }
@@ -103,6 +112,7 @@ class fullScanTests: XCTestCase {
             XCTAssertEqual(statusSubdirA.presentStatus, Present.present)
             XCTAssertEqual(statusSubdirA.isDir, true)
             XCTAssertEqual(statusSubdirA.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(statusSubdirA.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve folder status for 'subdirA'")
         }
@@ -110,12 +120,14 @@ class fullScanTests: XCTestCase {
         if let status4 = queries!.statusForPathV2Blocking(path: file4, in: repo1!) {
             XCTAssertEqual(status4.presentStatus, Present.present)
             XCTAssertEqual(status4.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status4.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file4)")
         }
         if let status5 = queries!.statusForPathV2Blocking(path: file5, in: repo1!) {
             XCTAssertEqual(status5.presentStatus, Present.present)
             XCTAssertEqual(status5.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status5.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file5)")
         }
@@ -124,6 +136,7 @@ class fullScanTests: XCTestCase {
             XCTAssertEqual(statusSubdirC.presentStatus, Present.present)
             XCTAssertEqual(statusSubdirC.isDir, true)
             XCTAssertEqual(statusSubdirC.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(statusSubdirC.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve folder status for 'subdirA/dirC'")
         }
@@ -134,6 +147,7 @@ class fullScanTests: XCTestCase {
             XCTAssertEqual(wholeRepo.presentStatus, Present.present)
             XCTAssertEqual(wholeRepo.isDir, true)
             XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(wholeRepo.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve folder status for whole repo1")
         }
@@ -143,19 +157,54 @@ class fullScanTests: XCTestCase {
         if let status6 = queries!.statusForPathV2Blocking(path: file6, in: repo2!) {
             XCTAssertEqual(status6.presentStatus, Present.present)
             XCTAssertEqual(status6.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status6.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file6)")
         }
         if let status7 = queries!.statusForPathV2Blocking(path: file7, in: repo2!) {
             XCTAssertEqual(status7.presentStatus, Present.present)
             XCTAssertEqual(status7.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status7.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve status for \(file7)")
         }
+        // An empty directory is always good :)
+        if let dir = queries!.statusForPathV2Blocking(path: "anEmptyDir", in: repo2!) {
+            XCTAssertEqual(dir.presentStatus, Present.present)
+            XCTAssertEqual(dir.isDir, true)
+            XCTAssertEqual(dir.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for 'anEmptyDir'")
+        }
+        
+        // An empty directory with empty directories inside it
+        if let dir = queries!.statusForPathV2Blocking(path: "anEmptyDirWithEmptyDirs/a", in: repo2!) {
+            XCTAssertEqual(dir.presentStatus, Present.present)
+            XCTAssertEqual(dir.isDir, true)
+            XCTAssertEqual(dir.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for 'anEmptyDirWithEmptyDirs/a'")
+        }
+        if let dir = queries!.statusForPathV2Blocking(path: "anEmptyDirWithEmptyDirs/b", in: repo2!) {
+            XCTAssertEqual(dir.presentStatus, Present.present)
+            XCTAssertEqual(dir.isDir, true)
+            XCTAssertEqual(dir.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for 'anEmptyDirWithEmptyDirs/b'")
+        }
+        if let dir = queries!.statusForPathV2Blocking(path: "anEmptyDirWithEmptyDirs", in: repo2!) {
+            XCTAssertEqual(dir.presentStatus, Present.present)
+            XCTAssertEqual(dir.isDir, true)
+            XCTAssertEqual(dir.enoughCopies, EnoughCopies.enough)
+        } else {
+            XCTFail("could not retrieve folder status for 'anEmptyDirWithEmptyDirs'")
+        }
+
         if let wholeRepo = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo2!) {
             XCTAssertEqual(wholeRepo.presentStatus, Present.present)
             XCTAssertEqual(wholeRepo.isDir, true)
             XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(wholeRepo.numberOfCopies, 1)
         } else {
             XCTFail("could not retrieve folder status for whole repo2")
         }

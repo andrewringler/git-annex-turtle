@@ -462,7 +462,7 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && (\(PathStatusAttributes.numberOfCopies.rawValue) == \(UNKNOWN_COPIES) || \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true)))", watchedFolder.uuid.uuidString)
+            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true))", watchedFolder.uuid.uuidString)
             do {
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {

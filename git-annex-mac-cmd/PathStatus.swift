@@ -54,4 +54,11 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
     public var description: String {
         return "PathStatus: tracked:\(isGitAnnexTracked) present:\(String(describing: presentStatus)) enough-copies:\(String(describing: enoughCopies)) number-of-copies:\(String(describing: numberOfCopies)) path:\(path) in:\(watchedFolder) parentPath:\(String(describing: parentPath)) last-modified:\(modificationDate) key:\(String(describing: key)) isDir: \(isDir) needsUpdate: \(needsUpdate)"
     }
+    
+    public func isEmptyFolder() -> Bool {
+        return isDir
+            && presentStatus?.isPresent() ?? false
+            && enoughCopies?.isEnough() ?? false
+            && numberOfCopies == nil
+    }
 }

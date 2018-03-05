@@ -132,6 +132,10 @@ enum Present: String {
             }
         }
     }
+    
+    public func isPresent() -> Bool {
+        return self == .present
+    }
 }
 enum EnoughCopies: String {
     case enough = "enough"
@@ -151,6 +155,10 @@ enum EnoughCopies: String {
         case .lacking:
             return .lacking
         }
+    }
+    
+    public func isEnough() -> Bool {
+        return self == .enough
     }
 }
 

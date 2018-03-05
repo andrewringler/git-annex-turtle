@@ -41,6 +41,8 @@
         <fetchIndex name="folderUpdates">
             <fetchIndexElement property="parentPath" type="Binary" order="ascending"/>
             <fetchIndexElement property="watchedFolderUUIDString" type="Binary" order="ascending"/>
+            <fetchIndexElement property="isDir" type="Binary" order="ascending"/>
+            <fetchIndexElement property="needsUpdate" type="Binary" order="ascending"/>
         </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>

@@ -49,7 +49,14 @@ class FolderTracking {
             }
             
             var complete = true
+            var allEmptyFolders = true
             for status in statuses {
+                if status.isEmptyFolder() {
+                    // ignore empty folders, they do not contribute to any counts
+                    continue
+                }
+                allEmptyFolders = false
+                
                 if status.isGitAnnexTracked {
                     if let numberOfCopies = status.numberOfCopies, let enoughCopies = status.enoughCopies, let present = status.presentStatus {
                         if leastCopies == nil {
@@ -74,10 +81,19 @@ class FolderTracking {
                 }
             }
             
-            if complete, let enoughCopies = enoughCopiesAllChildren, let leastCopiesValue = leastCopies, let present = presentAll {
-                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(leastCopiesValue) \(present)")
+            if allEmptyFolders || statuses.count == 0 {
+                // We have an empty directory, or an empty directory
+                // filled with empty directories
+                // the following combination signifies this
+                enoughCopiesAllChildren = .enough
+                leastCopies = nil
+                presentAll = .present
+            }
+            
+            if complete, let enoughCopies = enoughCopiesAllChildren, let present = presentAll {
+                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
                 
-                queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopiesValue, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
+                queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopies, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
                 
                 // Invalidate our parent, if we have one
                 if let parent = PathUtils.parent(for: folderNeedingUpdate, in: watchedFolder) {
@@ -115,7 +131,14 @@ class FolderTracking {
             let statuses = queries.childStatusesOfBlocking(parentRelativePath: folderNeedingUpdate, in: watchedFolder)
             
             var complete = true
+            var allEmptyFolders = true
             for status in statuses {
+                if status.isEmptyFolder() {
+                    // ignore empty folders, they do not contribute to any counts
+                    continue
+                }
+                allEmptyFolders = false
+                
                 if status.isGitAnnexTracked {
                     if let numberOfCopies = status.numberOfCopies, let enoughCopies = status.enoughCopies, let present = status.presentStatus {
                         if leastCopies == nil {
@@ -140,11 +163,20 @@ class FolderTracking {
                     }
                 }
             }
+                    
+            if allEmptyFolders || statuses.count == 0 {
+                // We have an empty directory, or an empty directory
+                // filled with empty directories
+                // the following combination signifies this
+                enoughCopiesAllChildren = .enough
+                leastCopies = nil
+                presentAll = .present
+            }
             
-            if complete, let enoughCopies = enoughCopiesAllChildren, let leastCopiesValue = leastCopies, let present = presentAll {
-                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(leastCopiesValue) \(present)")
+            if complete, let enoughCopies = enoughCopiesAllChildren, let present = presentAll {
+                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
                 
-                queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopiesValue, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
+                queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopies, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
                 
                 // Invalidate our parent, if we have one
                 if let parent = PathUtils.parent(for: folderNeedingUpdate, in: watchedFolder) {
