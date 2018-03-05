@@ -35,7 +35,7 @@ do
             echo $i
         else
             INFO=`$GITANNEX_CMD info --fast --json "$i" 2>/dev/null`
-            if [[ $INFO =~ "\"success\":\"true\"" ]]; then
+            if [[ $INFO =~ "\"success\":true" ]]; then
                 # OK, not a directory, but a file tracked by git-annex
                 # we do want to know about it
                 echo $i
