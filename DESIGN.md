@@ -22,6 +22,7 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
+ * Finder Sync extension should only be querying for visible paths
  * nice, renice git during full scan (or always?)
  * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
  * re design full-scan, workflow, simplify, not working well on large repos
