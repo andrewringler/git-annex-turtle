@@ -20,17 +20,19 @@ fileprivate class StatusRequest: CustomStringConvertible {
     let includeFiles: Bool
     let includeDirs: Bool
     let priority: Priority
+    let isDir: Bool
     
-    init(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
+    init(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority, isDir: Bool) {
         self.path = path
         self.watchedFolder = watchedFolder
         self.secondsOld = secondsOld
         self.includeFiles = includeFiles
         self.includeDirs = includeDirs
         self.priority = priority
+        self.isDir = isDir
     }
     
-    public var description: String { return "StatusRequest: '\(path)' in \(watchedFolder) \(secondsOld) secondsOld, includeFiles=\(includeFiles) includeDirs=\(includeDirs) priority=\(priority)" }
+    public var description: String { return "StatusRequest: '\(path)' in \(watchedFolder) \(secondsOld) secondsOld, includeFiles=\(includeFiles) includeDirs=\(includeDirs) priority=\(priority) isDir=\(isDir)" }
 }
 
 class HandleStatusRequests {
@@ -45,7 +47,7 @@ class HandleStatusRequests {
     fileprivate let highPriorityQueue =
         DispatchQueue(label: "com.andrewringler.git-annex-mac.HighPriority", attributes: .concurrent)
 
-    // TODO store in database? these could get quite large?
+    // TODO store in the database? these could get quite large?
     private var dateAddedToStatusRequestQueueHighPriority: [Double: StatusRequest] = [:]
     private var dateAddedToStatusRequestQueueLowPriority: [Double: StatusRequest] = [:]
     private var currentlyUpdatingPathByWatchedFolder: [WatchedFolder: [String]] = [:]
@@ -56,15 +58,14 @@ class HandleStatusRequests {
     
     // enqueue the request
     public func updateStatusFor(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
-        let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
-        let dateAdded = Date().timeIntervalSince1970 as Double
-        
-        // directories are always low priority, since they take a long
-        // time to calculate status for
+        // Create the Request
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
-        
+        let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority, isDir: isDir)
+
+        // Enqueue the request, prioritized FIFO
+        let dateAdded = Date().timeIntervalSince1970 as Double
         sharedResource.lock()
-        if isDir || priority == .low {
+        if isDir || priority == .low { /* directories are always low priority */
             dateAddedToStatusRequestQueueLowPriority[dateAdded] = statusRequest
         } else {
             dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
@@ -139,15 +140,6 @@ class HandleStatusRequests {
                 continue
             }
             
-//            // Queue Full?
-//            // do we already have too many concurrent requests in this watched folder?
-//            if let paths = watchedPaths, paths.count >= maxConcurrentUpdatesPerWatchedFolder {
-//                // too many concurrent updates for this WatchedFolder
-//                // keep in queue and try again later
-//                NSLog("Too many items in queue ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
-//                break
-//            }
-            
             // Fresh Enough?
             // do we already have a new enough status update for this file in the database?
             let statusOptional = queries.statusForPathV2Blocking(path: item.value.path, in: item.value.watchedFolder)
@@ -157,6 +149,18 @@ class HandleStatusRequests {
                 // and it is new enough, and it isn't marked as needing updating
                 // remove this request, it is not necessary
                 NSLog("Already new enough, delete \(item.value.path) in \(item.value.watchedFolder.pathString)")
+                sharedResource.lock()
+                dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
+                sharedResource.unlock()
+                continue
+            }
+            if let status = statusOptional, status.isDir {
+                /* we have a directory which already has an entry in our database
+                 * that means that some procedure has already enumerated this directories
+                 * files, there is nothing we need to do, except wait for his children
+                 * to finish updating their statuses
+                 */
+                NSLog("Ignoring folder already present in database \(item.value.path) for \(item.value.watchedFolder)")
                 sharedResource.lock()
                 dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                 sharedResource.unlock()
@@ -192,52 +196,40 @@ class HandleStatusRequests {
     
     private func updateStatusAsync(request r: StatusRequest, queue: DispatchQueue, limitConcurrentThreads: DispatchSemaphore) {
         queue.async {
-            let statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
-            if statusTuple.error {
-                NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
-            } else if let status = statusTuple.pathStatus {
-                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
-                
-                // OK we have a new status, even if it didn't change
-                // update in the database so we have a new date modified
-                self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: r.watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-                
-                // If status changed, invalidate immediate parent
-                if oldStatus != status, let parent = status.parentPath {
-                    self.queries.invalidateDirectory(path: parent, in: r.watchedFolder)
+            /* Folder
+             * we have a folder that has no entry in the database
+             * that means we need to enumerate all of his children
+             * and enqueue them for completion
+             */
+            if r.isDir {
+                // add entry for this directory
+                self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
+
+                // enqueue requests to find status for all this dirs children
+                let allChildren = PathUtils.children(path: r.path, in: r.watchedFolder)
+                for child in allChildren.files {
+                    self.updateStatusFor(for: child, in: r.watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                }
+                for child in allChildren.dirs {
+                    self.updateStatusFor(for: child, in: r.watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .low)
                 }
             } else {
-                // we have a skipped directory, save its status
-                // if it doesn't already exist, otherwise leave it alone
-                // since we didn't actually do anything
-                
-//                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path)
-//                if oldStatus == nil {
-//                    self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
-//                }
-                
-                // we have a skipped directory
-                let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
-                
-                // no entry for directory, lets add one
-                if oldStatus == nil {
-                    self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: false /* we will update below */)
-                }
-                
-                // lets update, it is out of date
-                if oldStatus == nil || (oldStatus?.needsUpdate ?? true) {
-                    NSLog("Skipped dir, updating, \(r)")
-                    let children = self.gitAnnexQueries.immediateChildrenNotIgnored(relativePath: r.path, in: r.watchedFolder)
-                    NSLog("children: \(children)")
-                    for child in children {
-                        if let _ = self.queries.statusForPathV2Blocking(path: child, in: r.watchedFolder) {
-                            // OK, we already have an entry for this child in the database
-                            // do nothing
-                        } else {
-                            NSLog("no entry for child: \(child) in \(r.watchedFolder)")
-                            // No entry exists, lets request one
-                            self.queries.addRequestV2Async(for: child, in: r.watchedFolder)
-                        }
+                /* File
+                 * we have a file, get its status
+                 */
+                let statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
+                if statusTuple.error {
+                    NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
+                } else if let status = statusTuple.pathStatus {
+                    let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
+                    
+                    // OK we have a new status, even if it didn't change
+                    // update in the database so we have a new date modified
+                    self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: r.watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
+                    
+                    // If status changed, invalidate immediate parent
+                    if oldStatus != status, let parent = status.parentPath {
+                        self.queries.invalidateDirectory(path: parent, in: r.watchedFolder)
                     }
                 }
             }

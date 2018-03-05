@@ -92,12 +92,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // Badge requests
-//        DispatchQueue.global(qos: .background).async {
-//            while true {
-//                self.handleBadgeRequests()
-//                usleep(100000)
-//            }
-//        }
+        DispatchQueue.global(qos: .background).async {
+            while true {
+                self.handleBadgeRequests()
+                usleep(100000)
+            }
+        }
         
         // Main loop
         DispatchQueue.global(qos: .background).async {
@@ -170,21 +170,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    // Grab latest commit information from Db
-    // IE do we have some status information from files
-    // from a previous time git-annex-turtle App was launched
-//    private func grabCommitHashesFromDatabase() {
-//        for watchedFolder in watchedFolders {
-//            let commits = queries.getLatestCommits(for: watchedFolder)
-//            if let gitCommitHash = commits.gitCommitHash {
-//                handledGitCommit.put(value: gitCommitHash, for: watchedFolder)
-//            }
-//            if let gitAnnexCommitHash = commits.gitAnnexCommitHash {
-//                handledAnnexCommit.put(value: gitAnnexCommitHash, for: watchedFolder)
-//            }
-//        }
-//    }
-    
     // Read in list of watched folders from Config (or create)
     // also populates menu with correct folders (if any)
     private func updateListOfWatchedFolders() {
@@ -232,18 +217,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             startFullScanForWatchedFoldersWithNoHistoryInDb()
         }
     }
-    
-//    // updates file system monitors based on new set of watched folders
-//    // old filesystem watches are presumably deninited and garbage collected…
-//    func updateFilesystemWatches() {
-//        // Start monitoring the new list of folders
-//        // TODO, we should only monitor the visible folders sent from Finder Sync
-//        // in addition to the .git/annex folder for annex updates
-//        // Monitoring the entire watched folder, is unnecessarily expensive
-//        fileSystemMonitors = watchedFolders.map {
-//            WatchedFolderMonitor(watchedFolder: $0, app: self)
-//        }
-//    }
 
     // updates from Watched Folder monitor
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {
@@ -382,45 +355,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-//    private func updateLatestCommitEntriesForWatchedFolders() {
-//        grabCommitHashesFromDatabase()
-//
-//        // Mark the current commit as handled
-//        for watchedFolder in watchedFolders {
-//            // master branch (IE git files)
-//            // grab latest commit hash, if we don't already have one
-//            if !handledGitCommit.contains(for: watchedFolder) {
-//                if let gitGitCommitHash = gitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder) {
-//                    handledGitCommit.put(value: gitGitCommitHash, for: watchedFolder)
-//                } else {
-//                    NSLog("Error: could not find latest commit on master branch for watchedFolder: \(watchedFolder)")
-//                }
-//            }
-//
-//            // git-annex branch (IE git-annex location tracking)
-//            // grab latest commit hash, if we don't already have one
-//            if !handledAnnexCommit.contains(for: watchedFolder) {
-//                if let gitAnnexCommitHash = gitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
-//                    handledAnnexCommit.put(value: gitAnnexCommitHash, for: watchedFolder)
-//                } else {
-//                    NSLog("Error: could not find latest git-annex branch commit for watchedFolder: \(watchedFolder)")
-//                }
-//            }
-//        }
-//    }
-    
     //
     // Badge Icon Requests
     //
     // handle requests for updated badge icons from our Finder Sync extension
     //
-//    private func handleBadgeRequests() {
-//        for watchedFolder in self.watchedFolders {
-//            for path in Queries(data: data).allPathRequestsV2Blocking(in: watchedFolder) {
-//                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
-//            }
-//        }
-//    }
+    private func handleBadgeRequests() {
+        for watchedFolder in self.watchedFolders {
+            // Only handle badge requests for folders that aren't currently being scanned
+            // TODO, give immediate feedback to the user here on some files?
+            // TODO, we can miss some files if they appear after full scan enumeration
+            if !fullScan.isScanning(watchedFolder: watchedFolder) {
+                for path in queries.allPathRequestsV2Blocking(in: watchedFolder) {
+                    if queries.statusForPathV2Blocking(path: path, in: watchedFolder) != nil {
+                        // OK, we already know about this file or folder
+                        // do nothing here.
+                        // we will automatically detect and handle any updates
+                        // that come in with our other procedures
+                    } else {
+                        // We have no information about this file
+                        // enqueue it for inspection
+                        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                    }
+                }
+            }
+        }
+    }
     
     func applicationWillTerminate(_ aNotification: Notification) {
         NSLog("quiting…")

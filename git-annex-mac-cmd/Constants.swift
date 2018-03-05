@@ -288,29 +288,16 @@ class PathUtils {
     }
     
     class func children(in watchedFolder: WatchedFolder) -> (files: [String], dirs: [String]) {
+        return children(path: CURRENT_DIR, in: watchedFolder)
+    }
+    
+    class func children(path subdirectoryRelativePath: String, in watchedFolder: WatchedFolder) -> (files: [String], dirs: [String]) {
         var files: [String] = []
         var dirs: [String] = []
-//        let url = urlFor(absolutePath: watchedFolder.pathString)
-//        if let dirEnumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [URLResourceKey.isDirectoryKey, URLResourceKey.pathKey, URLResourceKey.nameKey], options: [], errorHandler: { (url, error) -> Bool in
-//            return  }) {
-//            for file in dirEnumerator {
-//                if let fileURL = file as? URL {
-//                    if let path = PathUtils.relativePath(for: fileURL, in: watchedFolder) {
-//                        if !path.starts(with: ".git/") /* ignore root level git directory */ {
-//                            if fileURL.hasDirectoryPath {
-//                                dirs.append(path)
-//                            } else {
-//                                files.append(path)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } else {
-//            NSLog("directoryEnumerator error at \(url) \(error)")
-//        }
+        let rootPath = PathUtils.absolutePath(for: subdirectoryRelativePath, in: watchedFolder)
+        
         do {
-            for path in try FileManager.default.subpathsOfDirectory(atPath: watchedFolder.pathString) {
+            for path in try FileManager.default.subpathsOfDirectory(atPath: rootPath) {
                 if path != ".git" && !path.starts(with: ".git/") /* ignore root level git directory */ {
                     if PathUtils.directoryExistsAt(relativePath: path, in: watchedFolder) {
                         dirs.append(path)

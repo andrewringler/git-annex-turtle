@@ -110,39 +110,6 @@ class FullScan {
         sharedResource.unlock()
     }
     
-//    private func enumerateAllFileChildrenAndQueueDirectories(relativePath: String, watchedFolder: WatchedFolder) -> (success: Bool, children: (files: Set<String>, dirs: Set<String>)) {
-//        if shouldStop(watchedFolder) {
-//        return (success: false, children: (files: Set<String>(), dirs: Set<String>()))
-//        }
-//
-//        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: relativePath, in: watchedFolder)
-//
-//        var fileChildren = Set<String>()
-//        var dirChildren = Set<String>()
-//
-//        if isDir {
-//            // Dir
-//            dirChildren.insert(relativePath)
-//            let allChildren = Set(gitAnnexQueries.immediateChildrenNotIgnored(relativePath: relativePath, in: watchedFolder))
-//
-//            for child in allChildren {
-//                let childrenForChild = enumerateAllFileChildrenAndQueueDirectories(relativePath: child, watchedFolder: watchedFolder)
-//
-//                if childrenForChild.success {
-//                    childrenForChild.children.files.forEach { fileChildren.insert($0) }
-//                    childrenForChild.children.dirs.forEach { dirChildren.insert($0) }
-//                } else {
-//                    return (success: false, children: (files: Set<String>(), dirs: Set<String>()))
-//                }
-//            }
-//        } else {
-//            // File
-//            fileChildren.insert(relativePath)
-//        }
-//
-//        return (success: true, children: (files: fileChildren, dirs: dirChildren))
-//    }
-   
     private func updateStatusBlocking(in watchedFolder: WatchedFolder) -> Bool {
         let allChildren = PathUtils.children(in: watchedFolder)        
 

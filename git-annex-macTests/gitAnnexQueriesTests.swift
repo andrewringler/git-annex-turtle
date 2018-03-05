@@ -23,7 +23,8 @@ class gitAnnexQueriesTests: XCTestCase {
         // Create git annex repo in TMP dir
         let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
         let path = PathUtils.path(for: directoryURL)!
-        
+        NSLog("Testing in \(path)")
+
         watchedFolder = TestingUtil.createInitGitAnnexRepo(at: path, gitAnnexQueries: gitAnnexQueries!)!
     }
     
