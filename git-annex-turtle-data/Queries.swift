@@ -388,6 +388,10 @@ class Queries {
                         predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.pathString.rawValue) == %@", watchedFolder.uuid.uuidString, path))
                     }
                 }
+                // Always fetch the root folder itself, since Finder Sync extensions don't tell us if the root
+                // folder icon is in view (since it is contained in a folder we aren't watching
+                predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.pathString.rawValue) == %@", watchedFolder.uuid.uuidString, PathUtils.CURRENT_DIR))
+                
                 fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
 
                 let statuses = try privateMOC.fetch(fetchRequest)
