@@ -25,12 +25,11 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
  * BUG: quiting from menubar icon should quit running git processes too
  * nice, renice git during full scan (or always?)
  * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
+ * Finder Sync extension seems to launch automatically during some tests, when it shouldn't, how can we get more control over how and when Finder Sync is actually launched?, do we need to restart Finder when installing extension?
  * deploy to github
  * get tests running on https://travis-ci.org/
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
  * Menubar window should show list of remote transfers 
- * Menubar icon should animate while doing full scan
- * save latest commit hashes in Db, start where we left off on restarts
  * let user view/set git and git-annex binary paths from GUI
  * let user view/set per repo git-annex-turtle settings from GUI
  * Test with Assistant
@@ -48,7 +47,6 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
- * better logging? what do people use https://stackoverflow.com/questions/7512211/how-to-output-warnings-to-the-console-during-a-build-in-xcode
  
 ## Querying git-annex
 git-annex-turtle needs to keep informed of the state of files in git-annex repositories. Some file state is slow to query, other state very fast to query. Some state will get quicker to query as Joey adds [caching databases](https://git-annex.branchable.com/design/caching_database/), but given the current, various queries relevant to git-annex-turtle are documented below:
