@@ -40,84 +40,85 @@ class GitAnnexQueries {
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
         var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
-        var output : [String] = []
-        var error : [String] = []
-        
-        /* check for a valid working directory now, because Process will not let us catch
-         * the exception thrown if the directory is invalid */
-        if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
-            TurtleLog.error("Invalid working directory '%@'", workingDirectory)
-            return ret
-        }
-        
-//        let task = Process()
-//        task.launchPath = cmd
-//        task.currentDirectoryPath = workingDirectory
-//        task.arguments = args
-        
-        // TODO wrap commands in a shell (that is likely to exist) to avoid uncatchable errors
-        // IE if workingDirectory does not exist we cannot catch that error
-        // uncatchable runtime exceptions
-        // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
-        let task = Process()
-        task.launchPath = "/bin/bash"
-        task.currentDirectoryPath = workingDirectory
-        var bashCmd :[String] = [cmd]
-        for arg: String in args {
-            bashCmd.append(arg)
-        }
-//        let bashCmdString: String = "cd '" + workingDirectory + "';" +
-        let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
-        task.arguments = bashArgs
-        
-        let outpipe = Pipe()
-        task.standardOutput = outpipe
-        let errpipe = Pipe()
-        task.standardError = errpipe
-        
-        DispatchQueue.global(qos: .background).async {
-            task.launch()
-        }
-        
-        let startTime = Date()
-        /* 3-hour timeout, should be sufficient for most full scans… ? */
-        let maxTimeSeconds: Double = 60 * 60 * 3
-        while task.isRunning {
-            if Date().timeIntervalSince(startTime) > maxTimeSeconds {
-                TurtleLog.error("Timeout. running \(cmd) \(args) in \(workingDirectory)")
-                task.interrupt()
-                break
+        // Place call to Process in thread, in-case it crashes it won't bring down our main thread
+        DispatchQueue.global(qos: .background).sync {
+            var output : [String] = []
+            var error : [String] = []
+            
+            /* check for a valid working directory now, because Process will not let us catch
+             * the exception thrown if the directory is invalid */
+            if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
+                TurtleLog.error("Invalid working directory '%@'", workingDirectory)
+                return
             }
-            sleep(1)
+            
+    //        let task = Process()
+    //        task.launchPath = cmd
+    //        task.currentDirectoryPath = workingDirectory
+    //        task.arguments = args
+            
+            // TODO wrap commands in a shell (that is likely to exist) to avoid uncatchable errors
+            // IE if workingDirectory does not exist we cannot catch that error
+            // uncatchable runtime exceptions
+            // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
+            let task = Process()
+            task.launchPath = "/bin/bash"
+            task.currentDirectoryPath = workingDirectory
+            var bashCmd :[String] = [cmd]
+            for arg: String in args {
+                bashCmd.append(arg)
+            }
+    //        let bashCmdString: String = "cd '" + workingDirectory + "';" +
+            let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
+            task.arguments = bashArgs
+            
+            let outpipe = Pipe()
+            task.standardOutput = outpipe
+            let errpipe = Pipe()
+            task.standardError = errpipe
+        
+            task.launch()
+            
+            let startTime = Date()
+            /* 3-hour timeout, should be sufficient for most full scans… ? */
+            let maxTimeSeconds: Double = 60 * 60 * 3
+            while task.isRunning {
+                if Date().timeIntervalSince(startTime) > maxTimeSeconds {
+                    TurtleLog.error("Timeout. running \(cmd) \(args) in \(workingDirectory)")
+                    task.interrupt()
+                    break
+                }
+                sleep(1)
+            }
+            
+            let outputFileHandle = outpipe.fileHandleForReading
+            let outdata = outputFileHandle.readDataToEndOfFile()
+            if var string = String(data: outdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                output = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            outputFileHandle.closeFile()
+            
+            let errFileHandle = errpipe.fileHandleForReading
+            let errdata = errFileHandle.readDataToEndOfFile()
+            if var string = String(data: errdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                error = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            errFileHandle.closeFile()
+            
+            //        task.waitUntilExit()
+            
+            let status = task.terminationStatus
+            
+            ret = (output, error, status)
         }
-        
-        let outputFileHandle = outpipe.fileHandleForReading
-        let outdata = outputFileHandle.readDataToEndOfFile()
-        if var string = String(data: outdata, encoding: .utf8) {
-            string = string.trimmingCharacters(in: .newlines)
-            output = string.components(separatedBy: "\n")
-        }
-        // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
-        // i was running out of file descriptors without this
-        // even though the documentation clearly says it is not needed
-        outputFileHandle.closeFile()
-        
-        let errFileHandle = errpipe.fileHandleForReading
-        let errdata = errFileHandle.readDataToEndOfFile()
-        if var string = String(data: errdata, encoding: .utf8) {
-            string = string.trimmingCharacters(in: .newlines)
-            error = string.components(separatedBy: "\n")
-        }
-        // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
-        // i was running out of file descriptors without this
-        // even though the documentation clearly says it is not needed
-        errFileHandle.closeFile()
-        
-        //        task.waitUntilExit()
-        
-        let status = task.terminationStatus
-        
-        ret = (output, error, status)
         
         return ret
     }

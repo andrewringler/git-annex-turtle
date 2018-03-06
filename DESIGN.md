@@ -105,3 +105,6 @@ Check for open files <https://www.cyberciti.biz/faq/howto-linux-get-list-of-open
 Then list open files
 
     lsof -p <process-id> | less
+    
+Full scan
+took 22min. for my 60,000 file repo on solid-state drive
