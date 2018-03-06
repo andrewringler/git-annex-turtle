@@ -490,7 +490,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //
     //
     private func handleAnimateMenubarIcon() {
-        if let handlingRequests = handleStatusRequests?.handlingRequests(), handlingRequests {
+        if let handlingRequests = handleStatusRequests?.handlingRequests(), handlingRequests || fullScan.isScanning() {
             startAnimatingMenubarIcon()
         } else {
             stopAnimatingMenubarIcon()

@@ -46,6 +46,16 @@ class FullScan {
         sharedResource.unlock()
     }
 
+    func isScanning() -> Bool {
+        guard running else { return false }
+        
+        var ret = false
+        sharedResource.lock()
+        ret = scanning.count > 0
+        sharedResource.unlock()
+        return ret
+    }
+    
     func isScanning(watchedFolder: WatchedFolder) -> Bool {
         guard running else { return false }
 

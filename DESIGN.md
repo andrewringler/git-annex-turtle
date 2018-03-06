@@ -22,15 +22,14 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * Finder Sync extension should only be querying for visible paths
  * BUG: quiting from menubar icon should quit running git processes too
  * nice, renice git during full scan (or always?)
  * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
- * re design full-scan, workflow, simplify, not working well on large repos
  * deploy to github
  * get tests running on https://travis-ci.org/
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
  * Menubar window should show list of remote transfers 
+ * Menubar icon should animate while doing full scan
  * save latest commit hashes in Db, start where we left off on restarts
  * let user view/set git and git-annex binary paths from GUI
  * let user view/set per repo git-annex-turtle settings from GUI
