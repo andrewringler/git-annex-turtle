@@ -522,7 +522,7 @@ class GitAnnexQueries {
             }
         }
         
-        TurtleLog.error("status= \(status) output=\(output) error=\(error)")
+        TurtleLog.debug("missing git commit hash, this is OK, since only mixed-mode repos need to commit to the git branch, status= \(status) output=\(output) error=\(error)")
         return nil
     }
     

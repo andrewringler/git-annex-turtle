@@ -66,6 +66,8 @@ class FullScan {
     
     private func scan(_ watchedFolder: WatchedFolder) {
         while running {
+            let scanStartDate = Date()
+            
             // Store the current git commit hashes before starting our full scan
             // so we can perform incremental scans, from this point
             // IE, we only want to ever do a full scan one time per repo
@@ -95,7 +97,8 @@ class FullScan {
                 // incremental updates for this repo
                 queries.updateLatestHandledCommit(gitCommitHash: gitGitCommitHash, gitAnnexCommitHash: gitAnnexCommitHash, in: watchedFolder)
                 
-                TurtleLog.info("Completed full scan for \(watchedFolder)")
+                let scanDuration = Date().timeIntervalSince(scanStartDate) as Double
+                TurtleLog.info("Completed full scan for \(watchedFolder) in \(Int(scanDuration)) seconds")
             } else {
                 TurtleLog.error("Could not find any commits on the git-annex branch, this should not happen, stopping full scan for \(watchedFolder)")
                 break
