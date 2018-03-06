@@ -87,6 +87,7 @@ let VisibleFoldersEntityName = "VisibleFoldersEntity"
 enum VisibleFoldersEntityAttributes: String {
     case pathString = "pathString"
     case watchedFolderParentUUIDString = "watchedFolderParentUUIDString"
+    case processID = "processID"
 }
 
 
@@ -415,7 +416,8 @@ class Queries {
     //        return paths
     //    }
     
-    func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
+    
+    func allVisibleStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
         var paths: [PathStatus] = []
         
         let moc = data.persistentContainer.viewContext
@@ -453,6 +455,45 @@ class Queries {
         
         return paths
     }
+    
+//    func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
+//        var paths: [PathStatus] = []
+//
+//        let moc = data.persistentContainer.viewContext
+//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+//        privateMOC.parent = moc
+//        privateMOC.performAndWait {
+//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString)
+//            do {
+//                let statuses = try privateMOC.fetch(fetchRequest)
+//                for status in statuses {
+//                    // required properties
+//                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
+//                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
+//                        let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
+//                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
+//                        let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
+//                    {
+//
+//                        // optional properties
+//                        let key = status.value(forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue) as? String
+//                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
+//                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
+//                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
+//
+//                        paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
+//                    } else {
+//                        NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
+//                    }
+//                }
+//            } catch {
+//                fatalError("allNonRequestStatusesV2Blocking: Failure fetch statuses: \(error)")
+//            }
+//        }
+//
+//        return paths
+//    }
     
     func foldersIncompleteOrInvalidBlocking(in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
@@ -1038,7 +1079,7 @@ class Queries {
         return ret
     }
     
-    func removeVisibleFolderAsync(for path: String) {
+    func removeVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: Int32) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         
@@ -1047,7 +1088,7 @@ class Queries {
         privateMOC.perform {
             do {
                 let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
-                fetchRequest.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.pathString.rawValue) == %@", path)
+                fetchRequest.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.pathString.rawValue) == %@ && \(VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) == %@ && \(VisibleFoldersEntityAttributes.processID.rawValue) == %@", path, watchedFolder.uuid.uuidString, processID)
                 let results = try privateMOC.fetch(fetchRequest)
                 for result in results {
                     privateMOC.delete(result)
@@ -1067,11 +1108,11 @@ class Queries {
         }
     }
     
-    func getVisibleFoldersBlocking() -> [(path: String, watchedFolderParentUUID: String)] {
-        var ret: [(path: String, watchedFolderParentUUID: String)] = []
+    func getVisibleFoldersBlocking(with watchedFolders: Set<WatchedFolder>) -> Set<VisibleFolder> {
+        var ret = Set<VisibleFolder>()
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -1082,18 +1123,22 @@ class Queries {
                     if let watchedFolderParentUUID = result.value(forKeyPath: VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) as? String,
                         let path = result.value(forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue) as? String
                     {
-                        ret.append((path: path, watchedFolderParentUUID: watchedFolderParentUUID))
+                        for watchedFolder in watchedFolders {
+                            if watchedFolder.uuid.uuidString == watchedFolderParentUUID {
+                                ret.insert(VisibleFolder(relativePath: path, parent: watchedFolder))
+                            }
+                        }
                     }
                 }
             } catch {
                 fatalError("getVisibleFoldersBlocking: failure in fetch: \(error)")
             }
         }
-        
+
         return ret
     }
     
-    func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder) {
+    func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: Int32) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
@@ -1108,7 +1153,7 @@ class Queries {
                     
                     newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue)
                     newPathRow.setValue(path, forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue)
-                    
+                    newPathRow.setValue(processID, forKeyPath: VisibleFoldersEntityAttributes.processID.rawValue)
                 } else {
                     NSLog("addVisibleFolderAsync: could not create entity for \(VisibleFoldersEntityName)")
                 }

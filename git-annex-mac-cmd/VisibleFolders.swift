@@ -47,14 +47,8 @@ class VisibleFolders {
     //
     // update our list of visible folders
     //
-    func updateListOfVisibleFolders() {
-        let visibleFoldersTuples = Queries(data: data).getVisibleFoldersBlocking()
-        var newVisibleFolders = Set<VisibleFolder>()
-        for visibleFolderTuple in visibleFoldersTuples {
-            if let parent = app.watchedFolderFrom(uuid: visibleFolderTuple.watchedFolderParentUUID) {
-                newVisibleFolders.insert(VisibleFolder(relativePath: visibleFolderTuple.path, parent: parent))
-            }
-        }
+    func updateListOfVisibleFolders(with watchedFolders: Set<WatchedFolder>) {
+        let newVisibleFolders = Queries(data: data).getVisibleFoldersBlocking(with: watchedFolders)
         lock.lock()
         if visibleFolders != newVisibleFolders {
             visibleFolders = newVisibleFolders

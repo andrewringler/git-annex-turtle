@@ -8,6 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		49082F32201125D60030DE80 /* StatusCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49082F31201125D60030DE80 /* StatusCache.swift */; };
+		490982C6204E042E00096C92 /* Queries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFA200E5D8C00C8BBCB /* Queries.swift */; };
+		490982D6204E1D1300096C92 /* git_annex_shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490982CD204E1D1200096C92 /* git_annex_shared.framework */; };
+		490982DB204E1D1300096C92 /* git_annex_sharedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */; };
+		490982DD204E1D1300096C92 /* git_annex_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 490982CF204E1D1300096C92 /* git_annex_shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982E6204E1D5800096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982E7204E1D5900096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982E8204E1D5A00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982E9204E1D5C00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982EA204E213400096C92 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		490982EB204E21AB00096C92 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1FF2007BFB1005742DB /* Constants.swift */; };
+		490982EC204E22E500096C92 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		490982ED204E241900096C92 /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D149212049E94600CA10F2 /* StreamReader.swift */; };
+		490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
 		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
@@ -71,7 +86,6 @@
 		49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
 		49DD9BA820192B0300B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
 		49DD9BA920192B0400B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
-		49E13FBF2013AD4B00EE3DBE /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
 		49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */; };
 		49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
@@ -82,7 +96,6 @@
 		49EF6271200E75D7002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECCC200E51D000C8BBCB /* git_annex_turtle_data.xcdatamodeld */; };
 		49EF6272200E75D8002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECCC200E51D000C8BBCB /* git_annex_turtle_data.xcdatamodeld */; };
 		49EF6273200E7FDD002D1585 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
-		49EFD1CF2006CEF7005742DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1CE2006CEF7005742DB /* AppDelegate.swift */; };
 		49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EFD1D02006CEF7005742DB /* ViewController.swift */; };
 		49EFD1D32006CEF7005742DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D22006CEF7005742DB /* Assets.xcassets */; };
 		49EFD1D62006CEF7005742DB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49EFD1D42006CEF7005742DB /* Main.storyboard */; };
@@ -118,6 +131,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		490982D7204E1D1300096C92 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 490982CC204E1D1200096C92;
+			remoteInfo = "git-annex-shared";
+		};
 		490BCB921DE5444D00734FF4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
@@ -207,6 +227,12 @@
 
 /* Begin PBXFileReference section */
 		49082F31201125D60030DE80 /* StatusCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCache.swift; sourceTree = "<group>"; };
+		490982CD204E1D1200096C92 /* git_annex_shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = git_annex_shared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		490982CF204E1D1300096C92 /* git_annex_shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = git_annex_shared.h; sourceTree = "<group>"; };
+		490982D0204E1D1300096C92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-sharedTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_sharedTests.swift; sourceTree = "<group>"; };
+		490982DC204E1D1300096C92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		490BCB821DE5444C00734FF4 /* git-annex-turtle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-turtle.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCB851DE5444C00734FF4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		490BCB871DE5444C00734FF4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -250,7 +276,6 @@
 		49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolder.swift; sourceTree = "<group>"; };
 		49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolders.swift; sourceTree = "<group>"; };
 		49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-preferences.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		49EFD1CE2006CEF7005742DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		49EFD1D02006CEF7005742DB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		49EFD1D22006CEF7005742DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49EFD1D52006CEF7005742DB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -283,6 +308,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		490982C9204E1D1200096C92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490982D2204E1D1300096C92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490982D6204E1D1300096C92 /* git_annex_shared.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		490BCB7F1DE5444C00734FF4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -363,6 +403,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		490982CE204E1D1200096C92 /* git-annex-shared */ = {
+			isa = PBXGroup;
+			children = (
+				49D149212049E94600CA10F2 /* StreamReader.swift */,
+				49EFD1FF2007BFB1005742DB /* Constants.swift */,
+				49D3AA4320016A1500A43A78 /* WatchedFolder.swift */,
+				49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */,
+				490982CF204E1D1300096C92 /* git_annex_shared.h */,
+				490982D0204E1D1300096C92 /* Info.plist */,
+			);
+			path = "git-annex-shared";
+			sourceTree = "<group>";
+		};
+		490982D9204E1D1300096C92 /* git-annex-sharedTests */ = {
+			isa = PBXGroup;
+			children = (
+				490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */,
+				490982DC204E1D1300096C92 /* Info.plist */,
+			);
+			path = "git-annex-sharedTests";
+			sourceTree = "<group>";
+		};
 		490BCB791DE5444C00734FF4 = {
 			isa = PBXGroup;
 			children = (
@@ -377,6 +439,8 @@
 				49F0ECC7200E51D000C8BBCB /* git-annex-turtle-data */,
 				49F0ECDD200E51D000C8BBCB /* git-annex-turtle-dataTests */,
 				49F0ECE8200E51D000C8BBCB /* git-annex-turtle-dataUITests */,
+				490982CE204E1D1200096C92 /* git-annex-shared */,
+				490982D9204E1D1300096C92 /* git-annex-sharedTests */,
 				490BCB831DE5444C00734FF4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -395,6 +459,8 @@
 				49F0ECC6200E51D000C8BBCB /* git-annex-turtle-data.app */,
 				49F0ECDA200E51D000C8BBCB /* git-annex-turtle-dataTests.xctest */,
 				49F0ECE5200E51D000C8BBCB /* git-annex-turtle-dataUITests.xctest */,
+				490982CD204E1D1200096C92 /* git_annex_shared.framework */,
+				490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -474,19 +540,15 @@
 				4981FE0A1DE61774002E6CB3 /* Config.swift */,
 				49635EF32019208500AB95E5 /* PathStatus.swift */,
 				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
-				49D3AA4320016A1500A43A78 /* WatchedFolder.swift */,
-				49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */,
 				49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */,
 				499B44741DE54A250091E0E3 /* main.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
 				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
-				49EFD1FF2007BFB1005742DB /* Constants.swift */,
 				497D1FCA20114BF200106566 /* debounce-throttle.swift */,
 				497D1FC420113F3300106566 /* EventStream.swift */,
 				497D1FC520113F3300106566 /* FileEvent.swift */,
 				497D1FC620113F3300106566 /* Witness.swift */,
 				49F058AB203E225F00157DFB /* TurtleConfigV1.swift */,
-				49D149212049E94600CA10F2 /* StreamReader.swift */,
 			);
 			path = "git-annex-mac-cmd";
 			sourceTree = "<group>";
@@ -494,7 +556,6 @@
 		49EFD1CD2006CEF7005742DB /* git-annex-preferences */ = {
 			isa = PBXGroup;
 			children = (
-				49EFD1CE2006CEF7005742DB /* AppDelegate.swift */,
 				49EFD1D02006CEF7005742DB /* ViewController.swift */,
 				49EFD1D22006CEF7005742DB /* Assets.xcassets */,
 				49EFD1D42006CEF7005742DB /* Main.storyboard */,
@@ -557,7 +618,54 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		490982CA204E1D1200096C92 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490982DD204E1D1300096C92 /* git_annex_shared.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		490982CC204E1D1200096C92 /* git-annex-shared */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 490982DE204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-shared" */;
+			buildPhases = (
+				490982C8204E1D1200096C92 /* Sources */,
+				490982C9204E1D1200096C92 /* Frameworks */,
+				490982CA204E1D1200096C92 /* Headers */,
+				490982CB204E1D1200096C92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "git-annex-shared";
+			productName = "git-annex-shared";
+			productReference = 490982CD204E1D1200096C92 /* git_annex_shared.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		490982D4204E1D1300096C92 /* git-annex-sharedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 490982E1204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-sharedTests" */;
+			buildPhases = (
+				490982D1204E1D1300096C92 /* Sources */,
+				490982D2204E1D1300096C92 /* Frameworks */,
+				490982D3204E1D1300096C92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				490982D8204E1D1300096C92 /* PBXTargetDependency */,
+			);
+			name = "git-annex-sharedTests";
+			productName = "git-annex-sharedTests";
+			productReference = 490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		490BCB811DE5444C00734FF4 /* git-annex-turtle */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 490BCBA51DE5444D00734FF4 /* Build configuration list for PBXNativeTarget "git-annex-turtle" */;
@@ -764,6 +872,14 @@
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = "Andrew Ringler";
 				TargetAttributes = {
+					490982CC204E1D1200096C92 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					490982D4204E1D1300096C92 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
 					490BCB811DE5444C00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = ASJ7K8YJ25;
@@ -867,11 +983,27 @@
 				49F0ECC5200E51D000C8BBCB /* git-annex-turtle-data */,
 				49F0ECD9200E51D000C8BBCB /* git-annex-turtle-dataTests */,
 				49F0ECE4200E51D000C8BBCB /* git-annex-turtle-dataUITests */,
+				490982CC204E1D1200096C92 /* git-annex-shared */,
+				490982D4204E1D1300096C92 /* git-annex-sharedTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		490982CB204E1D1200096C92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490982D3204E1D1300096C92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		490BCB801DE5444C00734FF4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -958,6 +1090,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		490982C8204E1D1200096C92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
+				490982EA204E213400096C92 /* WatchedFolder.swift in Sources */,
+				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
+				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490982D1204E1D1300096C92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				490982DB204E1D1300096C92 /* git_annex_sharedTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		490BCB7E1DE5444C00734FF4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -967,6 +1118,7 @@
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
 				49D149232049F64700CA10F2 /* StreamReader.swift in Sources */,
+				490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */,
 				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
 				497D1FC820113F3300106566 /* FileEvent.swift in Sources */,
 				49D000662040B215008DC76A /* FolderTracking.swift in Sources */,
@@ -977,7 +1129,6 @@
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
-				49E13FBF2013AD4B00EE3DBE /* VisibleFolder.swift in Sources */,
 				492491F52040665A00F8D8A0 /* FullScan.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
@@ -1004,6 +1155,7 @@
 				492492002040A14E00F8D8A0 /* WatchedFolder.swift in Sources */,
 				490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */,
 				492492052040A17F00F8D8A0 /* Config.swift in Sources */,
+				490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */,
 				492492032040A16800F8D8A0 /* Queries.swift in Sources */,
 				492492092040A21400F8D8A0 /* TurtleConfigV1.swift in Sources */,
 				4924920C2040A24500F8D8A0 /* ShellScripts.swift in Sources */,
@@ -1024,6 +1176,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982E6204E1D5800096C92 /* VisibleFolder.swift in Sources */,
 				497D1FD020116EB200106566 /* FileEvent.swift in Sources */,
 				497D1FCF20116EB200106566 /* EventStream.swift in Sources */,
 				49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */,
@@ -1044,6 +1197,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982E7204E1D5900096C92 /* VisibleFolder.swift in Sources */,
 				49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
 				49EFD1FE2007BF70005742DB /* GitAnnexQueries.swift in Sources */,
@@ -1067,11 +1221,12 @@
 				49EFD2032007BFCA005742DB /* Constants.swift in Sources */,
 				49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */,
 				49F0ECFD200E5F6000C8BBCB /* Queries.swift in Sources */,
+				490982E8204E1D5A00096C92 /* VisibleFolder.swift in Sources */,
 				49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */,
 				49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */,
+				490982EC204E22E500096C92 /* WatchedFolder.swift in Sources */,
 				49EF626D200E70B5002D1585 /* DataEntrypoint.swift in Sources */,
 				49DD9BA820192B0300B90DC7 /* PathStatus.swift in Sources */,
-				49EFD1CF2006CEF7005742DB /* AppDelegate.swift in Sources */,
 				49EFD2042007BFD6005742DB /* Config.swift in Sources */,
 				49EF6272200E75D8002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 			);
@@ -1097,8 +1252,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982C6204E042E00096C92 /* Queries.swift in Sources */,
 				49EF6273200E7FDD002D1585 /* FinderSync.swift in Sources */,
 				49F0ECCB200E51D000C8BBCB /* ViewController.swift in Sources */,
+				490982E9204E1D5C00096C92 /* VisibleFolder.swift in Sources */,
 				49F0ECF6200E534B00C8BBCB /* WatchedFolder.swift in Sources */,
 				49F0ECC9200E51D000C8BBCB /* AppDelegate.swift in Sources */,
 				49DD9BA920192B0400B90DC7 /* PathStatus.swift in Sources */,
@@ -1128,6 +1285,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		490982D8204E1D1300096C92 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 490982CC204E1D1200096C92 /* git-annex-shared */;
+			targetProxy = 490982D7204E1D1300096C92 /* PBXContainerItemProxy */;
+		};
 		490BCB931DE5444D00734FF4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 490BCB811DE5444C00734FF4 /* git-annex-turtle */;
@@ -1193,6 +1355,104 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		490982DF204E1D1300096C92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-shared/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-shared";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		490982E0204E1D1300096C92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-shared/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-shared";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		490982E2204E1D1300096C92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-sharedTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-sharedTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		490982E3204E1D1300096C92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "git-annex-sharedTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-sharedTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
 		490BCBA31DE5444D00734FF4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1691,6 +1951,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		490982DE204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-shared" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490982DF204E1D1300096C92 /* Debug */,
+				490982E0204E1D1300096C92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		490982E1204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-sharedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490982E2204E1D1300096C92 /* Debug */,
+				490982E3204E1D1300096C92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		490BCB7D1DE5444C00734FF4 /* Build configuration list for PBXProject "git-annex-turtle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

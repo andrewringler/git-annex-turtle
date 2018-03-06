@@ -12,6 +12,7 @@ import CoreData
 
 class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
+    let processID: Int32 = ProcessInfo().processIdentifier
     
     var watchedFolders = Set<WatchedFolder>()
     let statusCache: StatusCache
@@ -48,6 +49,10 @@ class FinderSync: FIFinderSync {
         // or perhaps the Finder Sync extension is going into a background mode and not waking up?
         // or perhaps Finder Sync extensions are meant to be transient, so can never
         // really accept notifications from the system
+        //
+        // TODO ooops, probably I was just registering them on a background thread
+        // File System API registration requests must happen on the main thread…
+        // try and retest
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleDatabaseUpdatesIfAny()
@@ -82,7 +87,7 @@ class FinderSync: FIFinderSync {
             updateWatchedFolders(queries: queries)
             
             for watchedFolder in self.watchedFolders {
-                let statuses: [PathStatus] = queries.allNonRequestStatusesV2Blocking(in: watchedFolder)
+                let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder)
                 for status in statuses {
                     if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
                         // OK, this value is identical to the one in our cache, ignore
@@ -105,7 +110,7 @@ class FinderSync: FIFinderSync {
             for watchedFolder in watchedFolders {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                        Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder)
+                        Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
                         return
                     } else {
                         NSLog("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -119,13 +124,26 @@ class FinderSync: FIFinderSync {
     }
     
     // The user is no longer seeing the container's contents.
+    // TODO this is process specific I think. IE if a user loads
+    // a file window it will have its own Finder Sync process and generate
+    // its own set of start and end calls
     override func endObservingDirectory(at url: URL) {
         NSLog("endObservingDirectory for \(url) \(id())")
-        if let path = PathUtils.path(for: url) {
-            Queries(data: data).removeVisibleFolderAsync(for: path)
+        if let absolutePath = PathUtils.path(for: url) {
+            for watchedFolder in watchedFolders {
+                if absolutePath.starts(with: watchedFolder.pathString) {
+                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                        Queries(data: data).removeVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
+                        return
+                    } else {
+                        NSLog("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
+                    }
+                }
+            }
         } else {
-            NSLog("endObservingDirectory could not generate path string for url '\(url)'")
+            NSLog("endObservingDirectory: error, could not generate path for URL '\(url)'")
         }
+        NSLog("endObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
     }
     
     private func updateBadge(for url: URL, with status: PathStatus) {

@@ -102,7 +102,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Main loop
         DispatchQueue.global(qos: .background).async {
             while true {
-                self.visibleFolders?.updateListOfVisibleFolders()
+                self.visibleFolders?.updateListOfVisibleFolders(with: self.watchedFolders)
 
                 // Handle folder updates, for any folder that is not doing a full scan
                 for watchedFolder in self.watchedFolders {
