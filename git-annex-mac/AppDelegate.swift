@@ -528,6 +528,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             menubarAnimating = true
             menubarIconAnimationLock.unlock()
             animateMenubarIcon()
+            return
         }
         menubarIconAnimationLock.unlock()
     }
