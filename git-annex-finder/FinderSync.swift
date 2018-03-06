@@ -12,7 +12,8 @@ import CoreData
 
 class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
-    let processID: Int32 = ProcessInfo().processIdentifier
+    // Save off our Process Identifier, since each get request will be different (because of timestamping)
+    let processID: String = ProcessInfo().globallyUniqueString
     
     var watchedFolders = Set<WatchedFolder>()
     let statusCache: StatusCache
@@ -87,7 +88,7 @@ class FinderSync: FIFinderSync {
             updateWatchedFolders(queries: queries)
             
             for watchedFolder in self.watchedFolders {
-                let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder)
+                let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder, processID: processID)
                 for status in statuses {
                     if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
                         // OK, this value is identical to the one in our cache, ignore

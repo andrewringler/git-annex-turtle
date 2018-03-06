@@ -40,6 +40,107 @@ class fullScanTests: XCTestCase {
         super.tearDown()
     }
 
+    func testVisibleFolderQueries() {
+        let pid: String = "process 1"
+        
+        // add folders to git-annex repo
+        let folder1 = "folder1"
+        let file1 = "folder1/afile1.txt"
+        TestingUtil.createDir(dir: "folder1", in: repo1!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        
+        // add folders and files that will not be visible to git-annex repo
+        let folder2 = "folder2"
+        let file2 = "folder2/afile2.txt"
+        TestingUtil.createDir(dir: folder2, in: repo1!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "file2 content", to: file2, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        
+        // add some more nested folders, that will be visible
+        let folder3 = "folder2/folder3"
+        let file3 = "folder2/folder3/afile3.txt"
+        TestingUtil.createDir(dir: folder3, in: repo1!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "file3 content", to: file3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+
+        DispatchQueue.main.async {
+            self.queries!.addVisibleFolderAsync(for: folder1, in: self.repo1!, processID: pid)
+            self.queries!.addVisibleFolderAsync(for: folder3, in: self.repo1!, processID: pid)
+            self.queries!.addVisibleFolderAsync(for: PathUtils.CURRENT_DIR, in: self.repo1!, processID: pid)
+        }
+        wait(for: 5) // wait for visible folders to be added (in background thread)
+        
+        // do a full scan, to add our folders and files to the database
+        fullScan!.startFullScan(watchedFolder: repo1!)
+        
+        let done = NSPredicate(format: "doneScanning == true")
+        expectation(for: done, evaluatedWith: self, handler: nil)
+        waitForExpectations(timeout: 30, handler: nil)
+
+        // Grab visible folders
+        let statuses = queries!.allVisibleStatusesV2Blocking(in: repo1!, processID: pid)
+        XCTAssertEqual(statuses.count, 6)
+        let sorted = statuses.sorted { $0.path < $1.path }
+
+        if let file = sorted[safe: 0] {
+            XCTAssertEqual(file.path, PathUtils.CURRENT_DIR)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for file 3")
+        }
+        if let file = sorted[safe: 1] {
+            XCTAssertEqual(file.path, folder1)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for root folder")
+        }
+        if let file = sorted[safe: 2] {
+            XCTAssertEqual(file.path, file1)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for file 1")
+        }
+        if let file = sorted[safe: 3] {
+            XCTAssertEqual(file.path, folder2)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for folder 2")
+        }
+        if let file = sorted[safe: 4] {
+            XCTAssertEqual(file.path, folder3)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for folder 3")
+        }
+        if let file = sorted[safe: 5] {
+            XCTAssertEqual(file.path, file3)
+            XCTAssertEqual(file.presentStatus, Present.present)
+            XCTAssertEqual(file.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(file.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for file 3")
+        }
+
+        
+
+        // "folder2/afile2.txt" is not visible, but still has valid data
+        if let status1 = queries!.statusForPathV2Blocking(path: file2, in: repo1!) {
+            XCTAssertEqual(status1.presentStatus, Present.present)
+            XCTAssertEqual(status1.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status1.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for \(file2)")
+        }
+    }
+    
     func testFullScan() {
         //
         // Repo 1
@@ -266,5 +367,30 @@ class fullScanTests: XCTestCase {
     func doneScanning() -> Bool {
         return fullScan!.isScanning(watchedFolder: repo1!) == false
         && fullScan!.isScanning(watchedFolder: repo2!) == false
+    }
+}
+
+// https://stackoverflow.com/a/30593673/8671834
+extension Collection {
+    
+    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
+// https://stackoverflow.com/a/42222302/8671834
+extension XCTestCase {
+    
+    func wait(for duration: TimeInterval) {
+        let waitExpectation = expectation(description: "Waiting")
+        
+        let when = DispatchTime.now() + duration
+        DispatchQueue.main.asyncAfter(deadline: when) {
+            waitExpectation.fulfill()
+        }
+        
+        // We use a buffer here to avoid flakiness with Timer on CI
+        waitForExpectations(timeout: duration + 0.5)
     }
 }

@@ -417,16 +417,36 @@ class Queries {
     //    }
     
     
-    func allVisibleStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
+    func allVisibleStatusesV2Blocking(in watchedFolder: WatchedFolder, processID: String) -> [PathStatus] {
         var paths: [PathStatus] = []
         
         let moc = data.persistentContainer.viewContext
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString)
             do {
+                // Fetch visible folders for folder and Finder Sync Extension process ID
+                let fetchVisibleFolders = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
+                fetchVisibleFolders.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) == %@ && \(VisibleFoldersEntityAttributes.processID.rawValue) == %@", watchedFolder.uuid.uuidString, processID)
+//                fetchVisibleFolders.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) == %@", watchedFolder.uuid.uuidString)
+
+                let visibleFolders = try privateMOC.fetch(fetchVisibleFolders)
+                
+                // Fetch Status for all visible folders
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+                var predicates: [NSPredicate] = []
+//                predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString))
+
+                for visibleFolder in visibleFolders {
+                    if let path = visibleFolder.value(forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue) as? String {
+                        // Grab all children of this folder
+                        predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.parentPath.rawValue) == %@", watchedFolder.uuid.uuidString, path))
+                        // Grab the folder itself
+                        predicates.append(NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@ && \(PathStatusAttributes.pathString.rawValue) == %@", watchedFolder.uuid.uuidString, path))
+                    }
+                }
+                fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+
                 let statuses = try privateMOC.fetch(fetchRequest)
                 for status in statuses {
                     // required properties
@@ -1079,7 +1099,7 @@ class Queries {
         return ret
     }
     
-    func removeVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: Int32) {
+    func removeVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: String) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         
@@ -1138,7 +1158,7 @@ class Queries {
         return ret
     }
     
-    func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: Int32) {
+    func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: String) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy

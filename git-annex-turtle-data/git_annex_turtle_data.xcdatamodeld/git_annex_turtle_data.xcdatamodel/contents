@@ -56,8 +56,12 @@
     </entity>
     <entity name="VisibleFoldersEntity" representedClassName="VisibleFoldersEntity" syncable="YES" codeGenerationType="class">
         <attribute name="pathString" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="processID" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="processID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="watchedFolderParentUUIDString" optional="YES" attributeType="String" syncable="YES"/>
+        <fetchIndex name="visibleFolderQuery">
+            <fetchIndexElement property="watchedFolderParentUUIDString" type="Binary" order="ascending"/>
+            <fetchIndexElement property="processID" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="pathString"/>
