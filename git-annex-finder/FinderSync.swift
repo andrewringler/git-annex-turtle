@@ -223,7 +223,7 @@ class FinderSync: FIFinderSync {
         // grab its status, if we have it cached
         var statusOptional: PathStatus? = nil
         if menuKind == FIMenuKind.contextualMenuForItems {
-            if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
+            if let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1 {
                 for obj: URL in items {
                     if let absolutePath = PathUtils.path(for: obj) {
                         for watchedFolder in watchedFolders {
