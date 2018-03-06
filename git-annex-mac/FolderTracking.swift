@@ -26,7 +26,7 @@ class FolderTracking {
          */
         let sortedByLongestPath = PathUtils.sortedDeepestDirFirst(foldersNeedingUpdates)
         for folderNeedingUpdate in sortedByLongestPath {
-            NSLog("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
+            TurtleLog.debug("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
             var enoughCopiesAllChildren: EnoughCopies?
             var leastCopies: UInt8?
             var presentAll: Present?
@@ -40,9 +40,9 @@ class FolderTracking {
             // lets update, then check this folder again later
             let childrenWithoutEntries = children.subtracting(pathsForStatuses)
             if childrenWithoutEntries.count > 0 {
-                NSLog("Children of folder has changed \(folderNeedingUpdate) in \(watchedFolder) missing \(childrenWithoutEntries)")
+                TurtleLog.debug("Children of folder has changed \(folderNeedingUpdate) in \(watchedFolder) missing \(childrenWithoutEntries)")
                 for child in childrenWithoutEntries {
-                    NSLog("Adding missing entry for \(child) in \(folderNeedingUpdate) in \(watchedFolder)")
+                    TurtleLog.debug("Adding missing entry for \(child) in \(folderNeedingUpdate) in \(watchedFolder)")
                     queries.addRequestV2Async(for: child, in: watchedFolder)
                 }
                 break // check this folder again later
@@ -91,7 +91,7 @@ class FolderTracking {
             }
             
             if complete, let enoughCopies = enoughCopiesAllChildren, let present = presentAll {
-                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
+                TurtleLog.debug("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
                 
                 queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopies, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
                 
@@ -118,13 +118,13 @@ class FolderTracking {
          * before their parent
          */
         let sortedByLongestPath = PathUtils.sortedDeepestDirFirst(foldersNeedingUpdates)
-        NSLog("Handling folder updates in order: \(sortedByLongestPath)")
+        TurtleLog.debug("Handling folder updates in order: \(sortedByLongestPath)")
         for folderNeedingUpdate in sortedByLongestPath {
             if fullScan.shouldStop(watchedFolder) {
                 return false
             }
             
-            NSLog("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
+            TurtleLog.debug("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
             var enoughCopiesAllChildren: EnoughCopies?
             var leastCopies: UInt8?
             var presentAll: Present?
@@ -157,7 +157,7 @@ class FolderTracking {
                             presentAll = presentAllValue && present
                         }
                     } else {
-                        NSLog("Missing information for \(status)")
+                        TurtleLog.error("Missing information for \(status)")
                         complete = false
                         break
                     }
@@ -174,7 +174,7 @@ class FolderTracking {
             }
             
             if complete, let enoughCopies = enoughCopiesAllChildren, let present = presentAll {
-                NSLog("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
+                TurtleLog.debug("Folder now has full information \(folderNeedingUpdate) in \(watchedFolder) \(enoughCopies) \(String(describing: leastCopies)) \(present)")
                 
                 queries.updateStatusForPathV2Blocking(presentStatus: present, enoughCopies: enoughCopies, numberOfCopies: leastCopies, isGitAnnexTracked: true, for: folderNeedingUpdate, key: nil, in: watchedFolder, isDir: true, needsUpdate: false)
                 
@@ -183,7 +183,7 @@ class FolderTracking {
                     queries.invalidateDirectory(path: parent, in: watchedFolder)
                 }
             } else {
-                NSLog("Unable to complete folder information for \(folderNeedingUpdate) in \(watchedFolder)")
+                TurtleLog.info("Unable to complete folder information for \(folderNeedingUpdate) in \(watchedFolder)")
                 return false
             }
         }

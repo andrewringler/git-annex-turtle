@@ -56,7 +56,7 @@ fileprivate class TurtleConfigMutableV1: CustomStringConvertible {
             if let repo = repoBuilder.build() {
                 repos.insert(repo)
             } else {
-                NSLog("Invalid repo \(repoBuilder) for config \(self)")
+                TurtleLog.error("Invalid repo \(repoBuilder) for config \(self)")
                 return nil
             }
         }
@@ -229,7 +229,7 @@ struct TurtleConfigV1 {
             
             // first non-comment line, should be a section
             if section == nil {
-                NSLog("Invalid config, expecting section at line: \(line) for config: \(config)")
+                TurtleLog.error("Invalid config, expecting section at line: \(line) for config: \(config)")
                 return nil
             }
 
@@ -249,7 +249,7 @@ struct TurtleConfigV1 {
                         }
                         continue
                     }
-                    NSLog("Invalid key = value pair for [turtle] section at line: \(line) for config: \(config)")
+                    TurtleLog.error("Invalid key = value pair for [turtle] section at line: \(line) for config: \(config)")
                     return nil
                 case .turtleMonitor:
                     if let name = turtleSectionMonitorKeyValueName(rawValue: key) {
@@ -267,20 +267,20 @@ struct TurtleConfigV1 {
                                 repo?.trackFileStatus = try Bool(value)
                             }
                         } catch {
-                            NSLog("Invalid key = value pair at line: \(line) for config: \(config)")
+                            TurtleLog.error("Invalid key = value pair at line: \(line) for config: \(config)")
                             return nil
                         }
                         continue
                     }
-                    NSLog("Invalid key = value pair for [turtle-monitor] section at line: \(line) for config: \(config)")
+                    TurtleLog.error("Invalid key = value pair for [turtle-monitor] section at line: \(line) for config: \(config)")
                     return nil
                 }
                 
-                NSLog("Unknown attribute name at line: \(line) for config: \(config)")
+                TurtleLog.error("Unknown attribute name at line: \(line) for config: \(config)")
                 return nil
             }
                 
-            NSLog("Invalid config, expecting key = value pair or new section for line: \(line) with config: \(config)")
+            TurtleLog.error("Invalid config, expecting key = value pair or new section for line: \(line) with config: \(config)")
             return nil
         }
 

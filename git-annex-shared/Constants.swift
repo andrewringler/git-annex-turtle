@@ -236,10 +236,10 @@ class PathUtils {
                 return path
             }
         } catch {
-            NSLog("unable to create a new temp folder \(error)")
+            TurtleLog.error("unable to create a new temp folder \(error)")
             return nil
         }
-        NSLog("unable to create a new temp folder")
+        TurtleLog.error("unable to create a new temp folder")
         return nil
     }
     
@@ -249,7 +249,7 @@ class PathUtils {
             do {
                 try FileManager.default.removeItem(at: directory)
             } catch {
-                NSLog("Unable to cleanup folder \(path)")
+                TurtleLog.error("Unable to cleanup folder \(path)")
             }
         }
     }
@@ -308,7 +308,7 @@ class PathUtils {
             }
             dirs.append(CURRENT_DIR)
         } catch {
-            NSLog("Unable to enumerate files in \(watchedFolder)")
+            TurtleLog.error("Unable to enumerate files in \(watchedFolder)")
         }
         
         return (files: files, dirs: dirs)

@@ -74,7 +74,7 @@ class DataEntrypoint {
         let context = persistentContainer.viewContext
         
         if !context.commitEditing() {
-            NSLog("\(NSStringFromClass(type(of: self))) unable to commit editing before saving")
+            TurtleLog.error("\(NSStringFromClass(type(of: self))) unable to commit editing before saving")
         }
         if context.hasChanges {
             do {
@@ -97,7 +97,7 @@ class DataEntrypoint {
         let context = persistentContainer.viewContext
         
         if !context.commitEditing() {
-            NSLog("\(NSStringFromClass(type(of: self))) unable to commit editing to terminate")
+            TurtleLog.error("\(NSStringFromClass(type(of: self))) unable to commit editing to terminate")
             return .terminateCancel
         }
         

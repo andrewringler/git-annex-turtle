@@ -205,7 +205,7 @@ class BadgeIcons {
             }
         }
         
-        NSLog("could not find badge icon for \(status), returning unknown state icon")
+        TurtleLog.debug("could not find badge icon for \(status), returning unknown state icon")
         return unknownStateInGitAnnex.name()!.rawValue
     }
 }

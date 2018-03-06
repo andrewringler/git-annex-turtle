@@ -103,41 +103,6 @@ class Queries {
     // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
     // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/Concurrency.html
     
-    //    func updateStatusForPathBlocking(to status: Status, for path: String, in watchedFolder:
-    //        WatchedFolder) {
-    //        let moc = data.persistentContainer.viewContext
-    //        moc.stalenessInterval = 0
-    //
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            do {
-    //                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
-    //                let pathStatuses = try privateMOC.fetch(fetchRequest)
-    //                if pathStatuses.count == 1, let pathStatus = pathStatuses.first  {
-    //                    pathStatus.setValue(status.rawValue, forKeyPath: PathStatusAttributes.statusString.rawValue)
-    //                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
-    //                } else {
-    //                    NSLog("Error, more than one record for path='\(path)'")
-    //                }
-    //
-    //                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
-    //
-    //                try privateMOC.save()
-    //                moc.performAndWait {
-    //                    do {
-    //                        try moc.save()
-    //                    } catch {
-    //                        fatalError("Failure to save main context: \(error)")
-    //                    }
-    //                }
-    //            } catch {
-    //                fatalError("Failure to save private context: \(error)")
-    //            }
-    //        }
-    //    }
-    
     func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
         let moc = data.persistentContainer.viewContext
@@ -160,7 +125,7 @@ class Queries {
                     if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: privateMOC) {
                         entry = NSManagedObject(entity: entity, insertInto: privateMOC)
                     } else {
-                        NSLog("updateStatusForPathV2Blocking: Could not create entity for \(PathStatusEntityName)")
+                        TurtleLog.error("Could not create entity for \(PathStatusEntityName)")
                         return
                     }
                 }
@@ -181,7 +146,7 @@ class Queries {
                     pathStatus.setValue(parent, forKeyPath: PathStatusAttributes.parentPath.rawValue)
                     
                 } else {
-                    NSLog("updateStatusForPathV2Blocking: Could not create/update entity for \(PathStatusEntityName)")
+                    TurtleLog.error("could not create/update entity for \(PathStatusEntityName)")
                 }
                 
                 try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
@@ -191,18 +156,20 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("updateStatusForPathV2Blocking: Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
+                        fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                     }
                 }
             } catch {
-                fatalError("updateStatusForPathV2Blocking: Failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
+                fatalError("could not save private context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
             }
         }
     }
     
     // Skip checks to see if path is already in DB since this
     // is triggered from a fullscan, assume we have no entries
-    func updateStatusForPathV2BatchBlocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for paths: [String], key: String?, in watchedFolder:
+    func updateStatusForDirectoryPathsV2BatchBlocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for paths: [String], key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) -> Bool {
         var success = true
         let moc = data.persistentContainer.viewContext
@@ -229,7 +196,7 @@ class Queries {
                         let parent = PathUtils.parent(for: path, in: watchedFolder)
                         pathStatus.setValue(parent, forKeyPath: PathStatusAttributes.parentPath.rawValue)
                     } else {
-                        NSLog("updateStatusForPathV2Blocking: Could not create entity for \(PathStatusEntityName)")
+                        TurtleLog.error("could not create entity for \(PathStatusEntityName)")
                         success = false
                         return
                     }
@@ -242,12 +209,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("updateStatusForPathV2Blocking: Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
+                        fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                     }
                 }
             } catch {
-                fatalError("updateStatusForPathV2Blocking: Failure to save private context: \(error)")
-            }
+                TurtleLog.fatal("could not save private context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
+                fatalError("could not save private context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")            }
         }
         return success
     }
@@ -266,7 +234,7 @@ class Queries {
                 newPathRow.setValue(path, forKeyPath: PathRequestEntityAttributes.pathString.rawValue)
                 newPathRow.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathRequestEntityAttributes.watchedFolderUUIDString.rawValue)
             } else {
-                NSLog("addRequestV2Async: Could not create entity for \(PathRequestEntityName)")
+                TurtleLog.error("could not create entity for \(PathRequestEntityName)")
             }
             do {
                 try privateMOC.save()
@@ -274,11 +242,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("addRequestV2Async: Failure to save context: \(error)")
+                        TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) \(error)")
+                        fatalError("could not save main context path=\(path) \(watchedFolder) \(error)")
                     }
                 }
             } catch {
-                fatalError("addRequestV2Async: Failure to save context: \(error)")
+                TurtleLog.fatal("could not save private context path=\(path) \(watchedFolder) \(error)")
+                fatalError("could not save private context path=\(path) \(watchedFolder) \(error)")
             }
         }
     }
@@ -311,11 +281,12 @@ class Queries {
                         
                         ret = PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate)
                     } else {
-                        NSLog("statusForPathV2Blocking: unable to fetch entry for status=\(status)")
+                        TurtleLog.error("unable to fetch entry for status=\(status) path=\(path) \(watchedFolder)")
                     }
                 }
             } catch {
-                fatalError("Failure fetch statuses: \(error)")
+                TurtleLog.fatal("could not fetch statuses path=\(path) \(watchedFolder) \(error)")
+                fatalError("could not fetch statuses path=\(path) \(watchedFolder) \(error)")
             }
         }
         
@@ -377,45 +348,18 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("allPathsNotHandledV2Blocking: Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context for \(watchedFolder) \(error)")
+                        fatalError("could not save main context for \(watchedFolder) \(error)")
                     }
                 }
-            } catch let error as NSError {
-                NSLog("allPathsNotHandledV2Blocking: Could not fetch or save private from private context. \(error), \(error.userInfo)")
+            } catch {
+                TurtleLog.fatal("could not save private context for \(watchedFolder) \(error)")
+                fatalError("could not save private context for \(watchedFolder) \(error)")
             }
         }
         
         return paths
     }
-    
-    //    func allPathsOlderThanBlocking(in watchedFolder: WatchedFolder, secondsOld: Double) -> [String] {
-    //        var paths: [String] = []
-    //
-    //        let moc = data.persistentContainer.viewContext
-    //        moc.stalenessInterval = 0
-    //
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //            let olderThan: Double = (Date().timeIntervalSince1970 as Double) - secondsOld
-    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.modificationDate) <= \(olderThan)")
-    //            do {
-    //                let statuses = try privateMOC.fetch(fetchRequest)
-    //
-    //                for status in statuses {
-    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-    //                        paths.append(pathString)
-    //                    }
-    //                }
-    //            } catch let error as NSError {
-    //                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
-    //            }
-    //        }
-    //
-    //        return paths
-    //    }
-    
     
     func allVisibleStatusesV2Blocking(in watchedFolder: WatchedFolder, processID: String) -> [PathStatus] {
         var paths: [PathStatus] = []
@@ -428,7 +372,6 @@ class Queries {
                 // Fetch visible folders for folder and Finder Sync Extension process ID
                 let fetchVisibleFolders = NSFetchRequest<NSManagedObject>(entityName: VisibleFoldersEntityName)
                 fetchVisibleFolders.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) == %@ && \(VisibleFoldersEntityAttributes.processID.rawValue) == %@", watchedFolder.uuid.uuidString, processID)
-//                fetchVisibleFolders.predicate = NSPredicate(format: "\(VisibleFoldersEntityAttributes.watchedFolderParentUUIDString.rawValue) == %@", watchedFolder.uuid.uuidString)
 
                 let visibleFolders = try privateMOC.fetch(fetchVisibleFolders)
                 
@@ -465,55 +408,17 @@ class Queries {
                         
                         paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
                     } else {
-                        NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
+                        TurtleLog.error("unable to fetch entry for status=\(status) for \(watchedFolder) pid=\(processID)")
                     }
                 }
             } catch {
-                fatalError("allNonRequestStatusesV2Blocking: Failure fetch statuses: \(error)")
+                TurtleLog.fatal("could not fetch for \(watchedFolder) pid=\(processID) \(error)")
+                fatalError("could not fetch for \(watchedFolder) pid=\(processID) \(error)")
             }
         }
         
         return paths
     }
-    
-//    func allNonRequestStatusesV2Blocking(in watchedFolder: WatchedFolder) -> [PathStatus] {
-//        var paths: [PathStatus] = []
-//
-//        let moc = data.persistentContainer.viewContext
-//        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-//        privateMOC.parent = moc
-//        privateMOC.performAndWait {
-//            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-//            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == %@", watchedFolder.uuid.uuidString)
-//            do {
-//                let statuses = try privateMOC.fetch(fetchRequest)
-//                for status in statuses {
-//                    // required properties
-//                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String,
-//                        let isGitAnnexTracked = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isGitAnnexTracked.rawValue) as? NSNumber),
-//                        let modificationDate = status.value(forKeyPath: PathStatusAttributes.modificationDate.rawValue) as? Double,
-//                        let isDir = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.isDir.rawValue) as? NSNumber),
-//                        let needsUpdate = nsNumberAsBoolOrNil(status.value(forKeyPath: PathStatusAttributes.needsUpdate.rawValue) as? NSNumber)
-//                    {
-//
-//                        // optional properties
-//                        let key = status.value(forKeyPath: PathStatusAttributes.gitAnnexKey.rawValue) as? String
-//                        let enoughCopies = EnoughCopies(rawValue: status.value(forKeyPath: PathStatusAttributes.enoughCopiesStatus.rawValue) as? String ?? "NO MATCH")
-//                        let numberOfCopies = numberOfCopiesAsUInt8(status.value(forKeyPath: PathStatusAttributes.numberOfCopies.rawValue) as? Double)
-//                        let presentStatus = Present(rawValue: status.value(forKeyPath: PathStatusAttributes.presentStatus.rawValue) as? String ?? "NO MATCH")
-//
-//                        paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
-//                    } else {
-//                        NSLog("allNonRequestStatusesV2Blocking: unable to fetch entry for status=\(status)")
-//                    }
-//                }
-//            } catch {
-//                fatalError("allNonRequestStatusesV2Blocking: Failure fetch statuses: \(error)")
-//            }
-//        }
-//
-//        return paths
-//    }
     
     func foldersIncompleteOrInvalidBlocking(in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
@@ -532,44 +437,17 @@ class Queries {
                     {
                         paths.append(path)
                     } else {
-                        NSLog("foldersIncompleteBlocking: unable to fetch entry for status=\(status)")
+                        TurtleLog.error("unable to fetch entry for status=\(status)")
                     }
                 }
             } catch {
-                fatalError("foldersIncompleteBlocking: Failure fetch statuses: \(error)")
+                TurtleLog.fatal("could not fetch for \(watchedFolder) \(error)")
+                fatalError("could not fetch for \(watchedFolder) \(error)")
             }
         }
         
         return paths
     }
-    
-    //    func foldersThatNeedUpdatesBlocking(in watchedFolder: WatchedFolder) -> [String] {
-    //        var paths: [String] = []
-    //
-    //        let moc = data.persistentContainer.viewContext
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString.rawValue) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.isDir.rawValue) == \(NSNumber(value: true)) && \(PathStatusAttributes.needsUpdate.rawValue) == \(NSNumber(value: true))")
-    //            do {
-    //                let statuses = try privateMOC.fetch(fetchRequest)
-    //                for status in statuses {
-    //                    // required properties
-    //                    if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String
-    //                    {
-    //                        paths.append(path)
-    //                    } else {
-    //                        NSLog("foldersThatNeedUpdatesBlocking: unable to fetch entry for status=\(status)")
-    //                    }
-    //                }
-    //            } catch {
-    //                fatalError("foldersThatNeedUpdatesBlocking: Failure fetch statuses: \(error)")
-    //            }
-    //        }
-    //
-    //        return paths
-    //    }
     
     func childStatusesOfBlocking(parentRelativePath: String, in watchedFolder: WatchedFolder) -> [PathStatus] {
         var paths: [PathStatus] = []
@@ -599,10 +477,11 @@ class Queries {
                         
                         paths.append(PathStatus(isDir: isDir, isGitAnnexTracked: isGitAnnexTracked, presentStatus: presentStatus, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: key, needsUpdate: needsUpdate))
                     } else {
-                        NSLog("childStatusesOf: unable to fetch entry for status=\(status)")
+                        TurtleLog.error("unable to fetch entry for status=\(status)")
                     }
                 }
             } catch {
+                TurtleLog.fatal("could not fetch statuses \(error)")
                 fatalError("childStatusesOf: Failure fetch statuses: \(error)")
             }
         }
@@ -627,11 +506,12 @@ class Queries {
                         
                         paths.append(path)
                     } else {
-                        NSLog("allNonTrackedPathsBlocking: unable to parse result in \(watchedFolder)")
+                        TurtleLog.error("unable to parse result in \(watchedFolder)")
                     }
                 }
             } catch {
-                fatalError("allNonTrackedPathsBlocking: Failure fetch statuses: in \(watchedFolder)")
+                TurtleLog.fatal("failure to fetch statuses in \(watchedFolder) \(error)")
+                fatalError("failure to fetch statuses in \(watchedFolder) \(error)")
             }
         }
         
@@ -667,73 +547,17 @@ class Queries {
                     if let path = status.value(forKeyPath: PathStatusAttributes.pathString.rawValue) as? String {
                         paths.append(path)
                     } else {
-                        NSLog("pathsWithStatusesGivenAnnexKeysBlocking: unable to parse result for keys \(keys) in \(watchedFolder)")
+                        TurtleLog.error("unable to parse result for keys \(keys) in \(watchedFolder)")
                     }
                 }
             } catch {
-                fatalError("pathsWithStatusesGivenAnnexKeysBlocking: Failure fetch paths: \(error)")
+                TurtleLog.fatal("failure to fetch paths \(error) for keys \(keys) in \(watchedFolder)")
+                fatalError("failure to fetch paths \(error) for keys \(keys) in \(watchedFolder)")
             }
         }
         
         return paths
     }
-    
-    //    func allNonRequestStatusesBlocking(in watchedFolder: WatchedFolder) -> [(path: String, status: String)] {
-    //        var paths: [(path: String, status: String)] = []
-    //
-    //        let moc = data.persistentContainer.viewContext
-    //        moc.stalenessInterval = 0
-    //
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.watchedFolderUUIDString) == '\(watchedFolder.uuid.uuidString)' && \(PathStatusAttributes.statusString) != '\(Status.request.rawValue)'")
-    //            do {
-    //                let statuses = try privateMOC.fetch(fetchRequest)
-    //
-    //                for status in statuses {
-    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String,
-    //                        let statusString = status.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String
-    //                    {
-    //                        paths.append((path: pathString, status: statusString))
-    //                    } else {
-    //                        NSLog("Could not retrieve path and status for entity '\(status)'")
-    //                    }
-    //                }
-    //            } catch let error as NSError {
-    //                NSLog("Could not fetch allNonRequestStatuses. \(error), \(error.userInfo)")
-    //            }
-    //        }
-    //
-    //        return paths
-    //    }
-    
-    //    func allStatusesBlocking() -> [String] {
-    //        var ret: [String] = []
-    //
-    //        let moc = data.persistentContainer.viewContext
-    //        moc.stalenessInterval = 0
-    //
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //            do {
-    //                let statuses = try privateMOC.fetch(fetchRequest)
-    //
-    //                for status in statuses {
-    //                    if let pathString = status.value(forKeyPath: "\(PathStatusAttributes.pathString.rawValue)") as? String {
-    //                        ret.append(pathString)
-    //                    }
-    //                }
-    //            } catch let error as NSError {
-    //                NSLog("Could not fetch. \(error), \(error.userInfo)")
-    //            }
-    //        }
-    //
-    //        return ret
-    //    }
     
     func updateWatchedFoldersBlocking(to newListOfWatchedFolders: [WatchedFolder]) {
         let moc = data.persistentContainer.viewContext
@@ -787,12 +611,12 @@ class Queries {
                             newWatchedFolderRow.setValue(folderToAdd.pathString, forKeyPath: WatchedFolderEntityAttributes.pathString.rawValue)
                             newWatchedFolderRow.setValue(folderToAdd.uuid.uuidString, forKeyPath: WatchedFolderEntityAttributes.uuidString.rawValue)
                         } else {
-                            NSLog("Could not create entity for adding new folder for \(WatchedFolderEntityName)")
+                            TurtleLog.error("Could not create entity for adding new folder for \(WatchedFolderEntityName)")
                         }
                     }
                 }
             } catch let error as NSError {
-                NSLog("Could not update watched folders in Db \(newListOfWatchedFolders) \(error), \(error.userInfo)")
+                TurtleLog.error("Could not update watched folders in Db \(newListOfWatchedFolders) \(error), \(error.userInfo)")
             }
             
             do {
@@ -803,11 +627,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("Failure to save context: \(error)")
+                        TurtleLog.fatal("could not save main context for \(newListOfWatchedFolders) \(error)")
+                        fatalError("could not save main context for \(newListOfWatchedFolders) \(error)")
                     }
                 }
             } catch {
-                fatalError("Failure to save context: \(error)")
+                TurtleLog.fatal("could not save private context for \(newListOfWatchedFolders) \(error)")
+                fatalError("could not save private context for \(newListOfWatchedFolders) \(error)")
             }
         }
     }
@@ -832,11 +658,11 @@ class Queries {
                     {
                         ret.insert(WatchedFolder(uuid: uuid, pathString: pathString))
                     } else {
-                        NSLog("Unable to create watched folder item from database entity '\(watchedFolder)'")
+                        TurtleLog.error("Unable to create watched folder item from database entity '\(watchedFolder)'")
                     }
                 }
-            } catch let error as NSError {
-                NSLog("Could not fetch allWatchedFolders. \(error), \(error.userInfo)")
+            } catch {
+                TurtleLog.error("Could not fetch allWatchedFolders \(error)")
             }
         }
         
@@ -860,8 +686,8 @@ class Queries {
                         ret = lastModified
                     }
                 }
-            } catch let error as NSError {
-                NSLog("Could not fetch allPathsOlderThan. \(error), \(error.userInfo)")
+            } catch {
+                TurtleLog.error("Could not fetch allPathsOlderThan. \(error)")
             }
         }
         
@@ -880,10 +706,10 @@ class Queries {
                 
                 newPathRow.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
             } else {
-                NSLog("Could not create entity for \(PathStatusEntityName)")
+                TurtleLog.error("Could not create entity for \(PathStatusEntityName)")
             }
         } else {
-            NSLog("Error, invalid results from fetch '\(results)'")
+            TurtleLog.error("Error, invalid results from fetch '\(results)'")
         }
     }
     
@@ -901,11 +727,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context lastModified=\(lastModified) \(error)")
+                        fatalError("could not save main context lastModified=\(lastModified) \(error)")
                     }
                 }
             } catch {
-                fatalError("Failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context lastModified=\(lastModified) \(error)")
+                fatalError("could not save private context lastModified=\(lastModified) \(error)")
             }
         }
     }
@@ -937,10 +765,10 @@ class Queries {
                         newPathRow.setValue(gitCommitHashDb, forKeyPath: HandledCommitAttributes.gitCommitHash.rawValue)
                         newPathRow.setValue(gitAnnexCommitHashDb, forKeyPath: HandledCommitAttributes.gitAnnexCommitHash.rawValue)
                     } else {
-                        NSLog("Could not create entity for \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)' in \(watchedFolder)")
+                        TurtleLog.error("Could not create entity for \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)' in \(watchedFolder)")
                     }
                 } else {
-                    NSLog("Error, invalid results from fetch results='\(results)' \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)'")
+                    TurtleLog.error("Error, invalid results from fetch results='\(results)' \(HandledCommitEntityName) in \(watchedFolder) gitAnnexCommitHash='\(gitAnnexCommitHash)' gitCommitHash='\(gitCommitHash)'")
                 }
                 
                 try privateMOC.save()
@@ -948,11 +776,15 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
+                        TurtleLog.fatal("could not save main context gitCommitHash=\(gitCommitHash)  gitAnnexCommitHash=\(gitAnnexCommitHash) in \(watchedFolder) \(error)")
+                        fatalError("could not save main context gitCommitHash=\(gitCommitHash)  gitAnnexCommitHash=\(gitAnnexCommitHash) in \(watchedFolder) \(error)")
+
                         fatalError("Failure to save main context: \(error)")
                     }
                 }
             } catch {
-                fatalError("Failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context gitCommitHash=\(gitCommitHash)  gitAnnexCommitHash=\(gitAnnexCommitHash) in \(watchedFolder) \(error)")
+                fatalError("could not save private context gitCommitHash=\(gitCommitHash)  gitAnnexCommitHash=\(gitAnnexCommitHash) in \(watchedFolder) \(error)")
             }
         }
     }
@@ -980,7 +812,8 @@ class Queries {
                     ret = (gitCommitHash: gitCommitHashOptional, gitAnnexCommitHash: gitAnnexCommitHashOptional)
                 }
             } catch {
-                fatalError("Failure to get results private context: \(error)")
+                TurtleLog.fatal("Failure to get results in private context for \(watchedFolder): \(error)")
+                fatalError("Failure to get results in private context for \(watchedFolder): \(error)")
             }
         }
         
@@ -1000,7 +833,7 @@ class Queries {
                 if results.count > 0, let result = results.first  {
                     result.setValue(NSNumber(value: true), forKeyPath: PathStatusAttributes.needsUpdate.rawValue)
                 } else {
-                    NSLog("invalidateDirectory: unable to update entry for path=\(path) in \(watchedFolder) ")
+                    TurtleLog.error("unable to update entry for path=\(path) in \(watchedFolder) ")
                 }
                 
                 try privateMOC.save()
@@ -1008,11 +841,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("invalidateDirectory: Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context path=\(path) in \(watchedFolder) \(error)")
+                        fatalError("could not save main context path=\(path) in \(watchedFolder) \(error)")
                     }
                 }
             } catch {
-                fatalError("invalidateDirectory: Failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context path=\(path) in \(watchedFolder) \(error)")
+                fatalError("could not save private context path=\(path) in \(watchedFolder) \(error)")
             }
         }
     }
@@ -1034,7 +869,7 @@ class Queries {
                     newPathRow.setValue(path, forKeyPath: CommandRequestsAttributes.pathString.rawValue)
                     
                 } else {
-                    NSLog("Could not create entity for \(PathStatusEntityName)")
+                    TurtleLog.error("Could not create entity for \(PathStatusEntityName)")
                 }
                 
                 try privateMOC.save()
@@ -1042,11 +877,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context path=\(path) in \(watchedFolder) commandType=\(commandType) commandString=\(commandString) \(error)")
+                        fatalError("could not save main context path=\(path) in \(watchedFolder) commandType=\(commandType) commandString=\(commandString) \(error)")
                     }
                 }
             } catch {
-                fatalError("Failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context path=\(path) in \(watchedFolder) commandType=\(commandType) commandString=\(commandString) \(error)")
+                fatalError("could not save private context path=\(path) in \(watchedFolder) commandType=\(commandType) commandString=\(commandString) \(error)")
             }
         }
     }
@@ -1073,7 +910,7 @@ class Queries {
                     {
                         ret.append(CommandRequest(for: pathString, in: watchedFolderUUIDString, commandType: commandType, commandString: commandString))
                     } else {
-                        NSLog("Unable to parse results from fetch for command request '\(result)'")
+                        TurtleLog.error("Unable to parse results from fetch for command request '\(result)'")
                     }
                 }
                 
@@ -1088,11 +925,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("Failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context \(error)")
+                        fatalError("could not save main context \(error)")
                     }
                 }
-            } catch let error as NSError {
-                NSLog("Could not fetch allWatchedFolders. \(error), \(error.userInfo)")
+            } catch {
+                TurtleLog.fatal("could not save private context \(error)")
+                fatalError("could not save private context \(error)")
             }
         }
         
@@ -1119,11 +958,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("removeVisibleFolderAsync: failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
+                        fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                     }
                 }
             } catch {
-                fatalError("removeVisibleFolderAsync: failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
+                fatalError("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
             }
         }
     }
@@ -1151,7 +992,8 @@ class Queries {
                     }
                 }
             } catch {
-                fatalError("getVisibleFoldersBlocking: failure in fetch: \(error)")
+                TurtleLog.fatal("could not get results \(watchedFolders) \(error)")
+                fatalError("could not get results \(watchedFolders) \(error)")
             }
         }
 
@@ -1175,7 +1017,7 @@ class Queries {
                     newPathRow.setValue(path, forKeyPath: VisibleFoldersEntityAttributes.pathString.rawValue)
                     newPathRow.setValue(processID, forKeyPath: VisibleFoldersEntityAttributes.processID.rawValue)
                 } else {
-                    NSLog("addVisibleFolderAsync: could not create entity for \(VisibleFoldersEntityName)")
+                    TurtleLog.error("could not create entity for \(VisibleFoldersEntityName)")
                 }
                 
                 try privateMOC.save()
@@ -1183,11 +1025,13 @@ class Queries {
                     do {
                         try moc.save()
                     } catch {
-                        fatalError("addVisibleFolderAsync: failure to save main context: \(error)")
+                        TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
+                        fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                     }
                 }
             } catch {
-                fatalError("addVisibleFolderAsync: failure to save private context: \(error)")
+                TurtleLog.fatal("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
+                fatalError("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
             }
         }
     }

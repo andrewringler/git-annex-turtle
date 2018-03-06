@@ -19,8 +19,10 @@ class fullScanTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
+        TurtleLog.setLoggingLevel(.debug)
+        
         testDir = TestingUtil.createTmpDir()
-        NSLog("Using testing dir: \(testDir!)")
+        TurtleLog.info("Using testing dir: \(testDir!)")
         let config = Config(dataPath: "\(testDir!)/turtle-monitor")
         let storeURL = PathUtils.urlFor(absolutePath: "\(testDir!)/testingDatabase")
         
@@ -338,7 +340,7 @@ class fullScanTests: XCTestCase {
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)
         waitForExpectations(timeout: 3000, handler: nil)
-        NSLog("Full scan took \(Date().timeIntervalSince(startTime)) seconds.")
+        TurtleLog.info("Full scan took \(Date().timeIntervalSince(startTime)) seconds.")
         
         // Repo 1
         for file in files {

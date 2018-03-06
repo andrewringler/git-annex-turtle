@@ -75,7 +75,7 @@ class FinderSync: FIFinderSync {
                 }
             }
             
-            NSLog("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
+            TurtleLog.info("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
         }
     }
     
@@ -94,7 +94,7 @@ class FinderSync: FIFinderSync {
                         // OK, this value is identical to the one in our cache, ignore
                     } else {
                         // updated value
-                        //NSLog("updating to \(status) \(id())")
+                        TurtleLog.debug("updating to \(status) \(id())")
                         let url = PathUtils.url(for: status.path, in: watchedFolder)
                         statusCache.put(status: status, for: status.path, in: watchedFolder)
                         updateBadge(for: url, with: status)
@@ -106,7 +106,7 @@ class FinderSync: FIFinderSync {
     
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
-        NSLog("beginObservingDirectory for \(url) \(id())")
+        TurtleLog.debug("beginObservingDirectory for \(url) \(id())")
         if let absolutePath = PathUtils.path(for: url) {
             for watchedFolder in watchedFolders {
                 if absolutePath.starts(with: watchedFolder.pathString) {
@@ -114,14 +114,14 @@ class FinderSync: FIFinderSync {
                         Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
                         return
                     } else {
-                        NSLog("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
+                        TurtleLog.error("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
                     }
                 }
             }
         } else {
-            NSLog("beginObservingDirectory: error, could not generate path for URL '\(url)'")
+            TurtleLog.error("beginObservingDirectory: error, could not generate path for URL '\(url)'")
         }
-        NSLog("beginObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
+        TurtleLog.error("beginObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
     }
     
     // The user is no longer seeing the container's contents.
@@ -129,7 +129,7 @@ class FinderSync: FIFinderSync {
     // a file window it will have its own Finder Sync process and generate
     // its own set of start and end calls
     override func endObservingDirectory(at url: URL) {
-        NSLog("endObservingDirectory for \(url) \(id())")
+        TurtleLog.debug("endObservingDirectory for \(url) \(id())")
         if let absolutePath = PathUtils.path(for: url) {
             for watchedFolder in watchedFolders {
                 if absolutePath.starts(with: watchedFolder.pathString) {
@@ -137,14 +137,14 @@ class FinderSync: FIFinderSync {
                         Queries(data: data).removeVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
                         return
                     } else {
-                        NSLog("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
+                        TurtleLog.error("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
                     }
                 }
             }
         } else {
-            NSLog("endObservingDirectory: error, could not generate path for URL '\(url)'")
+            TurtleLog.error("endObservingDirectory: error, could not generate path for URL '\(url)'")
         }
-        NSLog("endObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
+        TurtleLog.error("endObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
     }
     
     private func updateBadge(for url: URL, with status: PathStatus) {
@@ -169,7 +169,7 @@ class FinderSync: FIFinderSync {
     }
     
     override func requestBadgeIdentifier(for url: URL) {
-        NSLog("requestBadgeIdentifier for \(url) \(id())")
+        TurtleLog.debug("requestBadgeIdentifier for \(url) \(id())")
         
         if let absolutePath = PathUtils.path(for: url) {
             if let watchedFolder = self.watchedFolderParent(for: absolutePath) {
@@ -196,13 +196,13 @@ class FinderSync: FIFinderSync {
                         }
                     }
                 } else {
-                    NSLog("Finder Sync could not get a relative path for '\(absolutePath)' in \(watchedFolder)")
+                    TurtleLog.error("Finder Sync could not get a relative path for '\(absolutePath)' in \(watchedFolder)")
                 }
             } else {
-                NSLog("Finder Sync could not find watched parent for url= \(url)")
+                TurtleLog.error("Finder Sync could not find watched parent for url= \(url)")
             }
         } else {
-            NSLog("Finder Sync could not find path for url= \(url)")
+            TurtleLog.error("Finder Sync could not find path for url= \(url)")
         }
     }
     
@@ -231,7 +231,7 @@ class FinderSync: FIFinderSync {
                                 if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                                     statusOptional = statusCache.get(for: path, in: watchedFolder)
                                 } else {
-                                    NSLog("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
+                                    TurtleLog.error("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
                                 }
                             }
                         }
@@ -311,21 +311,20 @@ class FinderSync: FIFinderSync {
                             if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                                 queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
                             } else {
-                                NSLog("commandRequest: could not find relative path for \(absolutePath) in \(watchedFolder)")
+                                TurtleLog.error("commandRequest: could not find relative path for \(absolutePath) in \(watchedFolder)")
                             }
-                            //                            NSLog("submitting command request \(command) for \(path)")
                             break
                         }
                     }
                 }
             }
         } else {
-            NSLog("invalid context menu item for command \(command) and target \(target)")
+            TurtleLog.error("invalid context menu item for command \(command) and target \(target)")
         }
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        NSLog("quiting \(id())")
+        TurtleLog.info("quiting \(id())")
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -337,6 +336,7 @@ class FinderSync: FIFinderSync {
     }
     
     func id() -> String {
-        return String(UInt(bitPattern: ObjectIdentifier(self)))
+//        return String(UInt(bitPattern: ObjectIdentifier(self)))
+        return processID
     }
 }

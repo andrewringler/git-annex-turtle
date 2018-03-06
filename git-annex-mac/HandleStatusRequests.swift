@@ -118,7 +118,7 @@ class HandleStatusRequests {
         
         // OK for each item, lets check if we should update it
         for item in oldestRequestFirst {
-            NSLog("Handling \(item.value.path) in \(item.value.watchedFolder.pathString)")
+            TurtleLog.debug("Handling \(item.value.path) in \(item.value.watchedFolder.pathString)")
             sharedResource.lock()
             var watchedPaths = currentlyUpdatingPathByWatchedFolder[item.value.watchedFolder]
             sharedResource.unlock()
@@ -131,12 +131,12 @@ class HandleStatusRequests {
                 // if it is high priority, we probably need to re-calculate
                 // so leave in the queue, and check on it later
                 if priority == .low {
-                    NSLog("Already updating, and low priority, remove from queue \(item.value.path) in \(item.value.watchedFolder.pathString)")
+                    TurtleLog.debug("Already updating, and low priority, remove from queue \(item.value.path) in \(item.value.watchedFolder.pathString)")
                     sharedResource.lock()
                     dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                     sharedResource.unlock()
                 }
-                NSLog("Already updating, ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
+                TurtleLog.debug("Already updating, ignore for now \(item.value.path) in \(item.value.watchedFolder.pathString)")
                 continue
             }
             
@@ -148,7 +148,7 @@ class HandleStatusRequests {
                 // OK, we already have this path in the database
                 // and it is new enough, and it isn't marked as needing updating
                 // remove this request, it is not necessary
-                NSLog("Already new enough, delete \(item.value.path) in \(item.value.watchedFolder.pathString)")
+                TurtleLog.debug("Already new enough, delete \(item.value.path) in \(item.value.watchedFolder.pathString)")
                 sharedResource.lock()
                 dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                 sharedResource.unlock()
@@ -160,7 +160,7 @@ class HandleStatusRequests {
                  * files, there is nothing we need to do, except wait for his children
                  * to finish updating their statuses
                  */
-                NSLog("Ignoring folder already present in database \(item.value.path) for \(item.value.watchedFolder)")
+                TurtleLog.debug("Ignoring folder already present in database \(item.value.path) for \(item.value.watchedFolder)")
                 sharedResource.lock()
                 dateAddedToStatusRequestQueue.removeValue(forKey: item.key)
                 sharedResource.unlock()
@@ -172,7 +172,7 @@ class HandleStatusRequests {
             // and we don't have a fresh enough copy in the database
             // and we have enough spare threads to actually do the request
             // so, we'll update it
-            NSLog("OK update \(item.value.path) in \(item.value.watchedFolder.pathString)")
+            TurtleLog.debug("OK update \(item.value.path) in \(item.value.watchedFolder.pathString)")
 
             sharedResource.lock()
             // remove from queue
@@ -187,9 +187,7 @@ class HandleStatusRequests {
             }
             sharedResource.unlock()
             
-            NSLog("wait() \(item.value.path) in \(item.value.watchedFolder.pathString)")
             limitConcurrentThreads.wait()
-            NSLog("enter() \(item.value.path) in \(item.value.watchedFolder.pathString)")
             updateStatusAsync(request: item.value, queue: queue, limitConcurrentThreads: limitConcurrentThreads)
         }
     }
@@ -219,7 +217,7 @@ class HandleStatusRequests {
                  */
                 let statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: r.path, in: r.watchedFolder.pathString, in: r.watchedFolder, includeFiles: r.includeFiles, includeDirs: r.includeDirs)
                 if statusTuple.error {
-                    NSLog("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
+                    TurtleLog.error("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
                 } else if let status = statusTuple.pathStatus {
                     let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: r.watchedFolder)
                     
@@ -241,11 +239,10 @@ class HandleStatusRequests {
                 paths.remove(at: index)
                 self.currentlyUpdatingPathByWatchedFolder[r.watchedFolder] = paths
             } else {
-                NSLog("Could not find path \(r.path) in \(self.currentlyUpdatingPathByWatchedFolder) for \(r.watchedFolder)")
+                TurtleLog.error("Could not find path \(r.path) in \(self.currentlyUpdatingPathByWatchedFolder) for \(r.watchedFolder)")
             }
             self.sharedResource.unlock()
             
-            NSLog("release() \(r.path) in \(r.watchedFolder.pathString)")
             limitConcurrentThreads.signal() // done, allow other threads to execute
         }
     }

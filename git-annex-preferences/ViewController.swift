@@ -41,7 +41,7 @@ class ViewController: NSViewController {
             guard let item = observedFoldersList?[itemSelectedRowIndex] else {
                 continue
             }
-            NSLog("Stop watching '\(item.pathString)'")
+            TurtleLog.debug("Stop watching '\(item.pathString)'")
             Config().stopWatchingRepo(repo: item.pathString)
         }
     }

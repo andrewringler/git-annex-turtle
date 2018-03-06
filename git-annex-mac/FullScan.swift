@@ -40,7 +40,7 @@ class FullScan {
 
         sharedResource.lock()
         if scanning.contains(watchedFolder) {
-            NSLog("Stopping full scan for \(watchedFolder)")
+            TurtleLog.info("Stopping full scan for \(watchedFolder)")
             scanning.remove(watchedFolder)
         }
         sharedResource.unlock()
@@ -76,17 +76,17 @@ class FullScan {
             // git annex init creates 1+ commits in the git-annex branch
             // so there should always be at least one git annex commit
             if let gitAnnexCommitHash = gitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder) {
-                NSLog("Starting full scan for \(watchedFolder)")
+                TurtleLog.info("Starting full scan for \(watchedFolder)")
                 
                 // update status of all files
                 if !updateStatusBlocking(in: watchedFolder) {
-                    NSLog("Stop requested. Stopped scanning early for \(watchedFolder)")
+                    TurtleLog.debug("Stop requested. Stopped scanning early for \(watchedFolder)")
                     break
                 }
                 
                 // update status of all folders in Db for this repo
                 if !FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: watchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, fullScan: self) {
-                    NSLog("Stop requested. Stopped scanning early for \(watchedFolder)")
+                    TurtleLog.debug("Stop requested. Stopped scanning early for \(watchedFolder)")
                     break
                 }
 
@@ -95,9 +95,9 @@ class FullScan {
                 // incremental updates for this repo
                 queries.updateLatestHandledCommit(gitCommitHash: gitGitCommitHash, gitAnnexCommitHash: gitAnnexCommitHash, in: watchedFolder)
                 
-                NSLog("Completed full scan for \(watchedFolder)")
+                TurtleLog.info("Completed full scan for \(watchedFolder)")
             } else {
-                NSLog("Could not find any commits on the git-annex branch, this should not happen, stopping full scan for \(watchedFolder)")
+                TurtleLog.error("Could not find any commits on the git-annex branch, this should not happen, stopping full scan for \(watchedFolder)")
                 break
             }
             
@@ -133,7 +133,7 @@ class FullScan {
                 return false
             }
             
-            if queries.updateStatusForPathV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: chunk, key: nil, in: watchedFolder, isDir: true, needsUpdate: true) == false {
+            if queries.updateStatusForDirectoryPathsV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: chunk, key: nil, in: watchedFolder, isDir: true, needsUpdate: true) == false {
                 return false
             }
         }
@@ -151,49 +151,16 @@ class FullScan {
                 if let status = self.gitAnnexQueries.parseWhereis(for: line, in: watchedFolder, modificationDate: modificationDate, filesWithCopiesLacking: filesWithCopiesLacking) {
                     // TODO batch db inserts
                     
-                    NSLog("Updated status for \(status.path) in \(watchedFolder)")
+                    TurtleLog.debug("Updated status for \(status.path) in \(watchedFolder)")
                     self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: status.path, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
                 }
             }
             s = nil // deinit, close file handle
             PathUtils.removeDir(resultsFileName)
         } else {
-            NSLog("Could not get whereis info for \(watchedFolder)")
+            TurtleLog.error("Could not get whereis info for \(watchedFolder)")
             return false
         }
-
-        
-        
-        
-//        let updateStatusQueue =
-//            DispatchQueue(label: "com.andrewringler.git-annex-mac.FullScanUpdateStatusQueue-\(watchedFolder.uuid.uuidString)", attributes: .concurrent)
-//        let maxConcurrency = DispatchSemaphore(value: 10)
-//        let processingOfAllChildrenGroup = DispatchGroup()
-//
-//        for file in allChildren.files {
-//            if shouldStop(watchedFolder) {
-//                return false
-//            }
-//
-//            maxConcurrency.wait()
-//            processingOfAllChildrenGroup.enter()
-//            updateStatusQueue.async {
-//                var statusTuple: (error: Bool, pathStatus: PathStatus?)?
-//                statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: file, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: false)
-//
-//                if statusTuple?.error == false, let status = statusTuple?.pathStatus {
-//                    self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: file, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
-//                } else {
-//                    let error: String = String(statusTuple?.error ?? false)
-//                    NSLog("FullScan, error trying to get status for '\(file)' in \(watchedFolder) \(error)")
-//                }
-//
-//                processingOfAllChildrenGroup.leave()
-//                maxConcurrency.signal()
-//            }
-//        }
-//
-//        processingOfAllChildrenGroup.wait() // wait for all asynchronous status updates to complete
         
         return true // completed successfully
     }

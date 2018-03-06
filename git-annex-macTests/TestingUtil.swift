@@ -16,7 +16,7 @@ class TestingUtil {
             do {
                 try FileManager.default.removeItem(at: directory)
             } catch {
-                NSLog("Unable to cleanup folder after tests \(path)")
+                TurtleLog.error("Unable to cleanup folder after tests \(path)")
             }
         }
     }
@@ -120,52 +120,12 @@ class TestingUtil {
             let url = PathUtils.url(for: dir, in: watchedFolder)
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         } catch {
-            NSLog("Unable to create new directory '\(dir)' in \(watchedFolder)")
+            TurtleLog.error("Unable to create new directory '\(dir)' in \(watchedFolder)")
         }
     }
     
-    // https://medium.com/flawless-app-stories/cracking-the-tests-for-core-data-15ef893a3fee
-//    class func persistentContainer(managedObjectModel: NSManagedObjectModel) -> NSPersistentContainer {
-//        let container = NSPersistentContainer(name: "git_annex_turtle_data", managedObjectModel: managedObjectModel)
-//        let description = NSPersistentStoreDescription()
-//        description.type = NSInMemoryStoreType
-//        description.shouldAddStoreAsynchronously = false // Make it simpler in test env
-//
-//        container.persistentStoreDescriptions = [description]
-//        container.loadPersistentStores { (description, error) in
-//            // Check if the data store is in memory
-//            precondition( description.type == NSInMemoryStoreType )
-//
-//            // Check if creating container wrong
-//            if let error = error {
-//                fatalError("Create an in-mem coordinator failed \(error)")
-//            }
-//        }
-//        return container
-//    }
-    
     class func persistentContainer(mom: NSManagedObjectModel, storeURL: URL) -> NSPersistentContainer {
-//        let container = NSPersistentContainer(name: "git_annex_turtle_data", managedObjectModel: managedObjectModel)
-//        let description = NSPersistentStoreDescription()
-//        description.type = NSInMemoryStoreType
-//        description.shouldAddStoreAsynchronously = false // Make it simpler in test env
-//
-//        container.persistentStoreDescriptions = [description]
-//        container.loadPersistentStores { (description, error) in
-//            // Check if the data store is in memory
-//            precondition( description.type == NSInMemoryStoreType )
-//
-//            // Check if creating container wrong
-//            if let error = error {
-//                fatalError("Create an in-mem coordinator failed \(error)")
-//            }
-//        }
-//        return container
         let momdName = "git_annex_turtle_data"
-        
-//        guard let mom = NSManagedObjectModel(contentsOf: managedObjectModel) else {
-//            fatalError("Error initializing mom from: \(managedObjectModel)")
-//        }
         
         /*
          The persistent container for the application. This implementation
@@ -175,12 +135,7 @@ class TestingUtil {
          */
         let container = NSPersistentContainer(name: momdName, managedObjectModel: mom)
         // https://useyourloaf.com/blog/easier-core-data-setup-with-persistent-containers/
-        
         // https://stackoverflow.com/a/42554741/8671834
-//        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-//        guard let storeURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
-//            fatalError("Error loading model from bundle")
-//        }
         let description = NSPersistentStoreDescription(url: storeURL)
         container.persistentStoreDescriptions = [description]
         

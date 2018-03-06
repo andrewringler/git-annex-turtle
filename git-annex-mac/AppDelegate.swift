@@ -48,7 +48,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             // TODO put notice in menubar icon
             // allow user to set paths or install
-            NSLog("Could not find binary paths for git and git-annex, quitting")
+            TurtleLog.error("Could not find binary paths for git and git-annex, quitting")
             exit(-1)
         }
         
@@ -184,7 +184,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 newWatchedFolders.insert(WatchedFolder(uuid: uuid, pathString: watchedFolder))
             } else {
                 // TODO let the user know this?
-                NSLog("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder)
+                TurtleLog.error("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder)
             }
         }
         
@@ -196,7 +196,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Stop any file system watches
             for watchedFolder in previousWatchedFolders {
                 if !watchedFolders.contains(watchedFolder) {
-                    NSLog("Stopped monitoring \(watchedFolder)")
+                    TurtleLog.info("Stopped monitoring \(watchedFolder)")
                     
                     fullScan.stopFullScan(watchedFolder: watchedFolder)
                     if let index = fileSystemMonitors.index(where: { $0.watchedFolder == watchedFolder} ) {
@@ -208,7 +208,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
             preferencesViewController?.reloadFileList()
 
-            NSLog("Finder Sync is now monitoring: [\(WatchedFolder.pretty(watchedFolders))]")
+            TurtleLog.info("Finder Sync is now monitoring: [\(WatchedFolder.pretty(watchedFolders))]")
             
             // Save updated folder list to the database
             let queries = Queries(data: data)
@@ -238,7 +238,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var checkForGitAnnexUpdatesLock = NSLock()
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
         checkForGitAnnexUpdatesLock.lock()
-        NSLog("Checking for updates in \(watchedFolder)")
+        TurtleLog.debug("Checking for updates in \(watchedFolder)")
         
         var paths: [String] = []
         
@@ -283,14 +283,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 // if the path was ever shown in a Finder window we will have
                 // a not-tracked entry for it, lets re-check all of our untracked paths
                 let newPaths = Queries(data: data).allNonTrackedPathsBlocking(in: watchedFolder)
-                NSLog("Checking non tracked paths \(newPaths)")
+                TurtleLog.debug("Checking non tracked paths \(newPaths)")
                 paths += newPaths
             }
         }
         paths = Set<String>(paths).sorted() // remove duplicates
         
         if paths.count > 0 {
-            NSLog("Requesting updated statuses for \(paths)")
+            TurtleLog.debug("Requesting updated statuses for \(paths)")
         }
         
         for path in paths {
@@ -383,7 +383,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {
-        NSLog("quiting…")
+        TurtleLog.info("quiting…")
         stopFinderSyncExtension()
     }
     
@@ -394,7 +394,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //
     func launchOrRelaunchFinderSyncExtension() {
         // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
-        NSLog("re-launching Finder Sync extension")
+        TurtleLog.info("re-launching Finder Sync extension")
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e use -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]

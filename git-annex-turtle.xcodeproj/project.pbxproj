@@ -23,6 +23,20 @@
 		490982EC204E22E500096C92 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		490982ED204E241900096C92 /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D149212049E94600CA10F2 /* StreamReader.swift */; };
 		490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
+		490982F0204EDA6100096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F2204EDBB200096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F3204EDBB300096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F4204EDBB400096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F5204EDBB500096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F6204EDBB600096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F7204EDBB600096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F8204EDBB700096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982F9204EDBB900096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982FA204EDBBA00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982FB204EDBBB00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982FC204EDBBC00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
+		490982FD204F136500096C92 /* FullScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F42040665A00F8D8A0 /* FullScan.swift */; };
 		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		490BCB8B1DE5444C00734FF4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB891DE5444C00734FF4 /* MainMenu.xib */; };
@@ -36,7 +50,6 @@
 		49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		4922DC7A1FFD5CA900448C22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
-		492491F52040665A00F8D8A0 /* FullScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F42040665A00F8D8A0 /* FullScan.swift */; };
 		492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F82040695D00F8D8A0 /* fullScanTests.swift */; };
 		492491FB20406A8800F8D8A0 /* TestingUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491FA20406A8800F8D8A0 /* TestingUtil.swift */; };
 		492492002040A14E00F8D8A0 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
@@ -233,6 +246,7 @@
 		490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-sharedTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_sharedTests.swift; sourceTree = "<group>"; };
 		490982DC204E1D1300096C92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		490982EF204EDA6100096C92 /* TurtleLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleLog.swift; sourceTree = "<group>"; };
 		490BCB821DE5444C00734FF4 /* git-annex-turtle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-turtle.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCB851DE5444C00734FF4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		490BCB871DE5444C00734FF4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -412,6 +426,7 @@
 				49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */,
 				490982CF204E1D1300096C92 /* git_annex_shared.h */,
 				490982D0204E1D1300096C92 /* Info.plist */,
+				490982EF204EDA6100096C92 /* TurtleLog.swift */,
 			);
 			path = "git-annex-shared";
 			sourceTree = "<group>";
@@ -950,12 +965,10 @@
 					49F0ECD9200E51D000C8BBCB = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
-						TestTargetID = 49F0ECC5200E51D000C8BBCB;
 					};
 					49F0ECE4200E51D000C8BBCB = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
-						TestTargetID = 49F0ECC5200E51D000C8BBCB;
 					};
 				};
 			};
@@ -1095,6 +1108,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
+				490982F0204EDA6100096C92 /* TurtleLog.swift in Sources */,
 				490982EA204E213400096C92 /* WatchedFolder.swift in Sources */,
 				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
 				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
@@ -1105,6 +1119,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982FC204EDBBC00096C92 /* TurtleLog.swift in Sources */,
 				490982DB204E1D1300096C92 /* git_annex_sharedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1117,6 +1132,7 @@
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
+				490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */,
 				49D149232049F64700CA10F2 /* StreamReader.swift in Sources */,
 				490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */,
 				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
@@ -1129,7 +1145,7 @@
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
-				492491F52040665A00F8D8A0 /* FullScan.swift in Sources */,
+				490982FD204F136500096C92 /* FullScan.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
 				49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */,
@@ -1143,6 +1159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982F2204EDBB200096C92 /* TurtleLog.swift in Sources */,
 				49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */,
 				492492062040A18400F8D8A0 /* Constants.swift in Sources */,
 				492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */,
@@ -1168,6 +1185,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982F3204EDBB300096C92 /* TurtleLog.swift in Sources */,
 				490BCBA11DE5444D00734FF4 /* git_annex_macUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1177,6 +1195,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				490982E6204E1D5800096C92 /* VisibleFolder.swift in Sources */,
+				490982F4204EDBB400096C92 /* TurtleLog.swift in Sources */,
 				497D1FD020116EB200106566 /* FileEvent.swift in Sources */,
 				497D1FCF20116EB200106566 /* EventStream.swift in Sources */,
 				49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */,
@@ -1198,6 +1217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				490982E7204E1D5900096C92 /* VisibleFolder.swift in Sources */,
+				490982F5204EDBB500096C92 /* TurtleLog.swift in Sources */,
 				49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				499B44751DE54A250091E0E3 /* main.swift in Sources */,
 				49EFD1FE2007BF70005742DB /* GitAnnexQueries.swift in Sources */,
@@ -1222,6 +1242,7 @@
 				49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */,
 				49F0ECFD200E5F6000C8BBCB /* Queries.swift in Sources */,
 				490982E8204E1D5A00096C92 /* VisibleFolder.swift in Sources */,
+				490982F6204EDBB600096C92 /* TurtleLog.swift in Sources */,
 				49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */,
 				49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */,
 				490982EC204E22E500096C92 /* WatchedFolder.swift in Sources */,
@@ -1236,6 +1257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982F7204EDBB600096C92 /* TurtleLog.swift in Sources */,
 				49EFD1E22006CEF7005742DB /* git_annex_preferencesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1244,6 +1266,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982F8204EDBB700096C92 /* TurtleLog.swift in Sources */,
 				49EFD1ED2006CEF7005742DB /* git_annex_preferencesUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1256,6 +1279,7 @@
 				49EF6273200E7FDD002D1585 /* FinderSync.swift in Sources */,
 				49F0ECCB200E51D000C8BBCB /* ViewController.swift in Sources */,
 				490982E9204E1D5C00096C92 /* VisibleFolder.swift in Sources */,
+				490982F9204EDBB900096C92 /* TurtleLog.swift in Sources */,
 				49F0ECF6200E534B00C8BBCB /* WatchedFolder.swift in Sources */,
 				49F0ECC9200E51D000C8BBCB /* AppDelegate.swift in Sources */,
 				49DD9BA920192B0400B90DC7 /* PathStatus.swift in Sources */,
@@ -1270,6 +1294,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982FA204EDBBA00096C92 /* TurtleLog.swift in Sources */,
 				49F0ECDF200E51D000C8BBCB /* git_annex_turtle_dataTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1278,6 +1303,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				490982FB204EDBBB00096C92 /* TurtleLog.swift in Sources */,
 				49F0ECEA200E51D000C8BBCB /* git_annex_turtle_dataUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1864,7 +1890,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1879,7 +1904,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 4.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle-data.app/Contents/MacOS/git-annex-turtle-data";
 			};
 			name = Debug;
 		};
@@ -1887,7 +1911,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1901,7 +1924,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-dataTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/git-annex-turtle-data.app/Contents/MacOS/git-annex-turtle-data";
 			};
 			name = Release;
 		};
@@ -1921,9 +1943,9 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-dataUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 4.0;
-				TEST_TARGET_NAME = "git-annex-turtle-data";
 			};
 			name = Debug;
 		};
@@ -1943,8 +1965,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-turtle-dataUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_VERSION = 4.0;
-				TEST_TARGET_NAME = "git-annex-turtle-data";
 			};
 			name = Release;
 		};

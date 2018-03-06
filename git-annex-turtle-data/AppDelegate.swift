@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let context = persistentContainer.viewContext
 
         if !context.commitEditing() {
-            NSLog("\(NSStringFromClass(type(of: self))) unable to commit editing before saving")
+            TurtleWatch.error("\(NSStringFromClass(type(of: self))) unable to commit editing before saving")
         }
         if context.hasChanges {
             do {
@@ -77,7 +77,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let context = persistentContainer.viewContext
         
         if !context.commitEditing() {
-            NSLog("\(NSStringFromClass(type(of: self))) unable to commit editing to terminate")
+            TurtleWatch.error("\(NSStringFromClass(type(of: self))) unable to commit editing to terminate")
             return .terminateCancel
         }
         

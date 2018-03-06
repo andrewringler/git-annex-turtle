@@ -20,7 +20,7 @@ class Config {
             if success {
                 configFile = dataPath
             } else {
-                NSLog("Unable to create configuration file at \(dataPath)")
+                TurtleLog.error("Unable to create configuration file at \(dataPath)")
                 exit(-1)
             }
         } else {
@@ -57,14 +57,14 @@ class Config {
         if let config = readConfig() {
             return writeConfig(config.setGitBin(gitBin))
         }
-        NSLog("setGitBin: unable to read config")
+        TurtleLog.error("setGitBin: unable to read config")
         return false
     }
     func setGitAnnexBin(gitAnnexBin: String) -> Bool {
         if let config = readConfig() {
             return writeConfig(config.setGitAnnexBin(gitAnnexBin))
         }
-        NSLog("setGitAnnexBin: unable to read config")
+        TurtleLog.error("setGitAnnexBin: unable to read config")
         return false
     }
     func gitBin() -> String? {
@@ -78,7 +78,7 @@ class Config {
         if let config = readConfig() {
             return writeConfig(config.addRepo(repo))
         }
-        NSLog("watchRepo: unable to read config")
+        TurtleLog.error("watchRepo: unable to read config")
         return false
     }
     
@@ -86,7 +86,7 @@ class Config {
         if let config = readConfig() {
             return writeConfig(config.removeRepo(repo))
         }
-        NSLog("stopWatchingRepo: unable to read config")
+        TurtleLog.error("stopWatchingRepo: unable to read config")
         return false
     }
     
@@ -95,7 +95,7 @@ class Config {
             return config.repoPaths()
         }
         
-        NSLog("Unable to list watched repos from config file at \(configFile)")
+        TurtleLog.error("Unable to list watched repos from config file at \(configFile)")
         return []
     }
     
@@ -106,10 +106,10 @@ class Config {
                 return config
             }
         } catch {
-            NSLog("Unable to read config at \(configFile) \(error)")
+            TurtleLog.error("Unable to read config at \(configFile) \(error)")
             return nil
         }
-        NSLog("Unable to read config at \(configFile)")
+        TurtleLog.error("Unable to read config at \(configFile)")
         return nil
     }
     
@@ -120,8 +120,8 @@ class Config {
         let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
         os.close()
         if success == -1 {
-            NSLog("writeConfig: unable to write new config=\(self) to '\(configFile)'")
-            NSLog(os.streamError!.localizedDescription)
+            TurtleLog.error("writeConfig: unable to write new config=\(self) to '\(configFile)'")
+            TurtleLog.error(os.streamError!.localizedDescription)
             return false
         }
         return true

@@ -18,7 +18,7 @@ class WatchedFolderMonitor {
         let checkForGitAnnexUpdatesDebounce = debounce2(delay: .milliseconds(120), queue: queue, action: app.checkForGitAnnexUpdates)
 
         let watchPath = "\(watchedFolder.pathString)"
-        NSLog("Setting up file system watch for '\(watchPath)'")
+        TurtleLog.debug("Setting up file system watch for '\(watchPath)'")
         
         fileMonitor = Witness(paths: [watchPath], flags: .FileEvents, latency: 0.1) { events
             in

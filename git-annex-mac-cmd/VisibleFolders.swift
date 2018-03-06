@@ -53,7 +53,7 @@ class VisibleFolders {
         if visibleFolders != newVisibleFolders {
             visibleFolders = newVisibleFolders
             absolutePaths = Set(visibleFolders.map { $0.absolutePath })
-            NSLog("Updated Visible: \(VisibleFolder.pretty(visibleFolders))")
+            TurtleLog.debug("Updated Visible: \(VisibleFolder.pretty(visibleFolders))")
         }
         lock.unlock()
     }

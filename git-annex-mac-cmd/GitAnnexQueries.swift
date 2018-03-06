@@ -46,7 +46,7 @@ class GitAnnexQueries {
         /* check for a valid working directory now, because Process will not let us catch
          * the exception thrown if the directory is invalid */
         if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
-            NSLog("Invalid working directory '%@'", workingDirectory)
+            TurtleLog.error("Invalid working directory '%@'", workingDirectory)
             return ret
         }
         
@@ -69,14 +69,27 @@ class GitAnnexQueries {
 //        let bashCmdString: String = "cd '" + workingDirectory + "';" +
         let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
         task.arguments = bashArgs
-        //            NSLog("How does this look? %@", bashArgs)
         
         let outpipe = Pipe()
         task.standardOutput = outpipe
         let errpipe = Pipe()
         task.standardError = errpipe
         
-        task.launch()
+        DispatchQueue.global(qos: .background).async {
+            task.launch()
+        }
+        
+        let startTime = Date()
+        /* 3-hour timeout, should be sufficient for most full scans… ? */
+        let maxTimeSeconds: Double = 60 * 60 * 3
+        while task.isRunning {
+            if Date().timeIntervalSince(startTime) > maxTimeSeconds {
+                TurtleLog.error("Timeout. running \(cmd) \(args) in \(workingDirectory)")
+                task.interrupt()
+                break
+            }
+            sleep(1)
+        }
         
         let outputFileHandle = outpipe.fileHandleForReading
         let outdata = outputFileHandle.readDataToEndOfFile()
@@ -102,17 +115,6 @@ class GitAnnexQueries {
         
         //        task.waitUntilExit()
         
-        let startTime = Date()
-        let maxTimeSeconds: Double = 30
-        while task.isRunning {
-            if Date().timeIntervalSince(startTime) > maxTimeSeconds {
-                NSLog("Timeout. running \(cmd) \(args) in \(workingDirectory)")
-                task.interrupt()
-                break
-            }
-            sleep(1)
-        }
-        
         let status = task.terminationStatus
         
         ret = (output, error, status)
@@ -123,19 +125,19 @@ class GitAnnexQueries {
     func createRepo(at path: String) -> Bool {
         // is this folder even a directory?
         if !GitAnnexQueries.directoryExistsAt(absolutePath: path) {
-            NSLog("'\(path)' is not a valid directory")
+            TurtleLog.error("'\(path)' is not a valid directory")
             return false
         }
         
         let createGitRepoResult = gitCommand(in: path, cmd: CommandString.initCmd)
         if !createGitRepoResult.success {
-            NSLog("Could not create git repo in \(path)")
+            TurtleLog.error("Could not create git repo in \(path)")
             return false
         }
         
         let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.initCmd)
         if !initGitAnnexRepo.success {
-            NSLog("Could not init git annex repo in \(path)")
+            TurtleLog.error("Could not init git annex repo in \(path)")
             return false
         }
         
@@ -147,10 +149,7 @@ class GitAnnexQueries {
         let commandRun = "git-annex " + cmd.rawValue
         
         if status != 0 {
-            NSLog(commandRun)
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
@@ -160,10 +159,7 @@ class GitAnnexQueries {
         let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
         
         if status != 0 {
-            NSLog(commandRun)
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
@@ -173,10 +169,7 @@ class GitAnnexQueries {
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         
         if status != 0 {
-            NSLog(commandRun)
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
@@ -185,17 +178,14 @@ class GitAnnexQueries {
         let commandRun = "git " + cmd.rawValue
         
         if status != 0 {
-            NSLog(commandRun)
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
     func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?
         if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
-            NSLog("Not a valid git-annex folder, nor even a directory '%@'", workingDirectory)
+            TurtleLog.error("Not a valid git-annex folder, nor even a directory '%@'", workingDirectory)
             return nil
         }
         
@@ -211,10 +201,7 @@ class GitAnnexQueries {
         }
         
         if status != 0 {
-            NSLog("git config %@",GitConfigs.AnnexUUID.name)
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("git config \(GitConfigs.AnnexUUID.name) status= \(status) output=\(output) error=\(error)")
         }
         return nil
     }
@@ -240,13 +227,10 @@ class GitAnnexQueries {
                 PathUtils.removeDir(dir)
                 return allFilesLackingCopies
             } else {
-                NSLog("error gitAnnexAllFilesLackingCopies, watchedFolder in \(watchedFolder)")
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
+                TurtleLog.error("in \(watchedFolder) status= \(status) output=\(output) error=\(error)")
             }
         }
-        NSLog("Error: gitAnnexAllFilesLackingCopies, could not create temporary directory")
+        TurtleLog.error("could not create temporary directory")
         return nil
     }
 
@@ -260,11 +244,10 @@ class GitAnnexQueries {
             if status == 0 {
                 return resultsFileAbsolutePath
             } else {
-                NSLog("watchedFolder in \(watchedFolder)")
-                NSLog("status: %@", String(status))
-                NSLog("output: %@", output)
-                NSLog("error: %@", error)
+                TurtleLog.error("\(watchedFolder) status= \(status) output=\(output) error=\(error)")
             }
+        } else {
+            TurtleLog.error("could not create temp dir")
         }
         return nil
     }
@@ -291,15 +274,15 @@ class GitAnnexQueries {
                 }
             }
         } catch {
-            NSLog("Error parseWhereis: could not figure out a status given line = '\(line)' for \(watchedFolder) \(error)")
+            TurtleLog.error("could not figure out a status given line = '\(line)' for \(watchedFolder) \(error)")
             return nil
         }
-        NSLog("Error parseWhereis: could not figure out a status given line = '\(line)' for \(watchedFolder)")
+        TurtleLog.error("could not figure out a status given line = '\(line)' for \(watchedFolder)")
         return nil
     }
     
     func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
-        NSLog("git-annex info \(path)")
+        TurtleLog.debug("git-annex info \(path)")
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
         if isDir {
             // Directory
@@ -316,10 +299,7 @@ class GitAnnexQueries {
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "info", "\"\(path)\"")
         
         if status != 0 {
-            NSLog("gitAnnexPathInfo for path='\(path)' in='\(workingDirectory)'")
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("path='\(path)' in='\(workingDirectory) status= \(status) output=\(output) error=\(error)")
         }
         
         let modificationDate = Date().timeIntervalSinceNow as Double
@@ -379,9 +359,7 @@ class GitAnnexQueries {
                                         return (error: false, pathStatus: PathStatus(isDir: true, isGitAnnexTracked: true, presentStatus: Present.partialPresent, enoughCopies: enoughCopies, numberOfCopies: numberOfCopies, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil /* folders don't have a key */, needsUpdate: false))
                                     }
                                 }
-                                
-                                NSLog("ERROR: could not figure out a status for folder: '\(path)' '\(dictionary)'")
-                                
+                                TurtleLog.error("could not figure out a status for folder: '\(path)' '\(dictionary)'")
                             }
                         } else {
                             // git-annex returned success: false
@@ -396,11 +374,12 @@ class GitAnnexQueries {
                             //
                             //                            }
                             // TODO
+                            TurtleLog.todo("unsupported file type in query for status \(path) in \(watchedFolder)")
                         }
                     }
                 }
             } catch {
-                NSLog("unable to parse JSON: '", output, "'")
+                TurtleLog.error("unable to parse JSON: '", output, "'")
             }
             
             return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil, needsUpdate: false))
@@ -418,7 +397,7 @@ class GitAnnexQueries {
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
-        if(status == 0){
+        if status == 0 {
             do {
                 var leastCopies: Int? = nil
                 
@@ -438,11 +417,11 @@ class GitAnnexQueries {
                                     leastCopies = numberOfCopies
                                 }
                             } else {
-                                NSLog("issue getting data from JSON: '\(dictionary)'")
+                                TurtleLog.error("issue getting data from JSON: '\(dictionary)'")
                             }
                         }
                     } else {
-                        NSLog("could not get output as string \(outputLine)")
+                        TurtleLog.error("could not get output as string \(outputLine)")
                     }
                 }
                 
@@ -451,13 +430,10 @@ class GitAnnexQueries {
                 }
                 return nil
             } catch {
-                NSLog("unable to parse JSON: '\(output)' for path='\(path)' workingdir='\(workingDirectory)'")
+                TurtleLog.error("unable to parse JSON: '\(output)' for path='\(path)' workingdir='\(workingDirectory)'")
             }
         } else {
-            NSLog("gitAnnexNumberOfCopies")
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("status= \(status) output=\(output) error=\(error)")
             return nil
         }
         
@@ -479,10 +455,7 @@ class GitAnnexQueries {
             }
             return false
         } else {
-            NSLog("gitAnnexLackingCopies")
-            NSLog("status: %@", String(status))
-            NSLog("output: %@", output)
-            NSLog("error: %@", error)
+            TurtleLog.error("status= \(status) output=\(output) error=\(error)")
             return nil
         }
     }
@@ -498,13 +471,10 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
             } else {
-                NSLog("allKeysWithLocationsChangesSinceBlocking(commitHash: \(commitHash)")
-                NSLog("status: \(status)")
-                NSLog("output: \(output)")
-                NSLog("error: \(error)")
+                TurtleLog.error("commitHash: \(commitHash) status= \(status) output=\(output) error=\(error)")
             }
         } else {
-            NSLog("allKeysWithLocationsChangesSinceBlocking: error, could not find shell script in bundle")
+            TurtleLog.error("could not find shell script in bundle")
         }
         
         return []
@@ -521,13 +491,10 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
             } else {
-                NSLog("allFileChangesSinceBlocking(commitHash: \(commitHash)")
-                NSLog("status: \(status)")
-                NSLog("output: \(output)")
-                NSLog("error: \(error)")
+                TurtleLog.error("commitHash: \(commitHash) status= \(status) output=\(output) error=\(error)")
             }
         } else {
-            NSLog("allFileChangesSinceBlocking: error, could not find shell script in bundle")
+            TurtleLog.error("could not find shell script in bundle")
         }
         
         return []
@@ -542,11 +509,7 @@ class GitAnnexQueries {
             }
         }
         
-        NSLog("latestGitAnnexCommitHashBlocking: error")
-        NSLog("status: \(status)")
-        NSLog("output: \(output)")
-        NSLog("error: \(error)")
-        
+        TurtleLog.error("status= \(status) output=\(output) error=\(error)")
         return nil
     }
     
@@ -559,11 +522,7 @@ class GitAnnexQueries {
             }
         }
         
-        NSLog("latestGitCommitHashBlocking: error")
-        NSLog("status: \(status)")
-        NSLog("output: \(output)")
-        NSLog("error: \(error)")
-        
+        TurtleLog.error("status= \(status) output=\(output) error=\(error)")
         return nil
     }
     
@@ -575,13 +534,10 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 } // remove empty strings
             } else {
-                NSLog("immediateChildrenNotIgnored(relativePath: \(relativePath), in: \(watchedFolder)")
-                NSLog("status: \(status)")
-                NSLog("output: \(output)")
-                NSLog("error: \(error)")
+                TurtleLog.error("relativePath: \(relativePath), in: \(watchedFolder) status= \(status) output=\(output) error=\(error)")
             }
         } else {
-            //            NSLog("immediateChildrenNotIgnored: error, could not find shell script in bundle")
+            TurtleLog.fatal("could not find shell script in bundle")
             fatalError("immediateChildrenNotIgnored: error, could not find shell script in bundle")
         }
         
@@ -605,7 +561,7 @@ class GitAnnexQueries {
             }
         }
         
-        NSLog("gitAnnexBinAbsolutePath could not find git-annex bin")
+        TurtleLog.error("could not find git-annex binary, perhaps it is not installed?")
         return nil
     }
     
@@ -626,7 +582,7 @@ class GitAnnexQueries {
             }
         }
         
-        NSLog("gitBinAbsolutePath could not find git-annex bin")
+        TurtleLog.error("could not find git binary, perhaps it is not installed?")
         return nil
     }
 }
