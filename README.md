@@ -8,13 +8,11 @@
 
 ## Getting Started
 ### Install
-[Sign-up for updates](http://eepurl.com/dndzG9) to receive an email about new version releases and infrequent announcements.
+**[Sign-up for updates](http://eepurl.com/dndzG9)** to receive an email about new version releases and infrequent announcements.
 
-Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) for macOS. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
+[Download git-annex](http://git-annex.branchable.com/install/OSX/) for macOS and install to your `/Applications` folder. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
 
-Download and install git-annex-turtle.
-
-**Requires:** macOS 10.12 or later
+[Download git-annex-turtle](https://github.com/andrewringler/git-annex-turtle/releases). Unzip and drag the application to your `/Applications` folder. **Requires:** macOS 10.12 or later
 
 ### Usage
 Click the git-annex-turtle Menubar icon, then click `Preferences…`, then click `+` to add a new git-annex repository to watch.
