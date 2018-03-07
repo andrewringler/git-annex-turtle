@@ -3,8 +3,8 @@
 
 *git-annex-turtle* is free, open-source and licensed under [The MIT License](https://opensource.org/licenses/MIT). *git-annex-turtle* includes software and creative works/assets that are licensed under other open source licenses, see [OTHER_LICENSES.txt](OTHER_LICENSES.txt) for more information.
 
-![finder window with badge icons](documentation/2018-03-07-folders-with-mixed-status-icons.png)
-![context menu of monitored file](documentation/2018-03-07-context-menu.png)
+![finder window with badge icons](documentation/2018-3-7-badge-icons-in-finder.png)
+![context menu of monitored file](documentation/2018-3-7-context-menu-whitebkg.png)
 
 ## Features
  * **badges:** *git-annex-turtle* adds a badge icon (badges) for every file and folder in monitored git-annex repositories indicating present/absent status, number of copies and whether or not copies are lacking.
