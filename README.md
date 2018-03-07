@@ -9,9 +9,29 @@
  * **menubar icon:** *git-annex-turtle* adds a Menubar icon (aka menubar extra) showing animated activity status, monitored folder status and a preferences menu.
 
 ### Badges
+For **files** badges signify if they are present or absent, their number of copies and whether or not they have the desired number of [git-annex copies](https://git-annex.branchable.com/git-annex-numcopies/) (`numcopies`). Present or absent status is signified by a filled (solid) in vs not-filled (empty) square. Number of copies is signified by digits ranging from 0 to 4 or a star for files with 5 or more copies. If a file has at least the amount of copies specified in your `numcopies` setting (or in a `.gitattributes` override) the icon is colored green, otherwise red.
+
+For **folders** badges signify status of the files contained within. They signify if all the files are present, some are present or all are absent. If all files are present icon is a solid square, if all files are absent icon is an empty square, otherwise if some files are present icon is a partially filed square. The icon's digit signifies the number of copies of the file with the least copies contained within. If every file contained within the folder has at least the desired number of copies the icon is colored green, otherwise red.
+
+**Examples:**
+
 | Icon | Description |
 | ---- | ----------- |
-| ![partial filled green 2](documentation/icons/HalfGreen12x12_2.png) | A folder containing at least 2 copies of all files, some are present, some are absent. All files have desired numcopies. |
+| ![green solid 2](documentation/icons/SolidGreen12x12_2.png) | A present file with 2 copies and having the desired number of copies; or a folder containing only present files with 2 or more copies and all files having the desired number of copies. |
+| ![green solid star](documentation/icons/SolidGreen12x12_Star.png) | A present file with 5 or more copies; or a folder containing only present files each with 5 or more copies. All files have the desired number of copies. |
+| ![green empty 3](documentation/icons/OutlineGreen12x12_3.png) | A file that with 3 copies that is not present; or a folder containing only absent files each having 3 or more copies. |
+| ![green empty star](documentation/icons/OutlineGreen12x12_Star.png) | A file with 5 or more copies that is not present and has the desired number of copies; or a folder containing only absent files each with 5 or more copies all of which have the desired number of copies. |
+| ![green, half-filled 2](documentation/icons/HalfGreen12x12_2.png) | A folder containing at least 2 copies of all files, some are present, some are absent. All files have the desired number of copies. |
+| ![green partially-filled star](documentation/icons/HalfGreen12x12_Star.png) | A folder containing both present and absent files each with 5 or more copies and all having at least the desired number of copies. |
+| ![red solid 4](documentation/icons/SolidRed12x12_4.png) | A present file with 4 copies and having less than the desired number of copies; or a folder containing only present files each with 4 or more copies and where one or more files have less than the desired number of copies.  |
+| ![red solid star](documentation/icons/SolidRed12x12_Star.png) | A present file with 5 or more copies and having less than the desired number of copies; or a folder containing only present files each with 5 or more copies and where one or more files have less than the desired number of copies. |
+| ![red empty 4](documentation/icons/OutlineRed12x12_4.png) | A file with 4 copies that is not present and has less than the desired number of copies; or a folder containing only absent files each with 4 or more copies and one or more of which having less than the desired number of copies |
+| ![red empty star](documentation/icons/OutlineRed12x12_Star.png) | A file with 5 or more copies that is not present and has less than the desired number of copies; or a folder containing only absent files each with 5 or more copies and one or more of which having less than the desired number of copies. |
+| ![red partially filled 2](documentation/icons/HalfRed12x12_2.png) | A folder containing both present and absent files each with 2 or more copies and one or more of which having less than the desired number of copies. |
+| ![red partially-filled star](documentation/icons/HalfRed12x12_Star.png) | A folder containing both present and absent files each with 5 or more copies and one or more of which having less than the desired number of copies. |
+| ![red 0](documentation/icons/Red12x12_0.png) | A file with no known copies (implies not present); or a folder containing all absent files, one of which has no known copies. |
+| ![green solid no number](documentation/icons/SolidGreen12x12.png) | An empty folder or a folder containing only non-annexed files or more empty folders. |
+| ![grey question mark](documentation/icons/QuestionGray12x12.png) | A file that was scanned successfully but has a state that is not yet handled by *git-annex-turtle* |
 
 ## Getting Started
 ### Install
