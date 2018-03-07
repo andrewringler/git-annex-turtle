@@ -5,7 +5,7 @@
 
 ## Features
  * **badges:** *git-annex-turtle* adds a badge icon (badges) for every file and folder in monitored git-annex repositories indicating present/absent status, number of copies and whether or not copies are lacking.
- * **contextual menus:** *git-annex-turtle* adds contextual menus (control-clicks) to all files and folders allowing quick access to git-annex get/drop/add and more.
+ * **contextual menus:** *git-annex-turtle* adds contextual menus (control-clicks) to all files and folders (in monitored repos) allowing quick access to git-annex get/drop/add and more.
  * **menubar icon:** *git-annex-turtle* adds a Menubar icon (aka menubar extra) showing animated activity status, monitored folder status and a preferences menu.
 
 ## Getting Started
