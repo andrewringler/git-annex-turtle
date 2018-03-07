@@ -6,6 +6,23 @@
 ![finder window with badge icons](documentation/2018-3-7-badge-icons-in-finder.png)
 ![context menu of monitored file](documentation/2018-3-7-context-menu-whitebkg.png)
 
+## Getting Started
+### Install
+[Sign-up for updates](http://eepurl.com/dndzG9) to receive an email about new version releases and infrequent announcements.
+
+Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) for macOS. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
+
+Download and install git-annex-turtle.
+
+**Requires:** macOS 10.12 or later
+
+### Usage
+Click the git-annex-turtle Menubar icon, then click `Preferences…`, then click `+` to add a new git-annex repository to watch.
+
+*git-annex-turtle* will then perform an initial `full scan` of the repository you added. *The full scan is required so that we may cache status information for folders, since only file-level status is stored by git and git-annex.*
+
+View your git-annex repository in Apple Finder to see updated badge icons. Right click (control-click) on a file or folder to see git-annex specific context menus. Badge icons will appear progressively as the full scan completes.
+
 ## Features
  * **badges:** *git-annex-turtle* adds a badge icon (badges) for every file and folder in monitored git-annex repositories indicating present/absent status, number of copies and whether or not copies are lacking.
  * **contextual menus:** *git-annex-turtle* adds contextual menus (control-clicks) to all files and folders (in monitored repos) allowing quick access to git-annex get/drop/add and more.
@@ -35,21 +52,6 @@ For **folders** badges signify status of the files contained within. They signif
 | ![red 0](documentation/icons/Red12x12_0.png) | A file with no known copies (implies not present); or a folder containing all absent files, one of which has no known copies. |
 | ![green solid no number](documentation/icons/SolidGreen12x12.png) | An empty folder or a folder containing only non-annexed files or more empty folders. |
 | ![grey question mark](documentation/icons/QuestionGray12x12.png) | A file that was scanned successfully but has a state that is not yet handled by *git-annex-turtle* |
-
-## Getting Started
-### Install
-Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) for macOS. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
-
-Download and install git-annex-turtle.
-
-**Requires:** macOS 10.12 or later
-
-### Usage
-Click the git-annex-turtle Menubar icon, then click `Preferences…`, then click `+` to add a new git-annex repository to watch.
-
-*git-annex-turtle* will then perform an initial `full scan` of the repository you added. *The full scan is required so that we may cache status information for folders, since only file-level status is stored by git and git-annex.*
-
-View your git-annex repository in Apple Finder to see updated badge icons. Right click (control-click) on a file or folder to see git-annex specific context menus. Badge icons will appear progressively as the full scan completes.
 
 ### Requirements
 macOS 10.12 or later
