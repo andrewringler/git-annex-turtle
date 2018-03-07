@@ -8,6 +8,11 @@
  * **contextual menus:** *git-annex-turtle* adds contextual menus (control-clicks) to all files and folders (in monitored repos) allowing quick access to git-annex get/drop/add and more.
  * **menubar icon:** *git-annex-turtle* adds a Menubar icon (aka menubar extra) showing animated activity status, monitored folder status and a preferences menu.
 
+### Badges
+| Icon | Description |
+| ---- | ----------- |
+| ![partial filled green 2](documentation/icons/HalfGreen12x12_2.png) | A folder containing at least 2 copies of all files, some are present, some are absent. All files have desired numcopies. |
+
 ## Getting Started
 ### Install
 Download and install [git-annex](http://git-annex.branchable.com/install/OSX/) for macOS. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
