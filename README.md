@@ -73,6 +73,13 @@ Stores config settings for *git-annex-turtle*, that are editable through the men
 ## Name
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and the many other tools which have provided OS-level filesystem icons for source revision control software.
 
+## Building
+ * Install XCode 9.2
+ * Install XCode SDK macOS 10.12 for XCode 9.2
+ * Open src/git-annex-turtle.xcodeproj in XCode
+ * Create a new scheme called git-annex-turtle with build targets `git-annex-turtle` and `git-annex-turtleTests`
+ * Run the `git-annex-turtle` scheme
+
 ## Build a Release
  * Open git-annex-turtle.xcodeproj in XCode 9.2
  * Click on the git-annex-turtle scheme (to the right of the triangle play button top of screen), click Edit Scheme, Make sure Run > Build Configuration is set to Release
