@@ -22,6 +22,10 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
+ * BUG: some process is adding just filenames (not complete relate paths) to the database
+ * new folders are not being discovered after the full scan
+ * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle
+ * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
  * BUG: quiting from menubar icon should quit running git processes too
  * nice, renice git during full scan (or always?)
  * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
