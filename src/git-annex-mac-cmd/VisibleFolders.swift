@@ -9,16 +9,14 @@
 import Foundation
 
 class VisibleFolders {
-    let data: DataEntrypoint
-    let app: AppDelegate
+    let queries: Queries
     
     private var absolutePaths = Set<String>()
     private var visibleFolders = Set<VisibleFolder>()
     private let lock = NSLock() // set is NOT thread-safe, use a lock
     
-    init(data: DataEntrypoint, app: AppDelegate) {
-        self.data = data
-        self.app = app
+    init(queries: Queries) {
+        self.queries = queries
     }
     
     //
@@ -48,7 +46,7 @@ class VisibleFolders {
     // update our list of visible folders
     //
     func updateListOfVisibleFolders(with watchedFolders: Set<WatchedFolder>) {
-        let newVisibleFolders = Queries(data: data).getVisibleFoldersBlocking(with: watchedFolders)
+        let newVisibleFolders = queries.getVisibleFoldersBlocking(with: watchedFolders)
         lock.lock()
         if visibleFolders != newVisibleFolders {
             visibleFolders = newVisibleFolders

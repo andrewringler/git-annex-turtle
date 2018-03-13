@@ -9,7 +9,7 @@
 import Cocoa
 
 class ViewController: NSViewController {
-    private var appDelegate :AppDelegate? = nil
+    private var appDelegate :GitAnnexTurtle? = nil
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-logo"))
     var observedFoldersList :[WatchedFolder]?
     
@@ -91,7 +91,7 @@ class ViewController: NSViewController {
 
 extension ViewController {
     // MARK: Storyboard instantiation
-    static func freshController(appDelegate: AppDelegate) -> ViewController {
+    static func freshController(appDelegate: GitAnnexTurtle) -> ViewController {
         //1.
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         //2.
