@@ -25,7 +25,7 @@ class ViewController: NSViewController {
 
     public func reloadFileList() {
         DispatchQueue.main.async {
-            self.observedFoldersList = self.appDelegate?.watchedFolders.sorted()
+            self.observedFoldersList = self.appDelegate?.getWatchedFolders().sorted()
             self.observedFoldersView?.reloadData()
         }
     }
@@ -65,7 +65,7 @@ class ViewController: NSViewController {
             if let chosenURL: URL = folderChooseDialog.url {
                 if let path :String = PathUtils.path(for: chosenURL) {
                     // valid git-annex folder?
-                    if appDelegate != nil, let _ = appDelegate!.gitAnnexQueries.gitGitAnnexUUID(in: path) {
+                    if appDelegate != nil, let _ = appDelegate!.getGitAnnexQueries().gitGitAnnexUUID(in: path) {
                         Config().watchRepo(repo: path)
                     } else {
                         dialogInvalidGitAnnexDirectory(path: path)

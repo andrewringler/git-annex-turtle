@@ -11,8 +11,20 @@ import Foundation
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
-    let gitAnnexTurtle = GitAnnexTurtle()
+    let gitAnnexTurtle: GitAnnexTurtle
 
+    override init() {
+        let isRunningTests = NSClassFromString("XCTestCase") != nil
+        if isRunningTests {
+            TurtleLog.info("Testing… skipping running GitAnnexTurtle")
+            gitAnnexTurtle = GitAnnexTurtleStub()
+        } else {
+            gitAnnexTurtle = GitAnnexTurtleProduction()
+        }
+        
+        super.init()
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         gitAnnexTurtle.applicationDidFinishLaunching(aNotification)
     }

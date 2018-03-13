@@ -8,7 +8,18 @@
 import Cocoa
 import Foundation
 
-class GitAnnexTurtle {
+protocol GitAnnexTurtle {
+    func getGitAnnexQueries() -> GitAnnexQueries
+    func getWatchedFolders() -> Set<WatchedFolder>
+    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double)
+
+    func applicationDidFinishLaunching(_ aNotification: Notification)
+    func applicationWillTerminate(_ aNotification: Notification)
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply
+    func windowWillReturnUndoManager(window: NSWindow) -> UndoManager?
+}
+
+class GitAnnexTurtleProduction: GitAnnexTurtle {
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
@@ -137,6 +148,14 @@ class GitAnnexTurtle {
         DispatchQueue.global(qos: .background).async {
             self.launchOrRelaunchFinderSyncExtension()
         }
+    }
+    
+    func getGitAnnexQueries() -> GitAnnexQueries {
+        return gitAnnexQueries
+    }
+    
+    func getWatchedFolders() -> Set<WatchedFolder> {
+        return watchedFolders
     }
     
     //
@@ -533,4 +552,23 @@ class GitAnnexTurtle {
         menubarAnimating = false
         menubarIconAnimationLock.unlock()
     }
+}
+
+class GitAnnexTurtleStub: GitAnnexTurtle {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {}
+    func applicationWillTerminate(_ aNotification: Notification) {}
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        return .terminateNow
+    }
+    func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
+        return nil
+    }
+    
+    func getGitAnnexQueries() -> GitAnnexQueries {
+        fatalError("Not implemented")
+    }
+    func getWatchedFolders() -> Set<WatchedFolder> {
+        fatalError("Not implemented")
+    }
+    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {}
 }
