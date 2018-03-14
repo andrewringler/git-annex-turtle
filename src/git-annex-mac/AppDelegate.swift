@@ -8,12 +8,19 @@
 import Cocoa
 import Foundation
 
+/* AppDelegate
+ * here we use AppDelegate to fork between testing code and production code
+ * this setup is necessary, because Apple really wants to launch your AppDelegate class
+ * from tests on occassion.
+ */
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     let gitAnnexTurtle: GitAnnexTurtle
 
     override init() {
+        // Here we use the classloader to determine if we are running in a test
+        // this is not uncommon hack.
         let isRunningTests = NSClassFromString("XCTestCase") != nil
         if isRunningTests {
             gitAnnexTurtle = GitAnnexTurtleStub()
