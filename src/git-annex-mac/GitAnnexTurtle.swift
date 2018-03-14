@@ -9,9 +9,7 @@ import Cocoa
 import Foundation
 
 protocol GitAnnexTurtle {
-    func getGitAnnexQueries() -> GitAnnexQueries
-    func getWatchedFolders() -> Set<WatchedFolder>
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double)
+    func updateMenubarData(with watchedFolders: Set<WatchedFolder>)
 
     func applicationDidFinishLaunching(_ aNotification: Notification)
     func applicationWillTerminate(_ aNotification: Notification)
@@ -32,19 +30,17 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     let menubarIconAnimationLock = NSLock()
     var menubarAnimating: Bool = false
     
-    let data = DataEntrypoint()
+    let data: DataEntrypoint
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
     let fullScan: FullScan
+    let handleStatusRequests: HandleStatusRequests
     
-    var handleStatusRequests: HandleStatusRequests? = nil
-    var watchedFolders = Set<WatchedFolder>()
     var menuBarButton :NSStatusBarButton?
     var preferencesViewController: ViewController? = nil
     var preferencesWindow: NSWindow? = nil
-    var fileSystemMonitors: [WatchedFolderMonitor] = []
-    var listenForWatchedFolderChanges: Witness? = nil
-    var visibleFolders: VisibleFolders? = nil
+    
+    var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
     
     init() {
         for i in 0...16 {
@@ -60,8 +56,10 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             exit(-1)
         }
         
+        data = DataEntrypoint()
         queries = Queries(data: data)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries, queries: queries)
+        handleStatusRequests = HandleStatusRequests(queries: queries, gitAnnexQueries: gitAnnexQueries)
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -71,75 +69,17 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         }
         
         constructMenu(watchedFolders: []) // generate an empty menu stub
-        visibleFolders = VisibleFolders(queries: queries)
-        handleStatusRequests = HandleStatusRequests(queries: Queries(data: self.data), gitAnnexQueries: gitAnnexQueries)
+        
+        // Start the main database and git-annex loop
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, data: data, fullScan: fullScan, handleStatusRequests: handleStatusRequests, gitAnnexQueries: gitAnnexQueries)
         
         // Menubar Icon > Preferences menu
-        preferencesViewController = ViewController.freshController(appDelegate: self)
-        
-        updateListOfWatchedFolders()
-        
-        setupFileSystemMonitorOnConfigFile()
-        
+        preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
+
         // Animated icon
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleAnimateMenubarIcon()
-                usleep(100000)
-            }
-        }
-        
-        // Command requests
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleCommandRequests()
-                usleep(100000)
-            }
-        }
-        
-        // Badge requests
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleBadgeRequests()
-                usleep(100000)
-            }
-        }
-        
-        // Main loop
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.visibleFolders?.updateListOfVisibleFolders(with: self.watchedFolders)
-                
-                // Handle folder updates, for any folder that is not doing a full scan
-                for watchedFolder in self.watchedFolders {
-                    if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
-                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries)
-                    }
-                }
-                
-                // Setup file system watches for any folder that has completed its full scan
-                // that we aren't already watching
-                for watchedFolder in self.watchedFolders {
-                    // A folder we need to start a file system watch for, is one
-                    // that has a commit hash in the database (meaning it is done with a full scan)
-                    // and one that isn't already being watched
-                    let handledCommits = self.queries.getLatestCommits(for: watchedFolder)
-                    if handledCommits.gitAnnexCommitHash != nil, (self.fileSystemMonitors.filter{ $0.watchedFolder == watchedFolder }).count == 0 {
-                        // Setup filesystem watch
-                        // must happen on main thread for Apple File System Events API to work
-                        if (Thread.isMainThread) {
-                            self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
-                        } else {
-                            DispatchQueue.main.sync {
-                                self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
-                            }
-                        }
-                        
-                        // Look for updates now, in case we have missed some, while setting up this watch
-                        self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 0)
-                    }
-                }
-                
                 usleep(100000)
             }
         }
@@ -150,263 +90,17 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         }
     }
     
-    func getGitAnnexQueries() -> GitAnnexQueries {
-        return gitAnnexQueries
-    }
-    
-    func getWatchedFolders() -> Set<WatchedFolder> {
-        return watchedFolders
-    }
-    
-    //
-    // Watch List Config File Updates: ~/.config/git-annex/turtle-monitor
-    //
-    // in addition to changing the watched folders via the Menubar GUI, users may
-    // edit the config file directly. We will attach a file system monitor to detect this
-    //
-    private func setupFileSystemMonitorOnConfigFile() {
-        let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
-        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0.1) { events in
-            updateListOfWatchedFoldersDebounce()
-        }
-    }
-    
-    // Start a full scan for any folder with no git annex commit information
-    private func startFullScanForWatchedFoldersWithNoHistoryInDb() {
-        for watchedFolder in watchedFolders {
-            // Last commit hash that we have handled (from the database)
-            let handledCommits = queries.getLatestCommits(for: watchedFolder)
-            
-            if handledCommits.gitAnnexCommitHash == nil {
-                fullScan.startFullScan(watchedFolder: watchedFolder)
-            }
-        }
-    }
-    
-    // Read in list of watched folders from Config (or create)
-    // also populates menu with correct folders (if any)
-    private func updateListOfWatchedFolders() {
-        // Re-read config, it might have changed
-        let config = Config()
-        
-        // For all watched folders, if it has a valid git-annex UUID then
-        // assume it is a valid git-annex folder and start monitoring it
-        var newWatchedFolders = Set<WatchedFolder>()
-        for watchedFolder in config.listWatchedRepos() {
-            if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
-                newWatchedFolders.insert(WatchedFolder(uuid: uuid, pathString: watchedFolder))
-            } else {
-                // TODO let the user know this?
-                TurtleLog.error("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder)
-            }
-        }
-        
-        if newWatchedFolders != watchedFolders {
-            let previousWatchedFolders = watchedFolders
-            watchedFolders = newWatchedFolders // atomically set the new array
-            
-            // Stop any full scans that might be runnning for a removed folder
-            // Stop any file system watches
-            for watchedFolder in previousWatchedFolders {
-                if !watchedFolders.contains(watchedFolder) {
-                    TurtleLog.info("Stopped monitoring \(watchedFolder)")
-                    
-                    fullScan.stopFullScan(watchedFolder: watchedFolder)
-                    if let index = fileSystemMonitors.index(where: { $0.watchedFolder == watchedFolder} ) {
-                        fileSystemMonitors.remove(at: index)
-                    }
-                }
-            }
-            
-            constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
-            preferencesViewController?.reloadFileList()
-            
-            TurtleLog.info("Finder Sync is now monitoring: [\(WatchedFolder.pretty(watchedFolders))]")
-            
-            // Save updated folder list to the database
-            let queries = Queries(data: data)
-            queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
-            
-            startFullScanForWatchedFoldersWithNoHistoryInDb()
-        }
-    }
-    
-    // updates from Watched Folder monitor
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {
-        checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: false)
-    }
-    
-    //    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
-    //        let queries = Queries(data: self.data)
-    //        let paths = queries.allPathsOlderThanBlocking(in: watchedFolder, secondsOld: secondsOld)
-    //
-    //        for path in paths {
-    //            // ignore non-visible paths
-    //            if let visible = visibleFolders?.isVisible(path: path), visible {
-    //                handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: .low)
-    //            }
-    //        }
-    //    }
-    
-    private var checkForGitAnnexUpdatesLock = NSLock()
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
-        checkForGitAnnexUpdatesLock.lock()
-        TurtleLog.debug("Checking for updates in \(watchedFolder)")
-        
-        var paths: [String] = []
-        
-        // Last commit hash that we have handled (from the database)
-        let handledCommits = queries.getLatestCommits(for: watchedFolder)
-        let handledGitCommitHashOptional = handledCommits.gitCommitHash
-        let handledGitAnnexCommitHashOptional = handledCommits.gitAnnexCommitHash
-        
-        // We are still performing a full scan for this folder
-        // no incremental updates to perform yet
-        if handledGitAnnexCommitHashOptional == nil {
-            checkForGitAnnexUpdatesLock.unlock()
-            return
-        }
-        
-        // Current commit hashes (un-handled)
-        let currentGitCommitHash = gitAnnexQueries.latestGitCommitHashBlocking(in: watchedFolder)
-        let currentGitAnnexCommitHash = gitAnnexQueries.latestGitAnnexCommitHashBlocking(in: watchedFolder)
-        
-        /* Commits to git could mean:
-         * - new file content (we should update key)
-         * - existing file points to new content in git-annex
-         * - change in lock/unlock state
-         * - add/drop for a path
-         */
-        if let handledGitCommitHash = handledGitCommitHashOptional {
-            let gitPaths = gitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: handledGitCommitHash, in: watchedFolder)
-            paths += gitPaths
-        }
-        
-        /* Commits to git-annex branch could mean:
-         * - location updates for file content
-         */
-        if let handledGitAnnexCommitHash = handledGitAnnexCommitHashOptional {
-            let keysChanged = gitAnnexQueries.allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: handledGitAnnexCommitHash, in: watchedFolder)
-            let newPaths = Queries(data: data).pathsWithStatusesGivenAnnexKeysBlocking(keys: keysChanged, in: watchedFolder)
-            paths += newPaths
-            
-            if keysChanged.count != newPaths.count {
-                // for 1 or more paths we were unable to find an associated key
-                // perhaps user did a `git annex add` via the commandline
-                // if the path was ever shown in a Finder window we will have
-                // a not-tracked entry for it, lets re-check all of our untracked paths
-                let newPaths = Queries(data: data).allNonTrackedPathsBlocking(in: watchedFolder)
-                TurtleLog.debug("Checking non tracked paths \(newPaths)")
-                paths += newPaths
-            }
-        }
-        paths = Set<String>(paths).sorted() // remove duplicates
-        
-        if paths.count > 0 {
-            TurtleLog.debug("Requesting updated statuses for \(paths)")
-        }
-        
-        for path in paths {
-            var priority: Priority = .low
-            if let visible = visibleFolders?.isVisible(relativePath: path, in: watchedFolder), visible {
-                priority = .high
-            }
-            
-            handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
-        }
-        
-        // OK, we have queued all changed paths for updates
-        // from the last handled commit, up-to and including the
-        // latest commit (that was available before we started)
-        queries.updateLatestHandledCommit(gitCommitHash: currentGitCommitHash, gitAnnexCommitHash: currentGitAnnexCommitHash, in: watchedFolder)
-        
-        checkForGitAnnexUpdatesLock.unlock()
-    }
-    
-    //    private func updateStatusNowAsync(for path: String, in watchedFolder: WatchedFolder) {
-    //        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: false, priority: .high)
-    //    }
-    
-    //
-    // Command Requests
-    //
-    // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
-    //
-    private func handleCommandRequests() {
-        let queries = Queries(data: self.data)
-        let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
-        
-        for commandRequest in commandRequests {
-            for watchedFolder in self.watchedFolders {
-                if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
-                    // Is this a Git Annex Command?
-                    if commandRequest.commandType.isGitAnnex {
-                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                        if !status.success {
-                            // git-annex has very nice error message, use them as-is
-                            self.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
-                    }
-                    
-                    // Is this a Git Command?
-                    if commandRequest.commandType.isGit {
-                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                        if !status.success {
-                            self.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
-                    }
-                    
-                    break
-                }
-            }
-        }
-    }
-    
-    //
-    // Badge Icon Requests
-    //
-    // handle requests for updated badge icons from our Finder Sync extension
-    //
-    private func handleBadgeRequests() {
-        for watchedFolder in self.watchedFolders {
-            // Only handle badge requests for folders that aren't currently being scanned
-            // TODO, give immediate feedback to the user here on some files?
-            // TODO, we can miss some files if they appear after full scan enumeration
-            if !fullScan.isScanning(watchedFolder: watchedFolder) {
-                for path in queries.allPathRequestsV2Blocking(in: watchedFolder) {
-                    if queries.statusForPathV2Blocking(path: path, in: watchedFolder) != nil {
-                        // OK, we already know about this file or folder
-                        // do nothing here.
-                        // we will automatically detect and handle any updates
-                        // that come in with our other procedures
-                    } else {
-                        // We have no information about this file
-                        // enqueue it for inspection
-                        handleStatusRequests?.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
-                    }
-                }
-            }
-        }
-    }
-    
     func applicationWillTerminate(_ aNotification: Notification) {
         TurtleLog.info("quiting…")
         stopFinderSyncExtension()
     }
-
     
     //
     // Finder Sync Extension
     //
     // launch or re-launch our Finder Sync extension
     //
-    func launchOrRelaunchFinderSyncExtension() {
+    private func launchOrRelaunchFinderSyncExtension() {
         // see https://github.com/kpmoran/OpenTerm/commit/022dcfaf425645f63d4721b1353c31614943bc32
         TurtleLog.info("re-launching Finder Sync extension")
         let task = Process()
@@ -416,7 +110,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     }
     
     // Stop our Finder Sync extensions
-    func stopFinderSyncExtension() {
+    private func stopFinderSyncExtension() {
         let task = Process()
         task.launchPath = "/bin/bash"
         task.arguments = ["-c", "pluginkit -e ignore -i com.andrewringler.git-annex-mac.git-annex-finder ; killall Finder"]
@@ -448,7 +142,16 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         NSApp.activate(ignoringOtherApps: true)
     }
     
-    func constructMenu(watchedFolders :Set<WatchedFolder>) {
+    public func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {
+        constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
+        updatePreferencesMenu()
+    }
+    
+    private func updatePreferencesMenu() {
+        preferencesViewController?.reloadFileList()
+    }
+    
+    private func constructMenu(watchedFolders :Set<WatchedFolder>) {
         DispatchQueue.main.async {
             let menu = NSMenu()
             
@@ -477,34 +180,13 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     
     @IBAction func nilAction(_ sender: AnyObject?) {}
     
-    func dialogOK(title: String, message: String) {
-        DispatchQueue.main.async {
-            // https://stackoverflow.com/questions/29433487/create-an-nsalert-with-swift
-            let alert = NSAlert()
-            alert.messageText = title
-            alert.informativeText = message
-            alert.alertStyle = .warning
-            alert.icon = self.gitAnnexLogoSquareColor
-            alert.addButton(withTitle: "OK")
-            alert.runModal()
-        }
-    }
-    
-    func watchedFolderFrom(uuid: String) -> WatchedFolder? {
-        for watchedFolder in watchedFolders {
-            if watchedFolder.uuid.uuidString == uuid {
-                return watchedFolder
-            }
-        }
-        return nil
-    }
-    
     //
     // Animate menubar-icon
     //
     //
     private func handleAnimateMenubarIcon() {
-        if let handlingRequests = handleStatusRequests?.handlingRequests(), handlingRequests || fullScan.isScanning() {
+        let handlingRequests = handleStatusRequests.handlingRequests()
+        if handlingRequests || fullScan.isScanning() {
             startAnimatingMenubarIcon()
         } else {
             stopAnimatingMenubarIcon()
@@ -564,11 +246,5 @@ class GitAnnexTurtleStub: GitAnnexTurtle {
         return nil
     }
     
-    func getGitAnnexQueries() -> GitAnnexQueries {
-        fatalError("Not implemented")
-    }
-    func getWatchedFolders() -> Set<WatchedFolder> {
-        fatalError("Not implemented")
-    }
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double) {}
+    func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {}
 }

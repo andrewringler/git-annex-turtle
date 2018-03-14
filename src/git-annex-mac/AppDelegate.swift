@@ -16,7 +16,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     override init() {
         let isRunningTests = NSClassFromString("XCTestCase") != nil
         if isRunningTests {
-            TurtleLog.info("Testing… skipping running GitAnnexTurtle")
             gitAnnexTurtle = GitAnnexTurtleStub()
         } else {
             gitAnnexTurtle = GitAnnexTurtleProduction()

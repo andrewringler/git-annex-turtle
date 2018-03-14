@@ -9,7 +9,7 @@
 import Cocoa
 
 class ViewController: NSViewController {
-    private var appDelegate :GitAnnexTurtle? = nil
+    private var appDelegate :WatchGitAndFinderForUpdates? = nil
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-logo"))
     var observedFoldersList :[WatchedFolder]?
     
@@ -65,7 +65,7 @@ class ViewController: NSViewController {
             if let chosenURL: URL = folderChooseDialog.url {
                 if let path :String = PathUtils.path(for: chosenURL) {
                     // valid git-annex folder?
-                    if appDelegate != nil, let _ = appDelegate!.getGitAnnexQueries().gitGitAnnexUUID(in: path) {
+                    if appDelegate != nil, let _ = appDelegate!.gitAnnexQueries.gitGitAnnexUUID(in: path) {
                         Config().watchRepo(repo: path)
                     } else {
                         dialogInvalidGitAnnexDirectory(path: path)
@@ -91,7 +91,7 @@ class ViewController: NSViewController {
 
 extension ViewController {
     // MARK: Storyboard instantiation
-    static func freshController(appDelegate: GitAnnexTurtle) -> ViewController {
+    static func freshController(appDelegate: WatchGitAndFinderForUpdates) -> ViewController {
         //1.
         let storyboard = NSStoryboard(name: NSStoryboard.Name(rawValue: "Main"), bundle: nil)
         //2.
