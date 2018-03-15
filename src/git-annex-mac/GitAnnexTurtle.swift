@@ -18,6 +18,7 @@ protocol GitAnnexTurtleSwift {
 }
 @objc protocol GitAnnexTurtleViewModel: class {
     func showPreferencesWindow(_ sender: Any?)
+    func showInFinder(_ sender: NSMenuItem)
 }
 typealias GitAnnexTurtle = GitAnnexTurtleSwift & GitAnnexTurtleViewModel
 
@@ -33,4 +34,5 @@ class GitAnnexTurtleStub: GitAnnexTurtle {
     
     func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {}
     @objc func showPreferencesWindow(_ sender: Any?) {}
+    @objc func showInFinder(_ sender: NSMenuItem) {}
 }

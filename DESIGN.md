@@ -22,9 +22,9 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
+ * BUG: new folders are not being discovered after the full scan
  * BUG: quiting from menubar icon should quit running git processes too
  * BUG: some process is adding just filenames (not complete relative paths) to the database
- * BUG: new folders are not being discovered after the full scan
  * crop or scroll large git error messages that appear in Dialogs
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)

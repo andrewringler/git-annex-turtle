@@ -9,6 +9,8 @@ import Cocoa
 import Foundation
 
 class GitAnnexTurtleProduction: GitAnnexTurtle {
+    // https://developer.apple.com/macos/human-interface-guidelines/icons-and-images/system-icons/
+    let actionIcon = NSImage(named:NSImage.Name.actionTemplate)
     let imgPresent = NSImage(named:NSImage.Name(rawValue: "git-annex-present"))
     let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
@@ -134,6 +136,12 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         NSApp.activate(ignoringOtherApps: true)
     }
     
+    @objc func showInFinder(_ sender: NSMenuItem) {
+        if let watchedFolder = sender.representedObject as? WatchedFolder {
+            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: watchedFolder.pathString)
+        }
+    }
+    
     public func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {
         constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
     }
@@ -149,15 +157,20 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
                     if(watchingStringTruncated.count > 40){
                         watchingStringTruncated = "…" + watchingStringTruncated.suffix(40)
                     }
-                    _ = menu.addItem(withTitle: watchingStringTruncated, action: nil, keyEquivalent: "")
+                    var newMenuItem = menu.addItem(withTitle: watchingStringTruncated, action: #selector(self.showInFinder(_:)), keyEquivalent: "")
+                    newMenuItem.target = self
+                    newMenuItem.representedObject = watching
                     //                    watching.image = self.gitAnnexLogoNoArrowsColor
                 }
             } else {
                 menu.addItem(NSMenuItem(title: "nothing", action: nil, keyEquivalent: ""))
             }
             
+            menu.addItem(NSMenuItem.separator())
+
             let preferencesMenuItem = NSMenuItem(title: "Preferences…", action: #selector(self.showPreferencesWindow(_:)), keyEquivalent: "")
             preferencesMenuItem.target = self
+            preferencesMenuItem.image = self.actionIcon
             menu.addItem(preferencesMenuItem)
             
             menu.addItem(NSMenuItem.separator())
