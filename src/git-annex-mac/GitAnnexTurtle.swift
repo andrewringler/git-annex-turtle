@@ -8,7 +8,7 @@
 import Cocoa
 import Foundation
 
-protocol GitAnnexTurtle {
+protocol GitAnnexTurtleSwift {
     func updateMenubarData(with watchedFolders: Set<WatchedFolder>)
 
     func applicationDidFinishLaunching(_ aNotification: Notification)
@@ -16,6 +16,10 @@ protocol GitAnnexTurtle {
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply
     func windowWillReturnUndoManager(window: NSWindow) -> UndoManager?
 }
+@objc protocol GitAnnexTurtleViewModel: class {
+    func showPreferencesWindow(_ sender: Any?)
+}
+typealias GitAnnexTurtle = GitAnnexTurtleSwift & GitAnnexTurtleViewModel
 
 class GitAnnexTurtleStub: GitAnnexTurtle {
     func applicationDidFinishLaunching(_ aNotification: Notification) {}
@@ -28,4 +32,5 @@ class GitAnnexTurtleStub: GitAnnexTurtle {
     }
     
     func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {}
+    @objc func showPreferencesWindow(_ sender: Any?) {}
 }

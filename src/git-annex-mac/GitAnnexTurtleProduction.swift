@@ -126,7 +126,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             preferencesWindow?.contentViewController = preferencesViewController
             preferencesWindow?.styleMask.insert([.closable, .miniaturizable, .titled])
         }
-        // show and bring to frong
+        // show and bring to front
         // see https://stackoverflow.com/questions/1740412/how-to-bring-nswindow-to-front-and-to-the-current-space
         preferencesWindow?.center()
         preferencesWindow?.orderedIndex = 0
@@ -136,11 +136,6 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     
     public func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {
         constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
-        updatePreferencesMenu()
-    }
-    
-    private func updatePreferencesMenu() {
-        preferencesViewController?.reloadFileList()
     }
     
     private func constructMenu(watchedFolders :Set<WatchedFolder>) {
@@ -161,12 +156,16 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
                 menu.addItem(NSMenuItem(title: "nothing", action: nil, keyEquivalent: ""))
             }
             
-            menu.addItem(NSMenuItem(title: "Preferences…", action: #selector(self.showPreferencesWindow(_:)), keyEquivalent: ""))
+            let preferencesMenuItem = NSMenuItem(title: "Preferences…", action: #selector(self.showPreferencesWindow(_:)), keyEquivalent: "")
+            preferencesMenuItem.target = self
+            menu.addItem(preferencesMenuItem)
             
             menu.addItem(NSMenuItem.separator())
             menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
             
             self.statusItem.menu = menu
+            
+            self.preferencesViewController?.reloadFileList()
         }
     }
     
