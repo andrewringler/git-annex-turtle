@@ -22,7 +22,7 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 
 ## TODO
- * BUG: new folders are not being discovered after the full scan
+ * BUG: after new files are created, added and committed, their badge icon is still not updated until you click off the folder and click back on. TODO, stub out all of FinderSync code for testing
  * BUG: quiting from menubar icon should quit running git processes too
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * crop or scroll large git error messages that appear in Dialogs
