@@ -237,6 +237,10 @@ class WatchGitAndFinderForUpdates {
                 priority = .high
             }
             
+            // git & git-annex don't report new folders directly
+            // so infer them from the files within
+            queries.addAllMissingParentFolders(for: path, in: watchedFolder)
+            
             handleStatusRequests.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
         }
         

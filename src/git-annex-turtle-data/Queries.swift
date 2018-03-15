@@ -105,6 +105,7 @@ class Queries {
     
     func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
+        let modificationDate = Date().timeIntervalSince1970 as Double
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
@@ -131,7 +132,7 @@ class Queries {
                 }
                 
                 if let pathStatus = entry {
-                    pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+                    pathStatus.setValue(modificationDate, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
                     
                     pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
                     pathStatus.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
@@ -149,7 +150,7 @@ class Queries {
                     TurtleLog.error("could not create/update entity for \(PathStatusEntityName)")
                 }
                 
-                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+                try changeLastModifedUpdatesStub(lastModified:modificationDate, in: privateMOC)
                 
                 try privateMOC.save()
                 moc.performAndWait {
@@ -171,6 +172,7 @@ class Queries {
     // is triggered from a fullscan, assume we have no entries
     func updateStatusForDirectoryPathsV2BatchBlocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for paths: [String], key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) -> Bool {
+        let modificationDate = Date().timeIntervalSince1970 as Double
         var success = true
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -182,7 +184,7 @@ class Queries {
                 for path in paths {
                     if let entity = NSEntityDescription.entity(forEntityName: PathStatusEntityName, in: privateMOC) {
                         let pathStatus = NSManagedObject(entity: entity, insertInto: privateMOC)
-                        pathStatus.setValue(Date().timeIntervalSince1970 as Double, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
+                        pathStatus.setValue(modificationDate, forKeyPath: PathStatusAttributes.modificationDate.rawValue)
                         
                         pathStatus.setValue(path, forKeyPath: PathStatusAttributes.pathString.rawValue)
                         pathStatus.setValue(watchedFolder.uuid.uuidString, forKeyPath: PathStatusAttributes.watchedFolderUUIDString.rawValue)
@@ -202,7 +204,7 @@ class Queries {
                     }
                 }
                 
-                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+                try changeLastModifedUpdatesStub(lastModified:modificationDate, in: privateMOC)
                 
                 try privateMOC.save()
                 moc.performAndWait {
@@ -957,6 +959,8 @@ class Queries {
                     privateMOC.delete(result)
                 }
                 
+                try self.changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+
                 try privateMOC.save()
                 moc.perform {
                     do {
@@ -1024,6 +1028,8 @@ class Queries {
                     TurtleLog.error("could not create entity for \(VisibleFoldersEntityName)")
                 }
                 
+                try self.changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
+
                 try privateMOC.save()
                 moc.perform {
                     do {
@@ -1037,6 +1043,28 @@ class Queries {
                 TurtleLog.fatal("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                 fatalError("could not save private context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
             }
+        }
+    }
+    
+    func addAllMissingParentFolders(for path: String, in watchedFolder: WatchedFolder) -> [String]? {
+        var foldersToAdd: [String] = []
+        var parent = PathUtils.parent(for: path, in: watchedFolder)
+        while parent != nil, PathUtils.isCurrent(parent!) == false {
+            if statusForPathV2Blocking(path: parent!, in: watchedFolder) == nil {
+                // folder has no entry, enqueue for addition
+                foldersToAdd.append(parent!)
+            }
+            parent = PathUtils.parent(for: parent!, in: watchedFolder)
+        }
+        
+        if foldersToAdd.count > 0 {
+            if updateStatusForDirectoryPathsV2BatchBlocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: foldersToAdd, key: nil, in: watchedFolder, isDir: true, needsUpdate: true) {
+                return foldersToAdd
+            } else {
+                return nil
+            }
+        } else {
+            return []
         }
     }
     
