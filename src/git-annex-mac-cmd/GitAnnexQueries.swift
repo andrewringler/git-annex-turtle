@@ -183,6 +183,15 @@ class GitAnnexQueries {
         }
         return (status == 0, error, output, commandRun)
     }
+    func gitCommit(in workingDirectory: String, commitMessage: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        let commandRun = "git commit \"" + commitMessage + "\""
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        return (status == 0, error, output, commandRun)
+    }
     func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
         // is this folder even a directory?
         if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
@@ -482,7 +491,7 @@ class GitAnnexQueries {
     }
     
     /* returns list of files in git repo that have been modified
-     * since the give commitHash
+     * since the given commitHash
      * where commitHash is a commit in the master branch */
     func allFileChangesGitSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
         let bundle = Bundle(for: ShellScripts.self)
@@ -493,6 +502,25 @@ class GitAnnexQueries {
                 return output.filter { $0.count > 0 }
             } else {
                 TurtleLog.error("commitHash: \(commitHash) status= \(status) output=\(output) error=\(error)")
+            }
+        } else {
+            TurtleLog.error("could not find shell script in bundle")
+        }
+        
+        return []
+    }
+    
+    /* returns list of files in git repo that have been modified
+     * mentioned in any git commit ever */
+    func allFileChangesInGitLog(in watchedFolder: WatchedFolder) -> [String] {
+        let bundle = Bundle(for: ShellScripts.self)
+        if let scriptPath: String = bundle.path(forResource: "allChangedGitFiles", ofType: "sh") {
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: gitCmd)
+            
+            if(status == 0){ // success
+                return output.filter { $0.count > 0 }
+            } else {
+                TurtleLog.error("status= \(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.error("could not find shell script in bundle")
@@ -585,5 +613,15 @@ class GitAnnexQueries {
         
         TurtleLog.error("could not find git binary, perhaps it is not installed?")
         return nil
+    }
+}
+
+extension String {
+    func escapeString() -> String {
+        let newString = self.replacingOccurrences(of: "\"", with: "\"\"", options: .literal, range: nil)
+        if newString.contains(",") || newString.contains("\n") {
+            return String(format: "\"%@\"", newString)
+        }
+        return newString
     }
 }

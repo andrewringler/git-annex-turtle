@@ -9,6 +9,7 @@
 import Foundation
 
 class WatchGitAndFinderForUpdates {
+    let config: Config
     let gitAnnexTurtle: GitAnnexTurtle
     let data: DataEntrypoint
     let queries: Queries
@@ -16,17 +17,20 @@ class WatchGitAndFinderForUpdates {
     let visibleFolders: VisibleFolders
     let fullScan: FullScan
     let handleStatusRequests: HandleStatusRequests
+    let dialogs: Dialogs
     
     var watchedFolders = Set<WatchedFolder>()
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     
-    init(gitAnnexTurtle: GitAnnexTurtle, data: DataEntrypoint, fullScan: FullScan, handleStatusRequests: HandleStatusRequests, gitAnnexQueries: GitAnnexQueries) {
+    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, handleStatusRequests: HandleStatusRequests, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs) {
         self.gitAnnexTurtle = gitAnnexTurtle
+        self.config = config
         self.data = data
         self.fullScan = fullScan
         self.handleStatusRequests = handleStatusRequests
         self.gitAnnexQueries = gitAnnexQueries
+        self.dialogs = dialogs
         
         queries = Queries(data: data)
         visibleFolders = VisibleFolders(queries: queries)
@@ -93,9 +97,6 @@ class WatchGitAndFinderForUpdates {
     // Read in list of watched folders from Config (or create)
     // also populates menu with correct folders (if any)
     private func updateListOfWatchedFolders() {
-        // Re-read config, it might have changed
-        let config = Config()
-        
         // For all watched folders, if it has a valid git-annex UUID then
         // assume it is a valid git-annex folder and start monitoring it
         var newWatchedFolders = Set<WatchedFolder>()
@@ -145,7 +146,7 @@ class WatchGitAndFinderForUpdates {
     //
     private func setupFileSystemMonitorOnConfigFile() {
         let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
-        listenForWatchedFolderChanges = Witness(paths: [Config().dataPath], flags: .FileEvents, latency: 0.1) { events in
+        listenForWatchedFolderChanges = Witness(paths: [config.dataPath], flags: .FileEvents, latency: 0.1) { events in
             updateListOfWatchedFoldersDebounce()
         }
     }
@@ -198,6 +199,11 @@ class WatchGitAndFinderForUpdates {
          */
         if let handledGitCommitHash = handledGitCommitHashOptional {
             let gitPaths = gitAnnexQueries.allFileChangesGitSinceBlocking(commitHash: handledGitCommitHash, in: watchedFolder)
+            paths += gitPaths
+        } else if currentGitCommitHash != nil {
+            // we have never handled a git commit, if there is at least one
+            // then we'll grab all files ever mentioned in any git commit
+            let gitPaths = gitAnnexQueries.allFileChangesInGitLog(in: watchedFolder)
             paths += gitPaths
         }
         
@@ -259,7 +265,7 @@ class WatchGitAndFinderForUpdates {
                         let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             // git-annex has very nice error message, use them as-is
-                            TurtleDialogs.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                            dialogs.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
                         } else {
                             // success, update this file status right away
                             //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
@@ -270,7 +276,7 @@ class WatchGitAndFinderForUpdates {
                     if commandRequest.commandType.isGit {
                         let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
-                            TurtleDialogs.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                            dialogs.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                         } else {
                             // success, update this file status right away
                             //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)

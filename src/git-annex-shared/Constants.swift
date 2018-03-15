@@ -341,6 +341,7 @@ enum CommandString: String {
     case lock = "lock"
     case initCmd = "init"
     case numCopies = "numcopies"
+    case commit = "commit"
 }
 
 

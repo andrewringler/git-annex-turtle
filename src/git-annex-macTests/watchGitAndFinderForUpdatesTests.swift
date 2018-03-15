@@ -16,6 +16,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     var queries: Queries?
     var gitAnnexQueries: GitAnnexQueries?
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
+    var config: Config?
     
     override func setUp() {
         super.setUp()
@@ -24,17 +25,18 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         testDir = TestingUtil.createTmpDir()
         TurtleLog.info("Using testing dir: \(testDir!)")
-        let config = Config(dataPath: "\(testDir!)/turtle-monitor")
+        config = Config(dataPath: "\(testDir!)/turtle-monitor")
         let storeURL = PathUtils.urlFor(absolutePath: "\(testDir!)/testingDatabase")
         
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
         let data = DataEntrypoint(persistentContainer: persistentContainer)
         queries = Queries(data: data)
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
+//        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
+        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitCmd: "/Applications/git-annex.app/Contents/MacOS/git")
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
         let handleStatusRequests = HandleStatusRequests(queries: queries!, gitAnnexQueries: gitAnnexQueries!)
 
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), data: data, fullScan: fullScan!, handleStatusRequests: handleStatusRequests, gitAnnexQueries: gitAnnexQueries!)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, handleStatusRequests: handleStatusRequests, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage())
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)
@@ -83,13 +85,18 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs/a", in: repo2!)
         TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs/b", in: repo2!)
         
-//        watchGitAndFinderForUpdates.
+        // Add repo to config, so we'll start the full scan
+        // and then subsequently start the incremental scans
         
-        
-        // Start a full scan on both repos
-//        fullScan!.startFullScan(watchedFolder: repo1!)
-//        fullScan!.startFullScan(watchedFolder: repo2!)
-        
+        XCTAssertTrue(config!.watchRepo(repo: repo1!.pathString), "unable to watch repo 1")
+        XCTAssertTrue(config!.watchRepo(repo: repo2!.pathString), "unable to watch repo 2")
+
+        // wait a few seconds for watchGitAndFinderForUpdates
+        // to find the repos we just added and start a full scan on them
+        wait(for: 10)
+
+        // wait for the full scans to complete
+        // triggered by watchGitAndFinderForUpdates
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)
         waitForExpectations(timeout: 30, handler: nil)
@@ -217,6 +224,36 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         } else {
             XCTFail("could not retrieve folder status for whole repo2")
         }
+        
+        
+        ///
+        /// OK, repos have their full scan completed
+        /// lets make some changes and see how
+        /// our incremental scanner picks them up
+        ///
+        let changeFile1 = "subdirA/changeFile1.txt"
+        TestingUtil.gitAnnexCreateAndAdd(content: "changeFile1 content", to: changeFile1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        
+        // incremental scanner will only pick up new files once they are committed
+        TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        
+        wait(for: 30)
+
+        if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
+            XCTAssertEqual(status.presentStatus, Present.present)
+            XCTAssertEqual(status.isDir, true)
+            XCTAssertEqual(status.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve folder status for 'subdirA'")
+        }
+        if let status = queries!.statusForPathV2Blocking(path: changeFile1, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, Present.present)
+            XCTAssertEqual(status.enoughCopies, EnoughCopies.lacking)
+            XCTAssertEqual(status.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for \(changeFile1)")
+        }
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {
@@ -227,30 +264,5 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     func doneScanning() -> Bool {
         return fullScan!.isScanning(watchedFolder: repo1!) == false
             && fullScan!.isScanning(watchedFolder: repo2!) == false
-    }
-}
-
-// https://stackoverflow.com/a/30593673/8671834
-extension Collection {
-    
-    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
-    subscript (safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}
-
-// https://stackoverflow.com/a/42222302/8671834
-extension XCTestCase {
-    
-    func wait(for duration: TimeInterval) {
-        let waitExpectation = expectation(description: "Waiting")
-        
-        let when = DispatchTime.now() + duration
-        DispatchQueue.main.asyncAfter(deadline: when) {
-            waitExpectation.fulfill()
-        }
-        
-        // We use a buffer here to avoid flakiness with Timer on CI
-        waitForExpectations(timeout: duration + 0.5)
     }
 }

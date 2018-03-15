@@ -107,6 +107,19 @@
 		49DDE17D2059D877008C55AC /* WatchGitAndFinderForUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE17620588020008C55AC /* WatchGitAndFinderForUpdates.swift */; };
 		49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1742058696A008C55AC /* GitAnnexTurtle.swift */; };
 		49DDE17F2059DC09008C55AC /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */; };
+		49DDE1842059E8B5008C55AC /* GitAnnexTurtleProduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */; };
+		49DDE1852059E8D6008C55AC /* GitAnnexTurtleProduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */; };
+		49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1862059EFF4008C55AC /* Dialogs.swift */; };
+		49DDE1882059F096008C55AC /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1862059EFF4008C55AC /* Dialogs.swift */; };
+		49DDE1892059F099008C55AC /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1862059EFF4008C55AC /* Dialogs.swift */; };
+		49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */; };
+		49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FCC20114F1800106566 /* WatchedFolderMonitor.swift */; };
+		49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FCA20114BF200106566 /* debounce-throttle.swift */; };
+		49DDE18D2059F546008C55AC /* EventStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FC420113F3300106566 /* EventStream.swift */; };
+		49DDE18E2059F548008C55AC /* FileEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FC520113F3300106566 /* FileEvent.swift */; };
+		49DDE18F2059F54B008C55AC /* Witness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FC620113F3300106566 /* Witness.swift */; };
+		49DDE191205AA584008C55AC /* allChangedGitFiles.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */; };
+		49DDE192205AA7CA008C55AC /* allChangedGitFiles.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */; };
 		49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */; };
 		49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
@@ -217,6 +230,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				49DDE191205AA584008C55AC /* allChangedGitFiles.sh in CopyFiles */,
 				49977D5220291D4B00FA9527 /* childrenNotIgnored.sh in CopyFiles */,
 				49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */,
 				49178B9B201E928500B98A46 /* changedAnnexFilesAfterCommit.sh in CopyFiles */,
@@ -299,6 +313,9 @@
 		49DDE17620588020008C55AC /* WatchGitAndFinderForUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchGitAndFinderForUpdates.swift; sourceTree = "<group>"; };
 		49DDE1782059CC22008C55AC /* TurtleDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleDialogs.swift; sourceTree = "<group>"; };
 		49DDE17B2059D71D008C55AC /* watchGitAndFinderForUpdatesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = watchGitAndFinderForUpdatesTests.swift; sourceTree = "<group>"; };
+		49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitAnnexTurtleProduction.swift; sourceTree = "<group>"; };
+		49DDE1862059EFF4008C55AC /* Dialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dialogs.swift; sourceTree = "<group>"; };
+		49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = allChangedGitFiles.sh; sourceTree = "<group>"; };
 		49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolder.swift; sourceTree = "<group>"; };
 		49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolders.swift; sourceTree = "<group>"; };
 		49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-preferences.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -432,6 +449,10 @@
 		490982CE204E1D1200096C92 /* git-annex-shared */ = {
 			isa = PBXGroup;
 			children = (
+				497D1FCA20114BF200106566 /* debounce-throttle.swift */,
+				497D1FC420113F3300106566 /* EventStream.swift */,
+				497D1FC520113F3300106566 /* FileEvent.swift */,
+				497D1FC620113F3300106566 /* Witness.swift */,
 				49D149212049E94600CA10F2 /* StreamReader.swift */,
 				49EFD1FF2007BFB1005742DB /* Constants.swift */,
 				49D3AA4320016A1500A43A78 /* WatchedFolder.swift */,
@@ -440,6 +461,7 @@
 				490982D0204E1D1300096C92 /* Info.plist */,
 				490982EF204EDA6100096C92 /* TurtleLog.swift */,
 				49DDE1782059CC22008C55AC /* TurtleDialogs.swift */,
+				49DDE1862059EFF4008C55AC /* Dialogs.swift */,
 			);
 			path = "git-annex-shared";
 			sourceTree = "<group>";
@@ -508,6 +530,7 @@
 				497D1FCC20114F1800106566 /* WatchedFolderMonitor.swift */,
 				492491F42040665A00F8D8A0 /* FullScan.swift */,
 				49D000652040B215008DC76A /* FolderTracking.swift */,
+				49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */,
 			);
 			path = "git-annex-mac";
 			sourceTree = "<group>";
@@ -538,6 +561,7 @@
 			isa = PBXGroup;
 			children = (
 				49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */,
+				49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */,
 				49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */,
 				49178B9D201E92C400B98A46 /* ShellScripts.swift */,
 				49977D512029155000FA9527 /* childrenNotIgnored.sh */,
@@ -571,14 +595,9 @@
 				4981FE0A1DE61774002E6CB3 /* Config.swift */,
 				49635EF32019208500AB95E5 /* PathStatus.swift */,
 				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
-				49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */,
 				499B44741DE54A250091E0E3 /* main.swift */,
 				49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */,
 				495DD1B51DE5EEBB00219E03 /* Finder.swift */,
-				497D1FCA20114BF200106566 /* debounce-throttle.swift */,
-				497D1FC420113F3300106566 /* EventStream.swift */,
-				497D1FC520113F3300106566 /* FileEvent.swift */,
-				497D1FC620113F3300106566 /* Witness.swift */,
 				49F058AB203E225F00157DFB /* TurtleConfigV1.swift */,
 			);
 			path = "git-annex-mac-cmd";
@@ -623,6 +642,7 @@
 				49F0ECD4200E51D000C8BBCB /* Info.plist */,
 				49F0ECD5200E51D000C8BBCB /* git_annex_turtle_data.entitlements */,
 				49F0ECCC200E51D000C8BBCB /* git_annex_turtle_data.xcdatamodeld */,
+				49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */,
 				49F0ECFA200E5D8C00C8BBCB /* Queries.swift */,
 				49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */,
 			);
@@ -1048,6 +1068,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49DDE192205AA7CA008C55AC /* allChangedGitFiles.sh in Resources */,
 				4924920B2040A24200F8D8A0 /* changedAnnexFilesAfterCommit.sh in Resources */,
 				4924920A2040A24000F8D8A0 /* changedGitFilesAfterCommit.sh in Resources */,
 				4924920D2040A24800F8D8A0 /* childrenNotIgnored.sh in Resources */,
@@ -1126,6 +1147,8 @@
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
 				490982F0204EDA6100096C92 /* TurtleLog.swift in Sources */,
 				490982EA204E213400096C92 /* WatchedFolder.swift in Sources */,
+				49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */,
+				49DDE1842059E8B5008C55AC /* GitAnnexTurtleProduction.swift in Sources */,
 				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
 				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
 				49DDE1792059CC22008C55AC /* TurtleDialogs.swift in Sources */,
@@ -1155,11 +1178,13 @@
 				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
 				497D1FC820113F3300106566 /* FileEvent.swift in Sources */,
 				49D000662040B215008DC76A /* FolderTracking.swift in Sources */,
+				49DDE1852059E8D6008C55AC /* GitAnnexTurtleProduction.swift in Sources */,
 				49F0ECFC200E5F5E00C8BBCB /* Queries.swift in Sources */,
 				497D1FCB20114BF200106566 /* debounce-throttle.swift in Sources */,
 				49178B97201A67EA00B98A46 /* HandleStatusRequests.swift in Sources */,
 				49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */,
 				49DDE17720588020008C55AC /* WatchGitAndFinderForUpdates.swift in Sources */,
+				49DDE1882059F096008C55AC /* Dialogs.swift in Sources */,
 				49DDE1752058696A008C55AC /* GitAnnexTurtle.swift in Sources */,
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
@@ -1186,22 +1211,29 @@
 				492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */,
 				492492042040A16A00F8D8A0 /* DataEntrypoint.swift in Sources */,
 				492492022040A15600F8D8A0 /* git_annex_turtle_data.xcdatamodeld in Sources */,
+				49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */,
 				492492072040A1A900F8D8A0 /* FullScan.swift in Sources */,
 				49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */,
 				492492082040A1F500F8D8A0 /* PathStatus.swift in Sources */,
 				492492012040A15100F8D8A0 /* GitAnnexQueries.swift in Sources */,
+				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,
+				49DDE18F2059F54B008C55AC /* Witness.swift in Sources */,
+				49DDE1892059F099008C55AC /* Dialogs.swift in Sources */,
 				49D149242049F6AF00CA10F2 /* StreamReader.swift in Sources */,
 				492492002040A14E00F8D8A0 /* WatchedFolder.swift in Sources */,
 				49DDE17C2059D71D008C55AC /* watchGitAndFinderForUpdatesTests.swift in Sources */,
 				490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */,
 				492492052040A17F00F8D8A0 /* Config.swift in Sources */,
 				490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */,
+				49DDE18E2059F548008C55AC /* FileEvent.swift in Sources */,
 				492492032040A16800F8D8A0 /* Queries.swift in Sources */,
 				49DDE17D2059D877008C55AC /* WatchGitAndFinderForUpdates.swift in Sources */,
+				49DDE18D2059F546008C55AC /* EventStream.swift in Sources */,
 				492492092040A21400F8D8A0 /* TurtleConfigV1.swift in Sources */,
 				4924920C2040A24500F8D8A0 /* ShellScripts.swift in Sources */,
 				49D000672040B252008DC76A /* FolderTracking.swift in Sources */,
 				492491FB20406A8800F8D8A0 /* TestingUtil.swift in Sources */,
+				49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

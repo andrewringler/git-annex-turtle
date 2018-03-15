@@ -9,7 +9,10 @@
 import Foundation
 
 class Config {
-    var configFile: String
+    // Create configuration file
+    // at ~/.config/git-annex/turtle-monitor
+    // to store list of git-annex directories to watch
+    public static let DEFAULT_DATA_PATH = "\(NSHomeDirectory())/.config/git-annex/turtle-monitor"
     let dataPath: String
     
     init(dataPath: String) {
@@ -17,24 +20,13 @@ class Config {
         
         if (!FileManager.default.fileExists(atPath: dataPath)) {
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
-            if success {
-                configFile = dataPath
-            } else {
+            if success == false {
                 TurtleLog.error("Unable to create configuration file at \(dataPath)")
                 exit(-1)
             }
-        } else {
-            configFile = dataPath
         }
         
         setupPaths()
-    }
-    
-    convenience init() {
-        // Create configuration file
-        // at ~/.config/git-annex/turtle-monitor
-        // to store list of git-annex directories to watch
-        self.init(dataPath: "\(NSHomeDirectory())/.config/git-annex/turtle-monitor")
     }
     
     fileprivate func setupPaths() {
@@ -95,32 +87,32 @@ class Config {
             return config.repoPaths()
         }
         
-        TurtleLog.error("Unable to list watched repos from config file at \(configFile)")
+        TurtleLog.error("Unable to list watched repos from config file at \(dataPath)")
         return []
     }
     
     fileprivate func readConfig() -> TurtleConfigV1? {
         do {
-            let data = try String(contentsOfFile: configFile, encoding: .utf8)
+            let data = try String(contentsOfFile: dataPath, encoding: .utf8)
             if let config = TurtleConfigV1.parse(from: data.components(separatedBy: .newlines)) {
                 return config
             }
         } catch {
-            TurtleLog.error("Unable to read config at \(configFile) \(error)")
+            TurtleLog.error("Unable to read config at \(dataPath) \(error)")
             return nil
         }
-        TurtleLog.error("Unable to read config at \(configFile)")
+        TurtleLog.error("Unable to read config at \(dataPath)")
         return nil
     }
     
     fileprivate func writeConfig(_ newConfig: TurtleConfigV1) -> Bool {
         let towrite = newConfig.toFileString()
-        let os = OutputStream(toFileAtPath: self.configFile, append: false)!
+        let os = OutputStream(toFileAtPath: dataPath, append: false)!
         os.open()
         let success = os.write(towrite, maxLength: towrite.lengthOfBytes(using: .utf8))
         os.close()
         if success == -1 {
-            TurtleLog.error("writeConfig: unable to write new config=\(self) to '\(configFile)'")
+            TurtleLog.error("writeConfig: unable to write new config=\(self) to '\(dataPath)'")
             TurtleLog.error(os.streamError!.localizedDescription)
             return false
         }

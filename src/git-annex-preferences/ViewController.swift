@@ -42,7 +42,7 @@ class ViewController: NSViewController {
                 continue
             }
             TurtleLog.debug("Stop watching '\(item.pathString)'")
-            Config().stopWatchingRepo(repo: item.pathString)
+            appDelegate!.config.stopWatchingRepo(repo: item.pathString)
         }
     }
     
@@ -66,7 +66,7 @@ class ViewController: NSViewController {
                 if let path :String = PathUtils.path(for: chosenURL) {
                     // valid git-annex folder?
                     if appDelegate != nil, let _ = appDelegate!.gitAnnexQueries.gitGitAnnexUUID(in: path) {
-                        Config().watchRepo(repo: path)
+                        appDelegate!.config.watchRepo(repo: path)
                     } else {
                         dialogInvalidGitAnnexDirectory(path: path)
                     }

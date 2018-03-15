@@ -9,10 +9,10 @@
 import Cocoa
 import Foundation
 
-class TurtleDialogs {
-    static let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
+class TurtleDialogs: Dialogs {
+    let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
 
-    class func dialogOK(title: String, message: String) {
+    func dialogOK(title: String, message: String) {
         // UI elements must always be on the main queue
         DispatchQueue.main.async {
             // https://stackoverflow.com/questions/29433487/create-an-nsalert-with-swift

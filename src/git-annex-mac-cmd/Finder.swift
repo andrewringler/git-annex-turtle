@@ -9,7 +9,7 @@
 import Foundation
 
 class Finder {
-    let config = Config()
+    let config = Config(dataPath: Config.DEFAULT_DATA_PATH)
     let consoleIO = ConsoleIO()
     
     func staticMode() {

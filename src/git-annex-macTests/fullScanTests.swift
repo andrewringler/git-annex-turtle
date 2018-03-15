@@ -373,28 +373,3 @@ class fullScanTests: XCTestCase {
         && fullScan!.isScanning(watchedFolder: repo2!) == false
     }
 }
-
-// https://stackoverflow.com/a/30593673/8671834
-extension Collection {
-    
-    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
-    subscript (safe index: Index) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
-}
-
-// https://stackoverflow.com/a/42222302/8671834
-extension XCTestCase {
-    
-    func wait(for duration: TimeInterval) {
-        let waitExpectation = expectation(description: "Waiting")
-        
-        let when = DispatchTime.now() + duration
-        DispatchQueue.main.asyncAfter(deadline: when) {
-            waitExpectation.fulfill()
-        }
-        
-        // We use a buffer here to avoid flakiness with Timer on CI
-        waitForExpectations(timeout: duration + 0.5)
-    }
-}
