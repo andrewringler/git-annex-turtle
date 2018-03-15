@@ -12,6 +12,8 @@ import CoreData
 
 class FinderSync: FIFinderSync {
     let data = DataEntrypoint()
+    let queries: Queries
+    
     // Save off our Process Identifier, since each get request will be different (because of timestamping)
     let processID: String = ProcessInfo().globallyUniqueString
     
@@ -25,6 +27,7 @@ class FinderSync: FIFinderSync {
     
     override init() {
         statusCache = StatusCache(data: data)
+        queries = Queries(data: data)
         badgeIcons = BadgeIcons(finderSyncController: FIFinderSyncController.default())
         
         super.init()
@@ -34,7 +37,7 @@ class FinderSync: FIFinderSync {
         //
         // grab the list of watched folders from the database and start watching them
         //
-        updateWatchedFolders(queries: Queries(data: data))
+        updateWatchedFolders(queries: queries)
         
         //
         // Status Updates
@@ -80,25 +83,27 @@ class FinderSync: FIFinderSync {
     }
     
     func handleDatabaseUpdatesIfAny() {
-        let queries = Queries(data: self.data)
         if let moreRecentUpdatesTime = queries.timeOfMoreRecentUpdatesBlocking(lastHandled: lastHandledDatabaseChangesDateSinceEpochAsDouble) {
-            // save this new time, marking it as handled (for this process)
+            // save this new time, marking it as handled (for this process only)
             lastHandledDatabaseChangesDateSinceEpochAsDouble = moreRecentUpdatesTime
             
             updateWatchedFolders(queries: queries)
-            
-            for watchedFolder in self.watchedFolders {
-                let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder, processID: processID)
-                for status in statuses {
-                    if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
-                        // OK, this value is identical to the one in our cache, ignore
-                    } else {
-                        // updated value
-                        TurtleLog.debug("updating to \(status) \(id())")
-                        let url = PathUtils.url(for: status.path, in: watchedFolder)
-                        statusCache.put(status: status, for: status.path, in: watchedFolder)
-                        updateBadge(for: url, with: status)
-                    }
+            updateStatusCacheAndBadgesForAllVisible()
+        }
+    }
+    
+    private func updateStatusCacheAndBadgesForAllVisible() {
+        for watchedFolder in self.watchedFolders {
+            let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder, processID: processID)
+            for status in statuses {
+                if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
+                    // OK, this value is identical to the one in our cache, ignore
+                } else {
+                    // updated value
+                    TurtleLog.debug("updating to \(status) \(id())")
+                    let url = PathUtils.url(for: status.path, in: watchedFolder)
+                    statusCache.put(status: status, for: status.path, in: watchedFolder)
+                    updateBadge(for: url, with: status)
                 }
             }
         }
@@ -111,7 +116,8 @@ class FinderSync: FIFinderSync {
             for watchedFolder in watchedFolders {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                        Queries(data: data).addVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
+                        queries.addVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
+                        
                         return
                     } else {
                         TurtleLog.error("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -134,7 +140,7 @@ class FinderSync: FIFinderSync {
             for watchedFolder in watchedFolders {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                        Queries(data: data).removeVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
+                        queries.removeVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
                         return
                     } else {
                         TurtleLog.error("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -179,7 +185,7 @@ class FinderSync: FIFinderSync {
                     // but we still want to create a request to let the main app know
                     // that this path is still fresh and still in view
                     DispatchQueue.global(qos: .background).async {
-                        Queries(data: self.data).addRequestV2Async(for: path, in: watchedFolder)
+                        self.queries.addRequestV2Async(for: path, in: watchedFolder)
                     }
                     
                     // already have the status? then use it
@@ -301,8 +307,6 @@ class FinderSync: FIFinderSync {
     }
     
     private func commandRequest(with command: GitOrGitAnnexCommand, target: URL?, item: NSMenuItem?, items: [URL]?) {
-        let queries = Queries(data: data)
-        
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
             for obj: URL in items {
                 if let absolutePath = PathUtils.path(for: obj) {
