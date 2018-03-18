@@ -85,6 +85,8 @@
 		49977D5220291D4B00FA9527 /* childrenNotIgnored.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49977D512029155000FA9527 /* childrenNotIgnored.sh */; };
 		49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49977D57202A323600FA9527 /* gitAnnexQueriesTests.swift */; };
 		499AFFE9205B1251008BD34A /* queriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AFFE8205B1251008BD34A /* queriesTests.swift */; };
+		499AFFEB205C0855008BD34A /* FinderSyncCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AFFEA205C0855008BD34A /* FinderSyncCore.swift */; };
+		499AFFED205C0885008BD34A /* FinderSyncProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AFFEC205C0885008BD34A /* FinderSyncProtocol.swift */; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		499B44751DE54A250091E0E3 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44741DE54A250091E0E3 /* main.swift */; };
@@ -300,6 +302,8 @@
 		49977D512029155000FA9527 /* childrenNotIgnored.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = childrenNotIgnored.sh; sourceTree = "<group>"; };
 		49977D57202A323600FA9527 /* gitAnnexQueriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = gitAnnexQueriesTests.swift; sourceTree = "<group>"; };
 		499AFFE8205B1251008BD34A /* queriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = queriesTests.swift; sourceTree = "<group>"; };
+		499AFFEA205C0855008BD34A /* FinderSyncCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSyncCore.swift; sourceTree = "<group>"; };
+		499AFFEC205C0885008BD34A /* FinderSyncProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSyncProtocol.swift; sourceTree = "<group>"; };
 		499B44601DE544F00091E0E3 /* git-annex-finder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "git-annex-finder.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
@@ -580,6 +584,8 @@
 				49B65D4B201787A400485852 /* BadgeIcons.swift */,
 				499B44661DE544F00091E0E3 /* Info.plist */,
 				499B44621DE544F00091E0E3 /* Supporting Files */,
+				499AFFEA205C0855008BD34A /* FinderSyncCore.swift */,
+				499AFFEC205C0885008BD34A /* FinderSyncProtocol.swift */,
 			);
 			path = "git-annex-finder";
 			sourceTree = "<group>";
@@ -1265,8 +1271,10 @@
 				49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */,
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */,
+				499AFFED205C0885008BD34A /* FinderSyncProtocol.swift in Sources */,
 				49F0ECFE200E5F6300C8BBCB /* Queries.swift in Sources */,
 				49EFD2012007BFC9005742DB /* Constants.swift in Sources */,
+				499AFFEB205C0855008BD34A /* FinderSyncCore.swift in Sources */,
 				49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */,
 				49EF6270200E75D6002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 			);

@@ -42,7 +42,7 @@ class WatchGitAndFinderForUpdates {
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleCommandRequests()
-                usleep(100000)
+                sleep(1)
             }
         }
         
@@ -50,7 +50,7 @@ class WatchGitAndFinderForUpdates {
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleBadgeRequests()
-                usleep(100000)
+                sleep(1)
             }
         }
         
@@ -89,7 +89,7 @@ class WatchGitAndFinderForUpdates {
                     }
                 }
                 
-                usleep(100000)
+                sleep(1)
             }
         }
     }

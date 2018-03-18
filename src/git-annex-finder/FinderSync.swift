@@ -10,124 +10,40 @@ import Cocoa
 import FinderSync
 import CoreData
 
-class FinderSync: FIFinderSync {
-    let data = DataEntrypoint()
-    let queries: Queries
-    
+class FinderSync: FIFinderSync, FinderSyncProtocol {
     // Save off our Process Identifier, since each get request will be different (because of timestamping)
     let processID: String = ProcessInfo().globallyUniqueString
-    
-    var watchedFolders = Set<WatchedFolder>()
-    let statusCache: StatusCache
-    var lastHandledDatabaseChangesDateSinceEpochAsDouble: Double = 0
-    
+
+    var finderSyncCore: FinderSyncCore?
+        
     let badgeIcons: BadgeIcons
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     
     override init() {
-        statusCache = StatusCache(data: data)
-        queries = Queries(data: data)
         badgeIcons = BadgeIcons(finderSyncController: FIFinderSyncController.default())
-        
+
         super.init()
-        
-        //
-        // Watched Folders
-        //
-        // grab the list of watched folders from the database and start watching them
-        //
-        updateWatchedFolders(queries: queries)
-        
-        //
-        // Status Updates
-        //
-        // check the database for updates to the list of watched folders
-        // and for updated statuses of watched files
-        //
-        //
-        // NOTE:
-        // I tried using File System API monitors on the sqlite database
-        // and I tried using observe on UserDefaults
-        // none worked reliably, perhaps Finder Sync Extensions are designed to ignore/miss notifications?
-        // or perhaps the Finder Sync extension is going into a background mode and not waking up?
-        // or perhaps Finder Sync extensions are meant to be transient, so can never
-        // really accept notifications from the system
-        //
-        // TODO ooops, probably I was just registering them on a background thread
-        // File System API registration requests must happen on the main thread…
-        // try and retest
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleDatabaseUpdatesIfAny()
-                usleep(100000)
+        finderSyncCore = FinderSyncCore(finderSync: self, data: DataEntrypoint())
+    }
+    
+    func setWatchedFolders(to newWatchedFolders: Set<URL>) {
+        if (Thread.isMainThread) {
+            FIFinderSyncController.default().directoryURLs = newWatchedFolders
+        } else {
+            DispatchQueue.main.sync {
+                FIFinderSyncController.default().directoryURLs = newWatchedFolders
             }
         }
     }
     
-    func updateWatchedFolders(queries: Queries) {
-        let newWatchedFolders: Set<WatchedFolder> = queries.allWatchedFoldersBlocking()
-        if newWatchedFolders != watchedFolders {
-            watchedFolders = newWatchedFolders
-            
-            if (Thread.isMainThread) {
-                FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
-            } else {
-                DispatchQueue.main.sync {
-                    FIFinderSyncController.default().directoryURLs = Set(newWatchedFolders.map { URL(fileURLWithPath: $0.pathString) })
-                }
-            }
-            
-            TurtleLog.info("Finder Sync is now watching: [\(WatchedFolder.pretty(watchedFolders))]")
-        }
+    override func requestBadgeIdentifier(for url: URL) {
+        finderSyncCore!.requestBadgeIdentifier(for: url)
     }
-    
-    func handleDatabaseUpdatesIfAny() {
-        if let moreRecentUpdatesTime = queries.timeOfMoreRecentUpdatesBlocking(lastHandled: lastHandledDatabaseChangesDateSinceEpochAsDouble) {
-            // save this new time, marking it as handled (for this process only)
-            lastHandledDatabaseChangesDateSinceEpochAsDouble = moreRecentUpdatesTime
-            
-            updateWatchedFolders(queries: queries)
-            updateStatusCacheAndBadgesForAllVisible()
-        }
-    }
-    
-    private func updateStatusCacheAndBadgesForAllVisible() {
-        for watchedFolder in self.watchedFolders {
-            let statuses: [PathStatus] = queries.allVisibleStatusesV2Blocking(in: watchedFolder, processID: processID)
-            for status in statuses {
-                if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
-                    // OK, this value is identical to the one in our cache, ignore
-                } else {
-                    // updated value
-                    TurtleLog.debug("updating to \(status) \(id())")
-                    let url = PathUtils.url(for: status.path, in: watchedFolder)
-                    statusCache.put(status: status, for: status.path, in: watchedFolder)
-                    updateBadge(for: url, with: status)
-                }
-            }
-        }
-    }
-    
+
     // The user is now seeing the container's contents.
     override func beginObservingDirectory(at url: URL) {
-        TurtleLog.debug("beginObservingDirectory for \(url) \(id())")
-        if let absolutePath = PathUtils.path(for: url) {
-            for watchedFolder in watchedFolders {
-                if absolutePath.starts(with: watchedFolder.pathString) {
-                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                        queries.addVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
-                        
-                        return
-                    } else {
-                        TurtleLog.error("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
-                    }
-                }
-            }
-        } else {
-            TurtleLog.error("beginObservingDirectory: error, could not generate path for URL '\(url)'")
-        }
-        TurtleLog.error("beginObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
+        finderSyncCore!.beginObservingDirectory(at: url)
     }
     
     // The user is no longer seeing the container's contents.
@@ -135,80 +51,19 @@ class FinderSync: FIFinderSync {
     // a file window it will have its own Finder Sync process and generate
     // its own set of start and end calls
     override func endObservingDirectory(at url: URL) {
-        TurtleLog.debug("endObservingDirectory for \(url) \(id())")
-        if let absolutePath = PathUtils.path(for: url) {
-            for watchedFolder in watchedFolders {
-                if absolutePath.starts(with: watchedFolder.pathString) {
-                    if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                        queries.removeVisibleFolderAsync(for: path, in: watchedFolder, processID: processID)
-                        return
-                    } else {
-                        TurtleLog.error("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
-                    }
-                }
-            }
-        } else {
-            TurtleLog.error("endObservingDirectory: error, could not generate path for URL '\(url)'")
-        }
-        TurtleLog.error("endObservingDirectory: error, could not find watched folder for URL '\(url)' path='\(PathUtils.path(for: url) ?? "")' in watched folders \(WatchedFolder.pretty(watchedFolders))")
+        finderSyncCore!.endObservingDirectory(at: url)
     }
     
-    private func updateBadge(for url: URL, with status: PathStatus) {
+    func updateBadge(for url: URL, with status: PathStatus) {
         let badgeName: String = badgeIcons.badgeIconFor(status: status)
         
+        // its a GUI thing, must happen on the main thread
         if (Thread.isMainThread) {
             FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
         } else {
             DispatchQueue.main.async {
                 FIFinderSyncController.default().setBadgeIdentifier(badgeName, for: url)
             }
-        }
-    }
-    
-    private func watchedFolderParent(for path: String) -> WatchedFolder? {
-        for watchedFolder in self.watchedFolders {
-            if path.starts(with: watchedFolder.pathString) {
-                return watchedFolder
-            }
-        }
-        return nil
-    }
-    
-    override func requestBadgeIdentifier(for url: URL) {
-        TurtleLog.debug("requestBadgeIdentifier for \(url) \(id())")
-        
-        if let absolutePath = PathUtils.path(for: url) {
-            if let watchedFolder = self.watchedFolderParent(for: absolutePath) {
-                if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                    // Request the folder:
-                    // we may already have this path in our cache
-                    // but we still want to create a request to let the main app know
-                    // that this path is still fresh and still in view
-                    DispatchQueue.global(qos: .background).async {
-                        self.queries.addRequestV2Async(for: path, in: watchedFolder)
-                    }
-                    
-                    // already have the status? then use it
-                    if let status = self.statusCache.get(for: path, in: watchedFolder) {
-                        self.updateBadge(for: url, with: status)
-                        return
-                    }
-                    
-                    // OK, status is not in the cache, maybe it is in the Db?
-                    DispatchQueue.global(qos: .background).async {
-                        if let status = self.statusCache.getAndCheckDb(for: path, in: watchedFolder) {
-                            self.updateBadge(for: url, with: status)
-                            return
-                        }
-                    }
-                } else {
-                    TurtleLog.error("Finder Sync could not get a relative path for '\(absolutePath)' in \(watchedFolder)")
-                }
-            } else {
-                TurtleLog.error("Finder Sync could not find watched parent for url= \(url)")
-            }
-        } else {
-            TurtleLog.error("Finder Sync could not find path for url= \(url)")
         }
     }
     
@@ -228,22 +83,8 @@ class FinderSync: FIFinderSync {
         // If the user control clicked on a single file
         // grab its status, if we have it cached
         var statusOptional: PathStatus? = nil
-        if menuKind == FIMenuKind.contextualMenuForItems {
-            if let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1 {
-                for obj: URL in items {
-                    if let absolutePath = PathUtils.path(for: obj) {
-                        for watchedFolder in watchedFolders {
-                            if absolutePath.starts(with: watchedFolder.pathString) {
-                                if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                                    statusOptional = statusCache.get(for: path, in: watchedFolder)
-                                } else {
-                                    TurtleLog.error("menu: could not retrieve relative path for \(absolutePath) in \(watchedFolder)")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if menuKind == FIMenuKind.contextualMenuForItems, let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1, let item = items.first {
+            statusOptional = finderSyncCore!.status(for: item)
         }
         
         // Produce a menu for the extension.
@@ -252,7 +93,7 @@ class FinderSync: FIFinderSync {
         
         // If the user ctrl-clicked a single item that we have status information about
         // then summarize the status as the first menu item
-        if let status = statusOptional, status.isGitAnnexTracked, let present = status.presentStatus {
+        if let status: PathStatus = statusOptional, status.isGitAnnexTracked, let present = status.presentStatus {
             var menuTitle = "\(present.menuDisplay())"
             if let numberOfCopies = status.numberOfCopies {
                 menuTitle = menuTitle + ", \(numberOfCopies) copies"
@@ -275,6 +116,7 @@ class FinderSync: FIFinderSync {
         menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "d")
         menuItem.image = gitAnnexLogoNoArrowsColor
         
+        // TODO add copy and copy --to menu items
         //        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
         //        menuItem.image = gitAnnexLogoColor
         //        let gitAnnexCopyToMenu = NSMenu(title: "")
@@ -309,38 +151,14 @@ class FinderSync: FIFinderSync {
     private func commandRequest(with command: GitOrGitAnnexCommand, target: URL?, item: NSMenuItem?, items: [URL]?) {
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
             for obj: URL in items {
-                if let absolutePath = PathUtils.path(for: obj) {
-                    for watchedFolder in watchedFolders {
-                        if absolutePath.starts(with: watchedFolder.pathString) {
-                            if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                                queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
-                            } else {
-                                TurtleLog.error("commandRequest: could not find relative path for \(absolutePath) in \(watchedFolder)")
-                            }
-                            break
-                        }
-                    }
-                }
+                finderSyncCore!.commandRequest(with: command, item: obj)
             }
         } else {
-            TurtleLog.error("invalid context menu item for command \(command) and target \(target)")
+            TurtleLog.error("invalid context menu item for command \(command) and target \(String(describing: target))")
         }
     }
     
-    func applicationWillTerminate(_ aNotification: Notification) {
-        TurtleLog.info("quiting \(id())")
-    }
-    
-    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        return data.applicationShouldTerminate(sender)
-    }
-    
-    func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
-        return data.windowWillReturnUndoManager(window: window)
-    }
-    
     func id() -> String {
-//        return String(UInt(bitPattern: ObjectIdentifier(self)))
         return processID
     }
 }

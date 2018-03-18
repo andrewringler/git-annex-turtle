@@ -23,32 +23,31 @@ Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can
 
 ## TODO
  * BUG: after new files are created, added and committed, their badge icon is still not updated until you click off the folder and click back on. TODO, stub out all of FinderSync code for testing
- * BUG: quiting from menubar icon should quit running git processes too
  * BUG: some process is adding just filenames (not complete relative paths) to the database
+ * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * crop or scroll large git error messages that appear in Dialogs
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
  * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
  * nice, renice git during full scan (or always?)
+ * BUG: quiting from menubar icon should quit running git processes too
  * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
- * Finder Sync extension seems to launch automatically during some tests, when it shouldn't, how can we get more control over how and when Finder Sync is actually launched?, do we need to restart Finder when installing extension?
- * deploy to github
+ * how can we get more control over how and when Finder Sync is actually launched?, do we actually need to restart Finder when installing extension, this kills and reloads all finder windows…
  * get tests running on https://travis-ci.org/
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
  * Menubar window should show list of remote transfers 
  * let user view/set git and git-annex binary paths from GUI
  * let user view/set per repo git-annex-turtle settings from GUI
- * Test with Assistant
  * Test with v6 repos
  * Test with git annex watch
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
- * bundle git-annex with turtle, or have some install script that will download it
+ * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
- * don't allow nested repositories watching, 
+ * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * don't display git-annex lock context menu in v5 repos, it always fails without force?
- * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this?
+ * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right?
  * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
