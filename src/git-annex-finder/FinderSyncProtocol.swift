@@ -10,7 +10,7 @@ import Foundation
 
 protocol FinderSyncProtocol {
     func updateBadge(for url: URL, with status: PathStatus)
-    func setWatchedFolders(to: Set<URL>)
+    func setWatchedFolders(to newWatchedFolders: Set<URL>)
 
     func id() -> String
 }
