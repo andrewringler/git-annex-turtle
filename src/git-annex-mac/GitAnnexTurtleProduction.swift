@@ -119,6 +119,10 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         return data.windowWillReturnUndoManager(window: window)
     }
     
+    @objc func showAboutWindow(_ sender: Any?) {
+        dialogs.about()
+    }
+    
     @objc func showPreferencesWindow(_ sender: Any?) {
         if preferencesWindow == nil {
             preferencesWindow = NSWindow()
@@ -141,7 +145,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: watchedFolder.pathString)
         }
     }
-    
+        
     public func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {
         constructMenu(watchedFolders: watchedFolders) // update our menubar icon menu
     }
@@ -172,6 +176,10 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             preferencesMenuItem.target = self
             preferencesMenuItem.image = self.actionIcon
             menu.addItem(preferencesMenuItem)
+            
+            let aboutMenuItem = NSMenuItem(title: "About git-annex-turtle", action: #selector(self.showAboutWindow(_:)), keyEquivalent: "")
+            aboutMenuItem.target = self
+            menu.addItem(aboutMenuItem)
             
             menu.addItem(NSMenuItem.separator())
             menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))

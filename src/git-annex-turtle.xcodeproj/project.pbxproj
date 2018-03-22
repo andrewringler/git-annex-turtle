@@ -739,6 +739,7 @@
 				490BCB7E1DE5444C00734FF4 /* Sources */,
 				490BCB7F1DE5444C00734FF4 /* Frameworks */,
 				490BCB801DE5444C00734FF4 /* Resources */,
+				49BBC6CF2063E3E800C3CB21 /* ShellScript */,
 				499B446D1DE544F00091E0E3 /* Embed App Extensions */,
 				4936E9FF2000481D00200973 /* CopyFiles */,
 				49178B9A201E927E00B98A46 /* CopyFiles */,
@@ -1153,6 +1154,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		49BBC6CF2063E3E800C3CB21 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/libexec/PlistBuddy -c \"Set :GIT_COMMIT_HASH `git rev-parse --short HEAD`\" \"${PROJECT_DIR}\"/\"${INFOPLIST_FILE}\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		490982C8204E1D1200096C92 /* Sources */ = {

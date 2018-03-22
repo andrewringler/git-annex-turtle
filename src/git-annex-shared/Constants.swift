@@ -98,6 +98,15 @@ struct GitConfigs {
     static let AnnexUUID = GitConfig(name: "annex.uuid")
 }
 
+// https://stackoverflow.com/a/12034850/8671834
+// https://stackoverflow.com/a/26539917/8671834
+let versionString: String = {
+    let versionNumber: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as! String
+    let gitHashShort: String = Bundle.main.object(forInfoDictionaryKey: "GIT_COMMIT_HASH") as! String
+    
+    return "\(versionNumber)-\(gitHashShort)"
+}()
+
 let UNKNOWN_COPIES: Double = -1.0
 enum Present: String {
     case present = "present"

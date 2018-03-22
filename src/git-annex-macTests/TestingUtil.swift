@@ -202,10 +202,12 @@ class DialogTestingStubCheckMessages: Dialogs {
         self.message = message
         TurtleLog.info("title=\(title) message=\(message)")
     }
+    func about() {}
 }
 
 class DialogTestingStubFailOnMessage: Dialogs {
     func dialogOK(title: String, message: String) {
         XCTFail("title=\(title) message=\(message)")
     }
+    func about() {}
 }

@@ -10,4 +10,5 @@ import Foundation
 
 protocol Dialogs {
     func dialogOK(title: String, message: String)
+    func about()
 }
