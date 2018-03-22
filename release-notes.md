@@ -6,10 +6,12 @@ v0.2
  * added icon for preferences menu
  * added about dialog accessible from the menubar drop-down
 
- **Bug Fixes**
-  * more expansive testing
-  * fixed: first git commit was being ignored by incremental update scanner, various other issues with incremental scanner fixed.
-  * fixed: potential issue with reloading list of watched repos in the preferences dialog
+**Bug Fixes**
+ * more expansive testing
+ * fixed: after new files are created, added and committed, their badge icon are now correctly updated without having to navigate away from the folder
+ * fixed: various timing issues preventing Finder Sync extensions from seeing latest status updates
+ * fixed: first git commit was being ignored by incremental update scanner, various other issues with incremental scanner fixed.
+ * fixed: potential issue with reloading list of watched repos in the preferences dialog
 
 
 v0.1

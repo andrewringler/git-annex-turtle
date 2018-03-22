@@ -1,5 +1,4 @@
 ## TODO (move into github issues)
- * BUG: after new files are created, added and committed, their badge icon is still not updated until you click off the folder and click back on.
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * crop or scroll large git error messages that appear in Dialogs

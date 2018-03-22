@@ -23,7 +23,7 @@ class StatusCache {
         if let status = pathStringToPathStatusCache.object(forKey: key(for: path, in: watchedFolder)) as PathStatus? {
             return status
         }
-        return nil // no where to be found
+        return nil // nowhere to be found
     }
     
     func getAndCheckDb(for path: String, in watchedFolder: WatchedFolder) -> PathStatus? {
@@ -38,7 +38,7 @@ class StatusCache {
             return status
         }
         
-        return nil // no where to be found
+        return nil // nowhere to be found
     }
     
     func put(status: PathStatus, for path: String, in watchedFolder: WatchedFolder) {

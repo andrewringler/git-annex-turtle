@@ -129,7 +129,7 @@ class HandleStatusRequests {
                 // we are already getting updates for this path
                 // if it is low priority, then whatever update we get will be new enough
                 // if it is high priority, we probably need to re-calculate
-                // so leave in the queue, and check on it later
+                // so leave it in the queue, and check on it later
                 if priority == .low {
                     TurtleLog.debug("Already updating, and low priority, remove from queue \(item.value.path) in \(item.value.watchedFolder.pathString)")
                     sharedResource.lock()

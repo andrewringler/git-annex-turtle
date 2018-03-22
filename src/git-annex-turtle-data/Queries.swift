@@ -99,7 +99,7 @@ let TIME_OFFSET: Double = 0.2
 class Queries {
     let data: DataEntrypoint
     let lastModifiedQueue = DispatchQueue(label: "git-annex-turtle.Queries-Last-Modified", attributes: .concurrent)
-    lazy var updateLastModifiedAsync = {
+    public lazy var updateLastModifiedAsync = {
         return debounce(delay: .milliseconds(50), queue: lastModifiedQueue, action: self.changeLastModifedUpdatesSync)
     }()
     
@@ -946,7 +946,9 @@ class Queries {
                 moc.perform {
                     do {
                         try moc.save()
-                        self.updateLastModifiedAsync()
+                        // we do not need to update last modified flag
+                        // since Finder Sync extensions do not need to do anything
+                        // if a folder is no longer visible
                     } catch {
                         TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                         fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")

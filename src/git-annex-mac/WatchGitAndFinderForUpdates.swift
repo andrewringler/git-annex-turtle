@@ -306,10 +306,10 @@ class WatchGitAndFinderForUpdates {
             if !fullScan.isScanning(watchedFolder: watchedFolder) {
                 for path in queries.allPathRequestsV2Blocking(in: watchedFolder) {
                     if queries.statusForPathV2Blocking(path: path, in: watchedFolder) != nil {
-                        // OK, we already know about this file or folder
-                        // do nothing here.
-                        // we will automatically detect and handle any updates
-                        // that come in with our other procedures
+                        // OK, we already have a status for this path, maybe
+                        // Finder Sync missed it, lets update our last modified flag
+                        // to ensure Finder Sync see it
+                        queries.updateLastModifiedAsync()
                     } else {
                         // We have no information about this file
                         // enqueue it for inspection

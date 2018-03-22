@@ -64,14 +64,6 @@ class FinderSyncCore {
         if let absolutePath = PathUtils.path(for: url) {
             if let watchedFolder = self.watchedFolderParent(for: absolutePath) {
                 if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
-                    // Request the folder:
-                    // we may already have this path in our cache
-                    // but we still want to create a request to let the main app know
-                    // that this path is still fresh and still in view
-                    DispatchQueue.global(qos: .background).async {
-                        self.queries.addRequestV2Async(for: path, in: watchedFolder)
-                    }
-                    
                     // already have the status? then use it
                     if let status = self.statusCache.get(for: path, in: watchedFolder) {
                         DispatchQueue.global(qos: .background).async {
@@ -85,6 +77,9 @@ class FinderSyncCore {
                         if let status = self.statusCache.getAndCheckDb(for: path, in: watchedFolder) {
                             self.finderSync.updateBadge(for: url, with: status)
                             return
+                        } else {
+                            // status is not in the Db, request it
+                            self.queries.addRequestV2Async(for: path, in: watchedFolder)
                         }
                     }
                 } else {
