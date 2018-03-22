@@ -334,7 +334,7 @@ class fullScanTests: XCTestCase {
     //
     func testLargeRepoPerformance() {
         gitAnnexQueries!.gitAnnexSetNumCopies(numCopies: 2, in: repo1!)
-        let files = TestingUtil.createAndAddFiles(numFiles: 1000, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        let files = TestingUtil.createAndAddFiles(numFiles: 100, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
         let startTime = Date()
         fullScan!.startFullScan(watchedFolder: repo1!)

@@ -129,9 +129,9 @@ class git_annex_turtleTests: XCTestCase {
     func testGitAnnexBinAbsolutePath() {
         XCTAssertEqual(GitAnnexQueries.gitAnnexBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git-annex")
     }
-    func testGitBinAbsolutePath() {
-        XCTAssertEqual(GitAnnexQueries.gitBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git")
-    }
+//    func testGitBinAbsolutePath() {
+//        XCTAssertEqual(GitAnnexQueries.gitBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git")
+//    }
     
     func testParseConfigisTurtleSection() {
         XCTAssertTrue(TurtleConfigV1.isTurtleSection("[turtle]"))

@@ -1,10 +1,10 @@
 v0.2
 **Features**
  * clicking on watched repo from menubar drop-down now opens folder in Finder
- * added icon for preferences menu
 
 **Minor**
  * added icon for preferences menu
+ * added about dialog accessible from the menubar drop-down
 
  **Bug Fixes**
   * more expansive testing

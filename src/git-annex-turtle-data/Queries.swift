@@ -90,25 +90,38 @@ enum VisibleFoldersEntityAttributes: String {
     case processID = "processID"
 }
 
-
+// HACK
+// TIME_OFFSET, makes queries claim they were updated after they already were
+// this sort-of ensures that Finder will always get newly updated file status
+// but, this will also cause them to sometimes grab the same status multiple times
+// TODO: re-design threading assumptions in Queries and remove this
+let TIME_OFFSET: Double = 0.2
 class Queries {
     let data: DataEntrypoint
+    let lastModifiedQueue = DispatchQueue(label: "git-annex-turtle.Queries-Last-Modified", attributes: .concurrent)
+    lazy var updateLastModifiedAsync = {
+        return debounce(delay: .milliseconds(50), queue: lastModifiedQueue, action: self.changeLastModifedUpdatesSync)
+    }()
     
     init(data: DataEntrypoint) {
         self.data = data
+    }
+    
+    private func changeLastModifedUpdatesSync() {
+        let modificationDate = Date().timeIntervalSince1970 as Double
+        changeLastModifedUpdatesSync(lastModified: modificationDate)
     }
     
     // NOTE all CoreData operations must happen on the main thread
     // or in a private context, then merged back into the main context (from any thread)
     // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
     // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/Concurrency.html
-    
     func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
-        let modificationDate = Date().timeIntervalSince1970 as Double
+        let modificationDate = Date().timeIntervalSince1970 as Double + TIME_OFFSET
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        moc.mergePolicy = NSOverwriteMergePolicy
         
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
@@ -150,12 +163,11 @@ class Queries {
                     TurtleLog.error("could not create/update entity for \(PathStatusEntityName)")
                 }
                 
-                try changeLastModifedUpdatesStub(lastModified:modificationDate, in: privateMOC)
-                
                 try privateMOC.save()
                 moc.performAndWait {
                     do {
                         try moc.save()
+                        self.updateLastModifiedAsync()
                     } catch {
                         TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                         fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
@@ -176,7 +188,7 @@ class Queries {
         var success = true
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        moc.mergePolicy = NSOverwriteMergePolicy
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {
@@ -204,12 +216,11 @@ class Queries {
                     }
                 }
                 
-                try changeLastModifedUpdatesStub(lastModified:modificationDate, in: privateMOC)
-                
                 try privateMOC.save()
                 moc.performAndWait {
                     do {
                         try moc.save()
+                        self.updateLastModifiedAsync()
                     } catch {
                         TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                         fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
@@ -225,7 +236,7 @@ class Queries {
     func addRequestV2Async(for path: String, in watchedFolder: WatchedFolder) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        moc.mergePolicy = NSOverwriteMergePolicy
         
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
@@ -294,30 +305,6 @@ class Queries {
         
         return ret
     }
-    
-    //    func statusForPathBlocking(path: String) -> Status? {
-    //        var ret: Status?
-    //
-    //        let moc = data.persistentContainer.viewContext
-    //        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-    //        privateMOC.parent = moc
-    //        privateMOC.performAndWait {
-    //            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
-    //            fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString) == '\(path)'")
-    //            do {
-    //                let statuses = try privateMOC.fetch(fetchRequest)
-    //                if let firstStatus = statuses.first {
-    //                    if let statusString = firstStatus.value(forKeyPath: "\(PathStatusAttributes.statusString.rawValue)") as? String {
-    //                        ret = Status.status(from: statusString)
-    //                    }
-    //                }
-    //            } catch {
-    //                fatalError("Failure fetch statuses: \(error)")
-    //            }
-    //        }
-    //
-    //        return ret
-    //    }
     
     func allPathRequestsV2Blocking(in watchedFolder: WatchedFolder) -> [String] {
         var paths: [String] = []
@@ -626,12 +613,11 @@ class Queries {
             }
             
             do {
-                try changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
-                
                 try privateMOC.save()
                 moc.performAndWait {
                     do {
                         try moc.save()
+                        self.updateLastModifiedAsync()
                     } catch {
                         TurtleLog.fatal("could not save main context for \(newListOfWatchedFolders) \(error)")
                         fatalError("could not save main context for \(newListOfWatchedFolders) \(error)")
@@ -700,25 +686,6 @@ class Queries {
         return ret
     }
     
-    private func changeLastModifedUpdatesStub(lastModified: Double, in privateMOC: NSManagedObjectContext) throws {
-        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: UpdatesEntityName)
-        let results = try privateMOC.fetch(fetchRequest)
-        if results.count > 0, let result = results.first  {
-            result.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
-        }else if results.count == 0 {
-            // Add new record
-            if let entity = NSEntityDescription.entity(forEntityName: UpdatesEntityName, in: privateMOC) {
-                let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
-                
-                newPathRow.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
-            } else {
-                TurtleLog.error("Could not create entity for \(PathStatusEntityName)")
-            }
-        } else {
-            TurtleLog.error("Error, invalid results from fetch '\(results)'")
-        }
-    }
-    
     func changeLastModifedUpdatesSync(lastModified: Double) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -727,7 +694,23 @@ class Queries {
         privateMOC.parent = moc
         privateMOC.performAndWait {
             do {
-                try changeLastModifedUpdatesStub(lastModified: lastModified, in: privateMOC)
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: UpdatesEntityName)
+                let results = try privateMOC.fetch(fetchRequest)
+                if results.count > 0, let result = results.first  {
+                    result.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
+                }else if results.count == 0 {
+                    // Add new record
+                    if let entity = NSEntityDescription.entity(forEntityName: UpdatesEntityName, in: privateMOC) {
+                        let newPathRow = NSManagedObject(entity: entity, insertInto: privateMOC)
+                        
+                        newPathRow.setValue(lastModified, forKeyPath: UpdatesEntityAttributes.lastModified.rawValue)
+                    } else {
+                        TurtleLog.error("Could not create entity for \(PathStatusEntityName)")
+                    }
+                } else {
+                    TurtleLog.error("Error, invalid results from fetch '\(results)'")
+                }
+                
                 try privateMOC.save()
                 moc.performAndWait {
                     do {
@@ -959,12 +942,11 @@ class Queries {
                     privateMOC.delete(result)
                 }
                 
-                try self.changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
-
                 try privateMOC.save()
                 moc.perform {
                     do {
                         try moc.save()
+                        self.updateLastModifiedAsync()
                     } catch {
                         TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                         fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
@@ -1011,7 +993,7 @@ class Queries {
     func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: String) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        moc.mergePolicy = NSOverwriteMergePolicy
         
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
@@ -1028,12 +1010,11 @@ class Queries {
                     TurtleLog.error("could not create entity for \(VisibleFoldersEntityName)")
                 }
                 
-                try self.changeLastModifedUpdatesStub(lastModified:Date().timeIntervalSince1970 as Double, in: privateMOC)
-
                 try privateMOC.save()
                 moc.perform {
                     do {
                         try moc.save()
+                        self.updateLastModifiedAsync()
                     } catch {
                         TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                         fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")

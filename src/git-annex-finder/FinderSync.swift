@@ -56,6 +56,7 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
     
     func updateBadge(for url: URL, with status: PathStatus) {
         let badgeName: String = badgeIcons.badgeIconFor(status: status)
+        TurtleLog.debug("updating badge for '\(url)' to \(status) badgeName=\(badgeName)")
         
         // its a GUI thing, must happen on the main thread
         if (Thread.isMainThread) {

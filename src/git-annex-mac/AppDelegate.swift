@@ -20,7 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         // Here we use the classloader to determine if we are running in a test
-        // this is not uncommon hack.
+        // this is a not uncommon hack.
         let isRunningTests = NSClassFromString("XCTestCase") != nil
         if isRunningTests {
             gitAnnexTurtle = GitAnnexTurtleStub()
