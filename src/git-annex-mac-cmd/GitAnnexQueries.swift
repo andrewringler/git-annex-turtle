@@ -77,19 +77,11 @@ class GitAnnexQueries {
             let errpipe = Pipe()
             task.standardError = errpipe
         
-            task.launch()
-            
+            // TODO kill long running tasks
             let startTime = Date()
-            /* 3-hour timeout, should be sufficient for most full scans… ? */
-            let maxTimeSeconds: Double = 60 * 60 * 3
-            while task.isRunning {
-                if Date().timeIntervalSince(startTime) > maxTimeSeconds {
-                    TurtleLog.error("Timeout. running \(cmd) \(args) in \(workingDirectory)")
-                    task.interrupt()
-                    break
-                }
-                sleep(1)
-            }
+            task.launch()
+            task.waitUntilExit()
+            TurtleLog.debug("Task ran in \(Date().timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args)")
             
             let outputFileHandle = outpipe.fileHandleForReading
             let outdata = outputFileHandle.readDataToEndOfFile()

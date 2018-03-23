@@ -23,8 +23,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // this is a not uncommon hack.
         let isRunningTests = NSClassFromString("XCTestCase") != nil
         if isRunningTests {
+            TurtleLog.info("not launching git-annex-turtle, we are testing")
             gitAnnexTurtle = GitAnnexTurtleStub()
         } else {
+            TurtleLog.info("Launching git-annex-turtle")
             gitAnnexTurtle = GitAnnexTurtleProduction()
         }
         
