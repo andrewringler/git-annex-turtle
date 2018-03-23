@@ -84,15 +84,20 @@ class WatchGitAndFinderForUpdates {
                 // Setup filesystem watch
                 // must happen on main thread for Apple File System Events API to work
                 if (Thread.isMainThread) {
-                    self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                    let monitor = WatchedFolderMonitor(watchedFolder: watchedFolder, app: self)
+                    self.fileSystemMonitors.append(monitor)
+                    
+                    // run once now, in case we missed some while setting up watch
+                    monitor.doUpdates()
                 } else {
                     DispatchQueue.main.sync {
-                        self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                        let monitor = WatchedFolderMonitor(watchedFolder: watchedFolder, app: self)
+                        self.fileSystemMonitors.append(monitor)
+                        
+                        // run once now, in case we missed some while setting up watch
+                        monitor.doUpdates()
                     }
                 }
-                
-                // Look for updates now, in case we have missed some, while setting up this watch
-                self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 0)
             }
         }
     }
@@ -171,9 +176,7 @@ class WatchGitAndFinderForUpdates {
         checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: false)
     }
 
-    private var checkForGitAnnexUpdatesLock = NSLock()
     func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
-        checkForGitAnnexUpdatesLock.lock()
         TurtleLog.debug("Checking for updates in \(watchedFolder)")
         
         var paths: [String] = []
@@ -186,7 +189,6 @@ class WatchGitAndFinderForUpdates {
         // We are still performing a full scan for this folder
         // no incremental updates to perform yet
         if handledGitAnnexCommitHashOptional == nil {
-            checkForGitAnnexUpdatesLock.unlock()
             return
         }
         
@@ -251,8 +253,6 @@ class WatchGitAndFinderForUpdates {
         // from the last handled commit, up-to and including the
         // latest commit (that was available before we started)
         queries.updateLatestHandledCommit(gitCommitHash: currentGitCommitHash, gitAnnexCommitHash: currentGitAnnexCommitHash, in: watchedFolder)
-        
-        checkForGitAnnexUpdatesLock.unlock()
     }
     
     //

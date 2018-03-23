@@ -9,9 +9,10 @@
 import Foundation
 
 class WatchedFolderMonitor {
-    let watchedFolder: WatchedFolder
-    let updateChecker: RunNowOrAgain1<Double>?
-    var fileMonitor: Witness?
+    public let watchedFolder: WatchedFolder
+    
+    private let updateChecker: RunNowOrAgain1<Double>
+    private var fileMonitor: Witness?
     
     init(watchedFolder: WatchedFolder, app: WatchGitAndFinderForUpdates) {
         self.watchedFolder = watchedFolder
@@ -38,8 +39,12 @@ class WatchedFolderMonitor {
                 }
             }
             if shouldUpdate {
-                self.updateChecker?.runTaskAgain(p1: 0 /* seconds old */)
+                self.updateChecker.runTaskAgain(p1: 0 /* seconds old */)
             }
         }
+    }
+    
+    public func doUpdates() {
+        updateChecker.runTaskAgain(p1: 0 /* seconds old */)
     }
 }
