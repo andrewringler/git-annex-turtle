@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		49082F32201125D60030DE80 /* StatusCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49082F31201125D60030DE80 /* StatusCache.swift */; };
 		490982C6204E042E00096C92 /* Queries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFA200E5D8C00C8BBCB /* Queries.swift */; };
-		490982D6204E1D1300096C92 /* git_annex_shared.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 490982CD204E1D1200096C92 /* git_annex_shared.framework */; };
-		490982DB204E1D1300096C92 /* git_annex_sharedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */; };
 		490982DD204E1D1300096C92 /* git_annex_shared.h in Headers */ = {isa = PBXBuildFile; fileRef = 490982CF204E1D1300096C92 /* git_annex_shared.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
 		490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */; };
@@ -35,7 +33,6 @@
 		490982F9204EDBB900096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
 		490982FA204EDBBA00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
 		490982FB204EDBBB00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
-		490982FC204EDBBC00096C92 /* TurtleLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490982EF204EDA6100096C92 /* TurtleLog.swift */; };
 		490982FD204F136500096C92 /* FullScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F42040665A00F8D8A0 /* FullScan.swift */; };
 		490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490BCB851DE5444C00734FF4 /* AppDelegate.swift */; };
 		490BCB881DE5444C00734FF4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
@@ -68,6 +65,10 @@
 		4924920D2040A24800F8D8A0 /* childrenNotIgnored.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49977D512029155000FA9527 /* childrenNotIgnored.sh */; };
 		4924920E2040B07200F8D8A0 /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		4936D9572064127300FB76C7 /* debounce-throttle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FCA20114BF200106566 /* debounce-throttle.swift */; };
+		4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
+		4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D95C2064889C00FB76C7 /* runOnceTests.swift */; };
+		4936D95E206488B000FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
+		4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
 		4936EA002000482700200973 /* git-annex-turtle-cmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
@@ -115,7 +116,6 @@
 		49DDE17D2059D877008C55AC /* WatchGitAndFinderForUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE17620588020008C55AC /* WatchGitAndFinderForUpdates.swift */; };
 		49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1742058696A008C55AC /* GitAnnexTurtle.swift */; };
 		49DDE17F2059DC09008C55AC /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B96201A67EA00B98A46 /* HandleStatusRequests.swift */; };
-		49DDE1842059E8B5008C55AC /* GitAnnexTurtleProduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */; };
 		49DDE1852059E8D6008C55AC /* GitAnnexTurtleProduction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */; };
 		49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1862059EFF4008C55AC /* Dialogs.swift */; };
 		49DDE1882059F096008C55AC /* Dialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DDE1862059EFF4008C55AC /* Dialogs.swift */; };
@@ -173,13 +173,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		490982D7204E1D1300096C92 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 490982CC204E1D1200096C92;
-			remoteInfo = "git-annex-shared";
-		};
 		490BCB921DE5444D00734FF4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 490BCB7A1DE5444C00734FF4 /* Project object */;
@@ -273,9 +266,6 @@
 		490982CD204E1D1200096C92 /* git_annex_shared.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = git_annex_shared.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		490982CF204E1D1300096C92 /* git_annex_shared.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = git_annex_shared.h; sourceTree = "<group>"; };
 		490982D0204E1D1300096C92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "git-annex-sharedTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = git_annex_sharedTests.swift; sourceTree = "<group>"; };
-		490982DC204E1D1300096C92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		490982EF204EDA6100096C92 /* TurtleLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleLog.swift; sourceTree = "<group>"; };
 		490BCB821DE5444C00734FF4 /* git-annex-turtle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-turtle.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		490BCB851DE5444C00734FF4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -295,6 +285,8 @@
 		492491F42040665A00F8D8A0 /* FullScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScan.swift; sourceTree = "<group>"; };
 		492491F82040695D00F8D8A0 /* fullScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fullScanTests.swift; sourceTree = "<group>"; };
 		492491FA20406A8800F8D8A0 /* TestingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUtil.swift; sourceTree = "<group>"; };
+		4936D9582064761900FB76C7 /* RunNowOrAgain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunNowOrAgain.swift; sourceTree = "<group>"; };
+		4936D95C2064889C00FB76C7 /* runOnceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = runOnceTests.swift; sourceTree = "<group>"; };
 		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		49635EF32019208500AB95E5 /* PathStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathStatus.swift; sourceTree = "<group>"; };
@@ -367,14 +359,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		490982D2204E1D1300096C92 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				490982D6204E1D1300096C92 /* git_annex_shared.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,17 +458,9 @@
 				490982EF204EDA6100096C92 /* TurtleLog.swift */,
 				49DDE1782059CC22008C55AC /* TurtleDialogs.swift */,
 				49DDE1862059EFF4008C55AC /* Dialogs.swift */,
+				4936D9582064761900FB76C7 /* RunNowOrAgain.swift */,
 			);
 			path = "git-annex-shared";
-			sourceTree = "<group>";
-		};
-		490982D9204E1D1300096C92 /* git-annex-sharedTests */ = {
-			isa = PBXGroup;
-			children = (
-				490982DA204E1D1300096C92 /* git_annex_sharedTests.swift */,
-				490982DC204E1D1300096C92 /* Info.plist */,
-			);
-			path = "git-annex-sharedTests";
 			sourceTree = "<group>";
 		};
 		490BCB791DE5444C00734FF4 = {
@@ -502,7 +478,6 @@
 				49F0ECDD200E51D000C8BBCB /* git-annex-turtle-dataTests */,
 				49F0ECE8200E51D000C8BBCB /* git-annex-turtle-dataUITests */,
 				490982CE204E1D1200096C92 /* git-annex-shared */,
-				490982D9204E1D1300096C92 /* git-annex-sharedTests */,
 				490BCB831DE5444C00734FF4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -522,7 +497,6 @@
 				49F0ECDA200E51D000C8BBCB /* git-annex-turtle-dataTests.xctest */,
 				49F0ECE5200E51D000C8BBCB /* git-annex-turtle-dataUITests.xctest */,
 				490982CD204E1D1200096C92 /* git_annex_shared.framework */,
-				490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -558,6 +532,7 @@
 				49DDE17B2059D71D008C55AC /* watchGitAndFinderForUpdatesTests.swift */,
 				499AFFE8205B1251008BD34A /* queriesTests.swift */,
 				4981033D205EB0C7006084B2 /* finderSyncCoreTests.swift */,
+				4936D95C2064889C00FB76C7 /* runOnceTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -714,24 +689,6 @@
 			productName = "git-annex-shared";
 			productReference = 490982CD204E1D1200096C92 /* git_annex_shared.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		490982D4204E1D1300096C92 /* git-annex-sharedTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 490982E1204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-sharedTests" */;
-			buildPhases = (
-				490982D1204E1D1300096C92 /* Sources */,
-				490982D2204E1D1300096C92 /* Frameworks */,
-				490982D3204E1D1300096C92 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				490982D8204E1D1300096C92 /* PBXTargetDependency */,
-			);
-			name = "git-annex-sharedTests";
-			productName = "git-annex-sharedTests";
-			productReference = 490982D5204E1D1300096C92 /* git-annex-sharedTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		490BCB811DE5444C00734FF4 /* git-annex-turtle */ = {
 			isa = PBXNativeTarget;
@@ -944,10 +901,6 @@
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					490982D4204E1D1300096C92 = {
-						CreatedOnToolsVersion = 9.2;
-						ProvisioningStyle = Automatic;
-					};
 					490BCB811DE5444C00734FF4 = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = ASJ7K8YJ25;
@@ -1050,20 +1003,12 @@
 				49F0ECD9200E51D000C8BBCB /* git-annex-turtle-dataTests */,
 				49F0ECE4200E51D000C8BBCB /* git-annex-turtle-dataUITests */,
 				490982CC204E1D1200096C92 /* git-annex-shared */,
-				490982D4204E1D1300096C92 /* git-annex-sharedTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		490982CB204E1D1200096C92 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		490982D3204E1D1300096C92 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1177,23 +1122,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */,
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
 				490982F0204EDA6100096C92 /* TurtleLog.swift in Sources */,
 				490982EA204E213400096C92 /* WatchedFolder.swift in Sources */,
 				49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */,
-				49DDE1842059E8B5008C55AC /* GitAnnexTurtleProduction.swift in Sources */,
 				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
 				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
 				49DDE1792059CC22008C55AC /* TurtleDialogs.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		490982D1204E1D1300096C92 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				490982FC204EDBBC00096C92 /* TurtleLog.swift in Sources */,
-				490982DB204E1D1300096C92 /* git_annex_sharedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1221,6 +1157,7 @@
 				49DDE1752058696A008C55AC /* GitAnnexTurtle.swift in Sources */,
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
+				4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
 				490982FD204F136500096C92 /* FullScan.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
@@ -1251,6 +1188,8 @@
 				49810340205EB0D8006084B2 /* FinderSyncCore.swift in Sources */,
 				492492082040A1F500F8D8A0 /* PathStatus.swift in Sources */,
 				492492012040A15100F8D8A0 /* GitAnnexQueries.swift in Sources */,
+				4936D95E206488B000FB76C7 /* RunNowOrAgain.swift in Sources */,
+				4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */,
 				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,
 				49DDE18F2059F54B008C55AC /* Witness.swift in Sources */,
 				49DDE1892059F099008C55AC /* Dialogs.swift in Sources */,
@@ -1408,11 +1347,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		490982D8204E1D1300096C92 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 490982CC204E1D1200096C92 /* git-annex-shared */;
-			targetProxy = 490982D7204E1D1300096C92 /* PBXContainerItemProxy */;
-		};
 		490BCB931DE5444D00734FF4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 490BCB811DE5444C00734FF4 /* git-annex-turtle */;
@@ -1534,45 +1468,6 @@
 				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		490982E2204E1D1300096C92 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "git-annex-sharedTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-sharedTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 4.0;
-			};
-			name = Debug;
-		};
-		490982E3204E1D1300096C92 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "git-annex-sharedTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-sharedTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -2075,15 +1970,6 @@
 			buildConfigurations = (
 				490982DF204E1D1300096C92 /* Debug */,
 				490982E0204E1D1300096C92 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		490982E1204E1D1300096C92 /* Build configuration list for PBXNativeTarget "git-annex-sharedTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				490982E2204E1D1300096C92 /* Debug */,
-				490982E3204E1D1300096C92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -129,6 +129,15 @@ class TestingUtil {
         }
     }
     
+    class func createDir(absolutePath: String) {
+        do {
+            let url = PathUtils.urlFor(absolutePath: absolutePath)
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            TurtleLog.error("Unable to create new directory '\(absolutePath)'")
+        }
+    }
+    
     class func persistentContainer(mom: NSManagedObjectModel, storeURL: URL) -> NSPersistentContainer {
         let momdName = "git_annex_turtle_data"
         

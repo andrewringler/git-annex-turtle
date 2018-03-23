@@ -11,19 +11,30 @@ import Cocoa
 import CoreData
 
 class DataEntrypoint {
+    let absoluteURL: URL
+    let absolutePath: String
     lazy var persistentContainer: NSPersistentContainer = {
-       return DataEntrypoint.createPersistentContainer()
+        return DataEntrypoint.createPersistentContainer(absoluteURL: absoluteURL)
     }()
     
-    init(persistentContainer: NSPersistentContainer) {
+    init(persistentContainer: NSPersistentContainer, absolutePath: String) {
+        self.absolutePath = absolutePath
+        self.absoluteURL = PathUtils.urlFor(absolutePath: absolutePath)
         self.persistentContainer = persistentContainer
     }
     
     init() {
-        // nothing to do
+        // https://stackoverflow.com/a/42554741/8671834
+        if let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID), let path = PathUtils.path(for: sharedGroupContainer) {
+            absoluteURL = sharedGroupContainer
+            absolutePath = path
+        } else {
+            TurtleLog.error("could not find group container and path for database")
+            fatalError("error finding group container and path")
+        }
     }
     
-    private static func createPersistentContainer() -> NSPersistentContainer {
+    private static func createPersistentContainer(absoluteURL: URL) -> NSPersistentContainer {
         let momdName = "git_annex_turtle_data"
 
         guard let model = Bundle(for: DataEntrypoint.self).url(forResource: momdName, withExtension:"momd") else {
@@ -42,11 +53,7 @@ class DataEntrypoint {
         let container = NSPersistentContainer(name: momdName, managedObjectModel: mom)
         // https://useyourloaf.com/blog/easier-core-data-setup-with-persistent-containers/
         
-        // https://stackoverflow.com/a/42554741/8671834
-        let sharedGroupContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
-        guard let storeURL = sharedGroupContainer?.appendingPathComponent(databaseName) else {
-            fatalError("Error loading model from bundle")
-        }
+        let storeURL = absoluteURL.appendingPathComponent(databaseName)
         let description = NSPersistentStoreDescription(url: storeURL)
         container.persistentStoreDescriptions = [description]
         

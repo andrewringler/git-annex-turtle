@@ -21,10 +21,13 @@ class queriesTests: XCTestCase {
         
         testDir = TestingUtil.createTmpDir()
         TurtleLog.info("Using testing dir: \(testDir!)")
-        let storeURL = PathUtils.urlFor(absolutePath: "\(testDir!)/testingDatabase")
+        
+        let databaseParentFolder  = "\(testDir!)/database"
+        TestingUtil.createDir(absolutePath: databaseParentFolder)
+        let storeURL = PathUtils.urlFor(absolutePath: "\(databaseParentFolder)/db")
         
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
-        let data = DataEntrypoint(persistentContainer: persistentContainer)
+        let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
     }
     

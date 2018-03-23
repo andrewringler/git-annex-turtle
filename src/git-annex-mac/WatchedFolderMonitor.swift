@@ -15,7 +15,7 @@ class WatchedFolderMonitor {
     init(watchedFolder: WatchedFolder, app: WatchGitAndFinderForUpdates) {
         self.watchedFolder = watchedFolder
         let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
-        let checkForGitAnnexUpdatesDebounce = debounce2(delay: .milliseconds(120), queue: queue, action: app.checkForGitAnnexUpdates)
+        let checkForGitAnnexUpdatesDebounce = debounce2(delay: .milliseconds(100), queue: queue, action: app.checkForGitAnnexUpdates)
 
         let watchPath = "\(watchedFolder.pathString)"
         TurtleLog.debug("Setting up file system watch for '\(watchPath)'")

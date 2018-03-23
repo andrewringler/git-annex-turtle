@@ -34,62 +34,65 @@ class WatchGitAndFinderForUpdates {
         
         queries = Queries(data: data)
         visibleFolders = VisibleFolders(queries: queries)
-
+        
         updateListOfWatchedFolders()
         setupFileSystemMonitorOnConfigFile()
-        
-        // Command requests
+
+        // Handle command, badge requests and visible folder updates from Finder Sync
+        // check if incomplete folders have finished scanning their children
         DispatchQueue.global(qos: .background).async {
             while true {
-                self.handleCommandRequests()
-                sleep(1)
+                let foundUpdates = self.handleDatabaseUpdates()
+                if !foundUpdates {
+                    // if we didn't get any database updates, lets give the CPU a rest
+                    usleep(150000)
+                }
+            }
+        }
+        _ = handleDatabaseUpdates() // check Db for updates, once now
+    }
+    
+    private func handleDatabaseUpdates() -> Bool {
+        let foundUpdatesCommands = handleCommandRequests()
+        let foundUpdatesBadges = handleBadgeRequests()
+        
+        // does not contribute to foundUpdates, since these are all things
+        // that don't necessary change rapidly
+        updateWatchedAndVisibleFolders()
+        
+        return foundUpdatesCommands || foundUpdatesBadges
+    }
+    
+    private func updateWatchedAndVisibleFolders() {
+        self.visibleFolders.updateListOfVisibleFolders(with: self.watchedFolders)
+        
+        // Handle folder updates, for any folder that is not doing a full scan
+        for watchedFolder in self.watchedFolders {
+            if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
+                _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries)
             }
         }
         
-        // Badge requests
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.handleBadgeRequests()
-                sleep(1)
-            }
-        }
-        
-        // Main loop
-        DispatchQueue.global(qos: .background).async {
-            while true {
-                self.visibleFolders.updateListOfVisibleFolders(with: self.watchedFolders)
-                
-                // Handle folder updates, for any folder that is not doing a full scan
-                for watchedFolder in self.watchedFolders {
-                    if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
-                        _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries)
+        // Setup file system watches for any folder that has completed its full scan
+        // that we aren't already watching
+        for watchedFolder in self.watchedFolders {
+            // A folder we need to start a file system watch for, is one
+            // that has a commit hash in the database (meaning it is done with a full scan)
+            // and one that isn't already being watched
+            let handledCommits = self.queries.getLatestCommits(for: watchedFolder)
+            if handledCommits.gitAnnexCommitHash != nil, (self.fileSystemMonitors.filter{ $0.watchedFolder == watchedFolder }).count == 0 {
+                // Setup filesystem watch
+                // must happen on main thread for Apple File System Events API to work
+                if (Thread.isMainThread) {
+                    self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
+                } else {
+                    DispatchQueue.main.sync {
+                        self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
                     }
                 }
                 
-                // Setup file system watches for any folder that has completed its full scan
-                // that we aren't already watching
-                for watchedFolder in self.watchedFolders {
-                    // A folder we need to start a file system watch for, is one
-                    // that has a commit hash in the database (meaning it is done with a full scan)
-                    // and one that isn't already being watched
-                    let handledCommits = self.queries.getLatestCommits(for: watchedFolder)
-                    if handledCommits.gitAnnexCommitHash != nil, (self.fileSystemMonitors.filter{ $0.watchedFolder == watchedFolder }).count == 0 {
-                        // Setup filesystem watch
-                        // must happen on main thread for Apple File System Events API to work
-                        if (Thread.isMainThread) {
-                            self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
-                        } else {
-                            DispatchQueue.main.sync {
-                                self.fileSystemMonitors.append(WatchedFolderMonitor(watchedFolder: watchedFolder, app: self))
-                            }
-                        }
-                        
-                        // Look for updates now, in case we have missed some, while setting up this watch
-                        self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 0)
-                    }
-                }
-                
-                sleep(1)
+                // Look for updates now, in case we have missed some, while setting up this watch
+                self.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: 0)
             }
         }
     }
@@ -145,8 +148,8 @@ class WatchGitAndFinderForUpdates {
     // edit the config file directly. We will attach a file system monitor to detect this
     //
     private func setupFileSystemMonitorOnConfigFile() {
-        let updateListOfWatchedFoldersDebounce = throttle(delay: 0.1, queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
-        listenForWatchedFolderChanges = Witness(paths: [config.dataPath], flags: .FileEvents, latency: 0.1) { events in
+        let updateListOfWatchedFoldersDebounce = debounce(delay: .milliseconds(200), queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
+        listenForWatchedFolderChanges = Witness(paths: [config.dataPath], flags: .FileEvents, latency: 0.3) { events in
             updateListOfWatchedFoldersDebounce()
         }
     }
@@ -257,7 +260,7 @@ class WatchGitAndFinderForUpdates {
     //
     // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
     //
-    private func handleCommandRequests() {
+    private func handleCommandRequests() -> Bool {
         let queries = Queries(data: self.data)
         let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
         
@@ -291,6 +294,8 @@ class WatchGitAndFinderForUpdates {
                 }
             }
         }
+        
+        return commandRequests.count > 0
     }
     
     //
@@ -298,13 +303,17 @@ class WatchGitAndFinderForUpdates {
     //
     // handle requests for updated badge icons from our Finder Sync extension
     //
-    private func handleBadgeRequests() {
+    private func handleBadgeRequests() -> Bool {
+        var foundUpdates = false
+        
         for watchedFolder in self.watchedFolders {
             // Only handle badge requests for folders that aren't currently being scanned
             // TODO, give immediate feedback to the user here on some files?
             // TODO, we can miss some files if they appear after full scan enumeration
             if !fullScan.isScanning(watchedFolder: watchedFolder) {
                 for path in queries.allPathRequestsV2Blocking(in: watchedFolder) {
+                    foundUpdates = true
+                    
                     if queries.statusForPathV2Blocking(path: path, in: watchedFolder) != nil {
                         // OK, we already have a status for this path, maybe
                         // Finder Sync missed it, lets update our last modified flag
@@ -318,6 +327,8 @@ class WatchGitAndFinderForUpdates {
                 }
             }
         }
+        
+        return foundUpdates
     }
     
     func getWatchedFolders() -> Set<WatchedFolder> {

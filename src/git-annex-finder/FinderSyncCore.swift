@@ -38,22 +38,13 @@ class FinderSyncCore {
         // check the database for updates to the list of watched folders
         // and for updated statuses of watched files
         //
-        //
-        // NOTE:
-        // I tried using File System API monitors on the sqlite database
-        // and I tried using observe on UserDefaults
-        // none worked reliably, perhaps Finder Sync Extensions are designed to ignore/miss notifications?
-        // or perhaps the Finder Sync extension is going into a background mode and not waking up?
-        // or perhaps Finder Sync extensions are meant to be transient, so can never
-        // really accept notifications from the system
-        //
-        // TODO ooops, probably I was just registering them on a background thread
-        // File System API registration requests must happen on the main thread…
-        // try and retest
         DispatchQueue.global(qos: .background).async {
             while true {
-                self.handleDatabaseUpdatesIfAny()
-                usleep(100000)
+                let foundUpdates = self.handleDatabaseUpdatesIfAny()
+                if !foundUpdates {
+                    // if we didn't get any database updates, lets give the CPU a rest
+                    usleep(150000)
+                }
             }
         }
     }
@@ -144,14 +135,17 @@ class FinderSyncCore {
         }
     }
     
-    func handleDatabaseUpdatesIfAny() {
+    func handleDatabaseUpdatesIfAny() -> Bool {
         if let moreRecentUpdatesTime = queries.timeOfMoreRecentUpdatesBlocking(lastHandled: lastHandledDatabaseChangesDateSinceEpochAsDouble) {
             // save this new time, marking it as handled (for this process only)
             lastHandledDatabaseChangesDateSinceEpochAsDouble = moreRecentUpdatesTime
             
             updateWatchedFolders(queries: queries)
             updateStatusCacheAndBadgesForAllVisible()
+            return true
         }
+        
+        return false
     }
     
     private func updateStatusCacheAndBadgesForAllVisible() {

@@ -24,12 +24,16 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         TurtleLog.setLoggingLevel(.debug)
         
         testDir = TestingUtil.createTmpDir()
+        
+        
         TurtleLog.info("Using testing dir: \(testDir!)")
         config = Config(dataPath: "\(testDir!)/turtle-monitor")
-        let storeURL = PathUtils.urlFor(absolutePath: "\(testDir!)/testingDatabase")
-        
+
+        let databaseParentFolder  = "\(testDir!)/database"
+        TestingUtil.createDir(absolutePath: databaseParentFolder)
+        let storeURL = PathUtils.urlFor(absolutePath: "\(databaseParentFolder)/db")
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
-        let data = DataEntrypoint(persistentContainer: persistentContainer)
+        let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
 //        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitCmd: "/Applications/git-annex.app/Contents/MacOS/git")
@@ -93,7 +97,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
 
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
-        wait(for: 10)
+        wait(for: 2)
 
         // wait for the full scans to complete
         // triggered by watchGitAndFinderForUpdates
@@ -252,7 +256,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let changeFile3 = "subdirA/subdirNew2/changeFile3.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "changeFile3 content", to: changeFile3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
-        wait(for: 30)
+        wait(for: 2)
 
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
@@ -369,7 +373,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
-        wait(for: 10)
+        wait(for: 2)
         
         // wait for the full scans to complete
         // triggered by watchGitAndFinderForUpdates

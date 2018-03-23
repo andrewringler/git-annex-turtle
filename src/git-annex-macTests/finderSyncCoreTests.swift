@@ -28,10 +28,13 @@ class finderSyncCoreTests: XCTestCase {
         testDir = TestingUtil.createTmpDir()
         TurtleLog.info("Using testing dir: \(testDir!)")
         config = Config(dataPath: "\(testDir!)/turtle-monitor")
-        let storeURL = PathUtils.urlFor(absolutePath: "\(testDir!)/testingDatabase")
+        
+        let databaseParentFolder  = "\(testDir!)/database"
+        TestingUtil.createDir(absolutePath: databaseParentFolder)
+        let storeURL = PathUtils.urlFor(absolutePath: "\(databaseParentFolder)/db")
         
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
-        let data = DataEntrypoint(persistentContainer: persistentContainer)
+        let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
         //        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitCmd: "/Applications/git-annex.app/Contents/MacOS/git")
@@ -97,6 +100,7 @@ class finderSyncCoreTests: XCTestCase {
         
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
+        // and waiting for watched folder list to make it to the Finder Sync extension
         wait(for: 10)
         
         // pretend these root folders have come into view
@@ -242,7 +246,7 @@ class finderSyncCoreTests: XCTestCase {
         
         // wait a few seconds for FinderSyncCore
         // to grab all changes
-        wait(for: 30)
+        wait(for: 10)
         
         // verify set WatchedFolders
         let expected: Set<URL> = Set([PathUtils.urlFor(absolutePath: repo1!.pathString), PathUtils.urlFor(absolutePath: repo2!.pathString)])
@@ -251,6 +255,9 @@ class finderSyncCoreTests: XCTestCase {
         // verify update badges
         assertCount(updateBadgeHistory: finderSyncTesting.updateBadgeHistory, path: file1, for: repo1!, expectedCount: 1)
         assertContains(updateBadgeHistory: finderSyncTesting.updateBadgeHistory, isDir: false, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: EnoughCopies.lacking, numberOfCopies: 1, path: file1, watchedFolder: repo1!, needsUpdate: false, occurenceOrderOfThisPath: 1)
+        assertCount(updateBadgeHistory: finderSyncTesting.updateBadgeHistory, path: file2, for: repo1!, expectedCount: 1)
+        assertContains(updateBadgeHistory: finderSyncTesting.updateBadgeHistory, isDir: false, isGitAnnexTracked: true, presentStatus: Present.present, enoughCopies: EnoughCopies.lacking, numberOfCopies: 1, path: file2, watchedFolder: repo1!, needsUpdate: false, occurenceOrderOfThisPath: 1)
+        
 
         
         
@@ -298,13 +305,13 @@ class finderSyncCoreTests: XCTestCase {
 
         // wait for incremental scan to complete
         // and for our Finder Sync extension to pick up the changes
-        wait(for: 30)
+        wait(for: 5)
         
         // make some folders visible after a wait
         finderSyncCore!.beginObservingDirectory(at: PathUtils.url(for: "subdirNew1/subdirNew3", in: repo1!))
         finderSyncCore!.beginObservingDirectory(at: PathUtils.url(for: "subdirA/subdirNew2", in: repo1!))
 
-        wait(for: 30)
+        wait(for: 15)
 
         /// verify Finder Sync Core picked up the new files
         /// from our incremental scanner
