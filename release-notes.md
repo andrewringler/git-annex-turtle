@@ -7,6 +7,7 @@ v0.2
  * added about dialog accessible from the menubar drop-down
 
 **Bug Fixes**
+ * fixed: issue with running shell commands, resulting in a minimum of a 1-second delay, now badge icons should appear much quicker after commands like get/add/etc…
  * more expansive testing
  * fixed: after new files are created, added and committed, their badge icon are now correctly updated without having to navigate away from the folder
  * fixed: various timing issues preventing Finder Sync extensions from seeing latest status updates
