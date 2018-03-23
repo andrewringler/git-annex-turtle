@@ -60,3 +60,51 @@ class RunNowOrAgain {
             }())
     }
 }
+
+class RunNowOrAgain1<T> {
+    private var lock = NSLock()
+    private var runningNow: Bool = false
+    private var runAgain: Bool = false
+    private let task: ((T) -> Void)
+    
+    init(_ task: @escaping ((T) -> Void)) {
+        self.task = task
+    }
+    
+    public func runTaskAgain(p1: T) {
+        lock.lock()
+        if runningNow {
+            // we are already running
+            // just enqueue to happen again
+            runAgain = true
+        } else {
+            // not currently running
+            // lets run it
+            runningNow = true
+            DispatchQueue.global(qos: .background).async {
+                self.runIt(p1: p1)
+            }
+        }
+        lock.unlock()
+    }
+    
+    private func runIt(p1: T) {
+        repeat {
+            lock.lock()
+            runAgain = false
+            lock.unlock()
+            
+            task(p1)
+            
+            lock.lock()
+            runningNow = false
+            lock.unlock()
+        } while ({ () in
+            var shouldRepeat = false
+            lock.lock()
+            shouldRepeat = runAgain
+            lock.unlock()
+            return shouldRepeat
+            }())
+    }
+}

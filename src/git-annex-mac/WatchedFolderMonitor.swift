@@ -10,13 +10,16 @@ import Foundation
 
 class WatchedFolderMonitor {
     let watchedFolder: WatchedFolder
-    let fileMonitor: Witness
+    let updateChecker: RunNowOrAgain1<Double>?
+    var fileMonitor: Witness?
     
     init(watchedFolder: WatchedFolder, app: WatchGitAndFinderForUpdates) {
         self.watchedFolder = watchedFolder
-        let queue = DispatchQueue(label: watchedFolder.uuid.uuidString, attributes: .concurrent)
-        let checkForGitAnnexUpdatesDebounce = debounce2(delay: .milliseconds(100), queue: queue, action: app.checkForGitAnnexUpdates)
 
+        updateChecker = RunNowOrAgain1({ (secondsOld: Double) in
+            app.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld)
+        })
+        
         let watchPath = "\(watchedFolder.pathString)"
         TurtleLog.debug("Setting up file system watch for '\(watchPath)'")
         
@@ -35,7 +38,7 @@ class WatchedFolderMonitor {
                 }
             }
             if shouldUpdate {
-                checkForGitAnnexUpdatesDebounce(watchedFolder, 0 /* seconds old */)
+                self.updateChecker?.runTaskAgain(p1: 0 /* seconds old */)
             }
         }
     }
