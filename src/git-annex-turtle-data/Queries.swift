@@ -100,7 +100,7 @@ class Queries {
     let data: DataEntrypoint
     let lastModifiedQueue = DispatchQueue(label: "git-annex-turtle.Queries-Last-Modified", attributes: .concurrent)
     public lazy var updateLastModifiedAsync = {
-        return debounce(delay: .milliseconds(50), queue: lastModifiedQueue, action: self.changeLastModifedUpdatesSync)
+        return debounce(delay: .milliseconds(100), queue: lastModifiedQueue, action: self.changeLastModifedUpdatesSync)
     }()
     
     init(data: DataEntrypoint) {
