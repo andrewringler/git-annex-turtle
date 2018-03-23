@@ -1,4 +1,5 @@
 ## TODO (move into github issues)
+ * PERFORMANCE: childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * crop or scroll large git error messages that appear in Dialogs
