@@ -239,6 +239,11 @@ class finderSyncCoreTests: XCTestCase {
         }
         
 
+        /// Finder Sync extension likes to follow symlinks sometimes…
+        /// lets make sure they are ignored
+        let fileInGit = ".git/annex/objects/5z/qm/SHA256E-s22260--7809043f0d6f2ae2d98d235e4518190a85dc2d002987f83724f57d66e1f1d9a8.png/SHA256E-s22260--7809043f0d6f2ae2d98d235e4518190a85dc2d002987f83724f57d66e1f1d9a8.png"
+        finderSyncCore!.requestBadgeIdentifier(for: PathUtils.url(for: fileInGit, in: repo1!))
+        
         ///
         /// OK, repos have their full scan completed
         /// lets verify, that Finder Sync Core
@@ -392,6 +397,9 @@ class finderSyncCoreTests: XCTestCase {
         } else {
             XCTFail("could not retrieve folder status for 'subdirNew1/subdirNew3'")
         }
+        
+        /// remember that .git/annex/objects… file we added, it shouldn't be in the database!
+        XCTAssertNil(queries!.statusForPathV2Blocking(path: fileInGit, in: repo1!))
     }
     
     lazy var managedObjectModel: NSManagedObjectModel = {

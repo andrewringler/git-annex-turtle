@@ -55,6 +55,12 @@ class FinderSyncCore {
         if let absolutePath = PathUtils.path(for: url) {
             if let watchedFolder = self.watchedFolderParent(for: absolutePath) {
                 if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
+                    if path.starts(with: ".git/") {
+                        // TODO why does the Finder Sync extension follow symlinks sometimes?
+                        TurtleLog.error("Finder Sync extension followed a symlink to \(path), ignoring.")
+                        return
+                    }
+                    
                     // already have the status? then use it
                     if let status = self.statusCache.get(for: path, in: watchedFolder) {
                         DispatchQueue.global(qos: .background).async {
