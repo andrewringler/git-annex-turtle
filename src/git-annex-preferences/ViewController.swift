@@ -101,6 +101,7 @@ extension ViewController {
             fatalError("Why cant i find ViewController? - Check Main.storyboard")
         }
         viewcontroller.appDelegate = appDelegate
+        viewcontroller.reloadFileList()
         return viewcontroller
     }
 }
