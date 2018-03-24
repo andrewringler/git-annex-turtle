@@ -373,7 +373,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
-        wait(for: 2)
+        wait(for: 5)
         
         // wait for the full scans to complete
         // triggered by watchGitAndFinderForUpdates
@@ -520,7 +520,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        wait(for: 30) // wait for incremental scan to complete
+        wait(for: 35) // wait for incremental scan to complete
         
         if let status = queries!.statusForPathV2Blocking(path: changeFile3, in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
