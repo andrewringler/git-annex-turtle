@@ -318,7 +318,7 @@ class WatchGitAndFinderForUpdates {
                         // OK, we already have a status for this path, maybe
                         // Finder Sync missed it, lets update our last modified flag
                         // to ensure Finder Sync see it
-                        queries.updateLastModifiedAsync()
+                        queries.updateLastModifiedAsync.runTaskAgain()
                     } else {
                         // We have no information about this file
                         // enqueue it for inspection

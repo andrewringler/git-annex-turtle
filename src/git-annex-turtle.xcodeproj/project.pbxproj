@@ -69,6 +69,8 @@
 		4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D95C2064889C00FB76C7 /* runOnceTests.swift */; };
 		4936D95E206488B000FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
 		4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
+		4936D9602065AC5F00FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
+		4936D9612065AC7100FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
 		4936EA002000482700200973 /* git-annex-turtle-cmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
@@ -1241,6 +1243,7 @@
 				499AFFED205C0885008BD34A /* FinderSyncProtocol.swift in Sources */,
 				49F0ECFE200E5F6300C8BBCB /* Queries.swift in Sources */,
 				49EFD2012007BFC9005742DB /* Constants.swift in Sources */,
+				4936D9612065AC7100FB76C7 /* RunNowOrAgain.swift in Sources */,
 				499AFFEB205C0855008BD34A /* FinderSyncCore.swift in Sources */,
 				49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */,
 				49EF6270200E75D6002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
@@ -1312,6 +1315,7 @@
 			files = (
 				490982C6204E042E00096C92 /* Queries.swift in Sources */,
 				49EF6273200E7FDD002D1585 /* FinderSync.swift in Sources */,
+				4936D9602065AC5F00FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49F0ECCB200E51D000C8BBCB /* ViewController.swift in Sources */,
 				490982E9204E1D5C00096C92 /* VisibleFolder.swift in Sources */,
 				490982F9204EDBB900096C92 /* TurtleLog.swift in Sources */,

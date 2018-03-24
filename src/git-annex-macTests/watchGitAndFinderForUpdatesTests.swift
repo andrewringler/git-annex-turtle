@@ -58,7 +58,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         //
         // set num copies to 2, so all files will be lacking
         XCTAssertTrue(gitAnnexQueries!.gitAnnexSetNumCopies(numCopies: 2, in: repo1!).success)
-        let file1 = "a name with spaces.txt"
+        let file1 = "a name with spaces.log"
         TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
         let file2 = "b ∆∆ söme unicode too.txt"
@@ -236,7 +236,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         /// our incremental scanner picks them up
         
         /// add a new file to existing folder
-        let changeFile1 = "subdirA/changeFile1.txt"
+        let changeFile1 = "subdirA/changeFile1.log"
         TestingUtil.gitAnnexCreateAndAdd(content: "changeFile1 content", to: changeFile1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
         /// add a new file to a new folder

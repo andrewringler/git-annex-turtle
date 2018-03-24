@@ -13,7 +13,7 @@ v0.2
  * fixed: various timing issues preventing Finder Sync extensions from seeing latest status updates
  * fixed: first git commit was being ignored by incremental update scanner, various other issues with incremental scanner fixed.
  * fixed: potential issue with reloading list of watched repos in the preferences dialog
-
+ * fixed: Finder Sync extension is following symlinks into .git/annex/object… sometimes, I don't know why and I can't reproduce reliably, but these are now always ignored in requestBadgeIdentifier calls
 
 v0.1
 Initial beta release of git-annex-turtle

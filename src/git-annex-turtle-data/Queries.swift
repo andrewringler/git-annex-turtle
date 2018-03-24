@@ -99,8 +99,10 @@ let TIME_OFFSET: Double = 0.2
 class Queries {
     let data: DataEntrypoint
     let lastModifiedQueue = DispatchQueue(label: "git-annex-turtle.Queries-Last-Modified", attributes: .concurrent)
-    public lazy var updateLastModifiedAsync = {
-        return debounce(delay: .milliseconds(100), queue: lastModifiedQueue, action: self.changeLastModifedUpdatesSync)
+    public lazy var updateLastModifiedAsync: RunNowOrAgain = {
+        return RunNowOrAgain({
+            self.changeLastModifedUpdatesSync()
+        })
     }()
     
     init(data: DataEntrypoint) {
@@ -167,7 +169,7 @@ class Queries {
                 moc.performAndWait {
                     do {
                         try moc.save()
-                        self.updateLastModifiedAsync()
+                        self.updateLastModifiedAsync.runTaskAgain()
                     } catch {
                         TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                         fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for path: \(path), key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
@@ -220,7 +222,7 @@ class Queries {
                 moc.performAndWait {
                     do {
                         try moc.save()
-                        self.updateLastModifiedAsync()
+                        self.updateLastModifiedAsync.runTaskAgain()
                     } catch {
                         TurtleLog.fatal("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
                         fatalError("could not save main context presentStatus: \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), for paths: \(paths.first)…, key: \(key), in watchedFolder: \(watchedFolder) isDir: \(isDir), needsUpdate: \(needsUpdate) \(error)")
@@ -237,7 +239,6 @@ class Queries {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSOverwriteMergePolicy
-        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.perform {
@@ -617,7 +618,7 @@ class Queries {
                 moc.performAndWait {
                     do {
                         try moc.save()
-                        self.updateLastModifiedAsync()
+                        self.updateLastModifiedAsync.runTaskAgain()
                     } catch {
                         TurtleLog.fatal("could not save main context for \(newListOfWatchedFolders) \(error)")
                         fatalError("could not save main context for \(newListOfWatchedFolders) \(error)")
@@ -996,7 +997,6 @@ class Queries {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
         moc.mergePolicy = NSOverwriteMergePolicy
-        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
         privateMOC.parent = moc
@@ -1016,7 +1016,7 @@ class Queries {
                 moc.perform {
                     do {
                         try moc.save()
-                        self.updateLastModifiedAsync()
+                        self.updateLastModifiedAsync.runTaskAgain()
                     } catch {
                         TurtleLog.fatal("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
                         fatalError("could not save main context path=\(path) \(watchedFolder) pid=\(processID) \(error)")
