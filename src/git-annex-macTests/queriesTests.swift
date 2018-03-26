@@ -32,8 +32,12 @@ class queriesTests: XCTestCase {
     }
     
     override func tearDown() {
-        TestingUtil.removeDir(testDir)
+        queries?.stop()
+        queries = nil
         
+        wait(for: 2) // wait for queries to finish
+        TestingUtil.removeDir(testDir)
+
         super.tearDown()
     }
     

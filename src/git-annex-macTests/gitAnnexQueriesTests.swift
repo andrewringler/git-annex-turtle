@@ -31,9 +31,9 @@ class gitAnnexQueriesTests: XCTestCase {
     }
     
     override func tearDown() {
-        super.tearDown()
-        
         TestingUtil.removeDir(configDir)
+        
+        super.tearDown()
     }
 
     func testChildren() {

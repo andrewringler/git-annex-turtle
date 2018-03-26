@@ -50,6 +50,18 @@ class finderSyncCoreTests: XCTestCase {
     }
     
     override func tearDown() {
+        fullScan?.stop()
+        fullScan = nil
+        queries?.stop()
+        queries = nil
+        gitAnnexQueries = nil
+        watchGitAndFinderForUpdates?.stop()
+        watchGitAndFinderForUpdates = nil
+        finderSyncCore?.stop()
+        finderSyncCore = nil
+        
+        wait(for: 5)
+
         TestingUtil.removeDir(testDir)
         
         super.tearDown()

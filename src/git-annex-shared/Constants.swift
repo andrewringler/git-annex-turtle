@@ -351,6 +351,8 @@ enum CommandString: String {
     case initCmd = "init"
     case numCopies = "numcopies"
     case commit = "commit"
+    case info = "info"
+    case unannex = "unannex"
 }
 
 

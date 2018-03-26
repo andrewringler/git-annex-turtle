@@ -8,9 +8,7 @@
 
 import Foundation
 
-class FullScan {
-    var running = true
-
+class FullScan: StoppableService {
     let gitAnnexQueries: GitAnnexQueries
     let queries: Queries
     
@@ -20,10 +18,11 @@ class FullScan {
     init(gitAnnexQueries: GitAnnexQueries, queries: Queries) {
         self.gitAnnexQueries = gitAnnexQueries
         self.queries = queries
+        super.init()
     }
     
     func startFullScan(watchedFolder: WatchedFolder) {
-        guard running else { return }
+        guard running.isRunning() else { return }
         
         sharedResource.lock()
         if !scanning.contains(watchedFolder) {
@@ -36,7 +35,7 @@ class FullScan {
     }
 
     func stopFullScan(watchedFolder: WatchedFolder) {
-        guard running else { return }
+        guard running.isRunning() else { return }
 
         sharedResource.lock()
         if scanning.contains(watchedFolder) {
@@ -47,7 +46,7 @@ class FullScan {
     }
 
     func isScanning() -> Bool {
-        guard running else { return false }
+        guard running.isRunning() else { return false }
         
         var ret = false
         sharedResource.lock()
@@ -57,7 +56,7 @@ class FullScan {
     }
     
     func isScanning(watchedFolder: WatchedFolder) -> Bool {
-        guard running else { return false }
+        guard running.isRunning() else { return false }
 
         var ret = false
         sharedResource.lock()
@@ -75,7 +74,7 @@ class FullScan {
     }
     
     private func scan(_ watchedFolder: WatchedFolder) {
-        while running {
+        while running.isRunning() {
             let scanStartDate = Date()
             
             // Store the current git commit hashes before starting our full scan
@@ -176,9 +175,5 @@ class FullScan {
         }
         
         return true // completed successfully
-    }
-    
-    deinit {
-        running = false
-    }
+    }    
 }

@@ -35,7 +35,7 @@ fileprivate class StatusRequest: CustomStringConvertible {
     public var description: String { return "StatusRequest: '\(path)' in \(watchedFolder) \(secondsOld) secondsOld, includeFiles=\(includeFiles) includeDirs=\(includeDirs) priority=\(priority) isDir=\(isDir)" }
 }
 
-class HandleStatusRequests {
+class HandleStatusRequests: StoppableService {
     let maxConcurrentUpdatesPerWatchedFolderHighPriority = 20
     let maxConcurrentUpdatesPerWatchedFolderLowPriority = 5
     
@@ -77,13 +77,16 @@ class HandleStatusRequests {
         self.queries = queries
         self.gitAnnexQueries = gitAnnexQueries
         
+        super.init()
+        
         // High Priority
         DispatchQueue.global(qos: .background).async {
             let limitConcurrentThreadsHighPriority = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderHighPriority)
 
-            while true {
+            while self.running.isRunning() {
                 self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueHighPriority, max: self.maxConcurrentUpdatesPerWatchedFolderHighPriority, priority: .high, queue: self.highPriorityQueue, limitConcurrentThreads: limitConcurrentThreadsHighPriority)
                 
+                // TODO get rid of delay
                 sleep(1)
             }
         }
@@ -92,9 +95,10 @@ class HandleStatusRequests {
         DispatchQueue.global(qos: .background).async {
             let limitConcurrentThreadsLowPriority = DispatchSemaphore(value: self.maxConcurrentUpdatesPerWatchedFolderLowPriority)
             
-            while true {
+            while self.running.isRunning() {
                 self.handleSomeRequests(for: &self.dateAddedToStatusRequestQueueLowPriority, max: self.maxConcurrentUpdatesPerWatchedFolderLowPriority, priority: .low, queue: self.lowPriorityQueue, limitConcurrentThreads: limitConcurrentThreadsLowPriority)
                 
+                // TODO get rid of delay
                 sleep(1)
             }
         }

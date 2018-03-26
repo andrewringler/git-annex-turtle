@@ -13,7 +13,7 @@ import Foundation
  * and repeats the tasks once it is done
  * as long as new requests come in
  */
-class RunNowOrAgain {
+class RunNowOrAgain: StoppableService {
     private var lock = NSLock()
     private var runningNow: Bool = false
     private var runAgain: Bool = false
@@ -24,20 +24,22 @@ class RunNowOrAgain {
     }
     
     public func runTaskAgain() {
-        lock.lock()
-        if runningNow {
-            // we are already running
-            // just enqueue to happen again
-            runAgain = true
-        } else {
-            // not currently running
-            // lets run it
-            runningNow = true
-            DispatchQueue.global(qos: .background).async {
-                self.runIt()
+        if running.isRunning() {
+            lock.lock()
+            if runningNow {
+                // we are already running
+                // just enqueue to happen again
+                runAgain = true
+            } else {
+                // not currently running
+                // lets run it
+                runningNow = true
+                DispatchQueue.global(qos: .background).async {
+                    self.runIt()
+                }
             }
+            lock.unlock()
         }
-        lock.unlock()
     }
     
     private func runIt() {
@@ -56,12 +58,12 @@ class RunNowOrAgain {
             lock.lock()
             shouldRepeat = runAgain
             lock.unlock()
-            return shouldRepeat
+            return shouldRepeat && running.isRunning()
             }())
     }
 }
 
-class RunNowOrAgain1<T> {
+class RunNowOrAgain1<T>: StoppableService {
     private var lock = NSLock()
     private var runningNow: Bool = false
     private var runAgain: Bool = false
@@ -69,23 +71,26 @@ class RunNowOrAgain1<T> {
     
     init(_ task: @escaping ((T) -> Void)) {
         self.task = task
+        super.init()
     }
     
     public func runTaskAgain(p1: T) {
-        lock.lock()
-        if runningNow {
-            // we are already running
-            // just enqueue to happen again
-            runAgain = true
-        } else {
-            // not currently running
-            // lets run it
-            runningNow = true
-            DispatchQueue.global(qos: .background).async {
-                self.runIt(p1: p1)
+        if running.isRunning() {
+            lock.lock()
+            if runningNow {
+                // we are already running
+                // just enqueue to happen again
+                runAgain = true
+            } else {
+                // not currently running
+                // lets run it
+                runningNow = true
+                DispatchQueue.global(qos: .background).async {
+                    self.runIt(p1: p1)
+                }
             }
+            lock.unlock()
         }
-        lock.unlock()
     }
     
     private func runIt(p1: T) {
@@ -104,7 +109,7 @@ class RunNowOrAgain1<T> {
             lock.lock()
             shouldRepeat = runAgain
             lock.unlock()
-            return shouldRepeat
+            return shouldRepeat && running.isRunning()
             }())
-    }
+    }    
 }

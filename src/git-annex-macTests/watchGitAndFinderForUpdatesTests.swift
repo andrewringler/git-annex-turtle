@@ -47,6 +47,15 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     }
     
     override func tearDown() {
+        fullScan?.stop()
+        fullScan = nil
+        queries?.stop()
+        queries = nil
+        gitAnnexQueries = nil
+        watchGitAndFinderForUpdates?.stop()
+        watchGitAndFinderForUpdates = nil
+        
+        wait(for: 5)        
         TestingUtil.removeDir(testDir)
         
         super.tearDown()
@@ -261,7 +270,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        wait(for: 30) // wait for incremental scan to complete
+        wait(for: 45) // wait for incremental scan to complete
 
         if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)

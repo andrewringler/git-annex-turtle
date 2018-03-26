@@ -8,7 +8,7 @@
 
 import Foundation
 
-class WatchGitAndFinderForUpdates {
+class WatchGitAndFinderForUpdates: StoppableService {
     let config: Config
     let gitAnnexTurtle: GitAnnexTurtle
     let data: DataEntrypoint
@@ -34,14 +34,16 @@ class WatchGitAndFinderForUpdates {
         
         queries = Queries(data: data)
         visibleFolders = VisibleFolders(queries: queries)
-        
+
+        super.init()
+
         updateListOfWatchedFolders()
         setupFileSystemMonitorOnConfigFile()
 
         // Handle command, badge requests and visible folder updates from Finder Sync
         // check if incomplete folders have finished scanning their children
         DispatchQueue.global(qos: .background).async {
-            while true {
+            while super.running.isRunning() {
                 let foundUpdates = self.handleDatabaseUpdates()
                 if !foundUpdates {
                     // if we didn't get any database updates, lets give the CPU a rest
@@ -333,5 +335,13 @@ class WatchGitAndFinderForUpdates {
     
     func getWatchedFolders() -> Set<WatchedFolder> {
         return watchedFolders
+    }
+    
+    override public func stop() {
+        handleStatusRequests.stop()
+        fileSystemMonitors.forEach { $0.stop() }
+        fileSystemMonitors = []
+        listenForWatchedFolderChanges = nil
+        super.stop()
     }
 }

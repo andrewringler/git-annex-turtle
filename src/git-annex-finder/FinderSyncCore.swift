@@ -10,7 +10,7 @@ import Cocoa
 import CoreData
 import Foundation
 
-class FinderSyncCore {
+class FinderSyncCore: StoppableService {
     let finderSync: FinderSyncProtocol
     let data: DataEntrypoint
     let queries: Queries
@@ -24,6 +24,7 @@ class FinderSyncCore {
         self.data = data
         statusCache = StatusCache(data: data)
         queries = Queries(data: data)
+        super.init()
 
         //
         // Watched Folders
@@ -39,7 +40,7 @@ class FinderSyncCore {
         // and for updated statuses of watched files
         //
         DispatchQueue.global(qos: .background).async {
-            while true {
+            while self.running.isRunning() {
                 let foundUpdates = self.handleDatabaseUpdatesIfAny()
                 if !foundUpdates {
                     // if we didn't get any database updates, lets give the CPU a rest

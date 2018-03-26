@@ -8,7 +8,7 @@
 
 import Foundation
 
-class WatchedFolderMonitor {
+class WatchedFolderMonitor: StoppableService {
     public let watchedFolder: WatchedFolder
     
     private let updateChecker: RunNowOrAgain1<Double>
@@ -20,6 +20,8 @@ class WatchedFolderMonitor {
         updateChecker = RunNowOrAgain1({ (secondsOld: Double) in
             app.checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld)
         })
+        
+        super.init()
         
         let watchPath = "\(watchedFolder.pathString)"
         TurtleLog.debug("Setting up file system watch for '\(watchPath)'")
@@ -46,5 +48,11 @@ class WatchedFolderMonitor {
     
     public func doUpdates() {
         updateChecker.runTaskAgain(p1: 0 /* seconds old */)
+    }
+    
+    override public func stop() {
+        fileMonitor = nil
+        updateChecker.stop()
+        super.stop()
     }
 }

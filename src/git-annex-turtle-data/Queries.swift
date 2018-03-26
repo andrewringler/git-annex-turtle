@@ -96,9 +96,8 @@ enum VisibleFoldersEntityAttributes: String {
 // but, this will also cause them to sometimes grab the same status multiple times
 // TODO: re-design threading assumptions in Queries and remove this
 let TIME_OFFSET: Double = 0.2
-class Queries {
+class Queries: StoppableService {
     let data: DataEntrypoint
-    let lastModifiedQueue = DispatchQueue(label: "git-annex-turtle.Queries-Last-Modified", attributes: .concurrent)
     public lazy var updateLastModifiedAsync: RunNowOrAgain = {
         return RunNowOrAgain({
             self.changeLastModifedUpdatesSync()
@@ -996,7 +995,7 @@ class Queries {
     func addVisibleFolderAsync(for path: String, in watchedFolder: WatchedFolder, processID: String) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        moc.mergePolicy = NSOverwriteMergePolicy
+        moc.mergePolicy = NSOverwriteMergePolicy        
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         // http://dorianroy.com/blog/2015/09/how-to-implement-unique-constraints-in-core-data-with-ios-9/
         privateMOC.parent = moc
@@ -1073,5 +1072,10 @@ class Queries {
             return Bool(truncating: actualVal)
         }
         return nil
+    }
+    
+    override public func stop() {
+        updateLastModifiedAsync.stop()
+        super.stop()
     }
 }

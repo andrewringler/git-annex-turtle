@@ -40,11 +40,17 @@ class fullScanTests: XCTestCase {
     }
     
     override func tearDown() {
+        fullScan?.stop()
+        fullScan = nil
+        queries?.stop()
+        queries = nil
+        gitAnnexQueries = nil
+        wait(for: 5)
         TestingUtil.removeDir(testDir)
         
         super.tearDown()
     }
-
+   
     func testVisibleFolderQueries() {
         let pid: String = "process 1"
         

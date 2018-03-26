@@ -10,15 +10,28 @@ import Foundation
 import XCTest
 
 class TestingUtil {
-    class func removeDir(_ absolutePath: String?) {
+    class func removeDir(_ absolutePath: String?, file: StaticString = #file, line: UInt = #line) {
         if let path = absolutePath {
             let directory = PathUtils.urlFor(absolutePath: path)
             do {
+                // add write bit to all files recursively
+                // since git-annex repos have write bit removed on annexed objects
+                // see http://git-annex.branchable.com/internals/
+                // otherwise we can't delete the directory with the removeItem command below
+                let task = Process()
+                task.launchPath = "/bin/chmod"
+                task.currentDirectoryPath = path
+                task.arguments = ["-R", "a+w", "."]
+                task.launch()
+                task.waitUntilExit()
+                
                 try FileManager.default.removeItem(at: directory)
             } catch {
-                TurtleLog.error("Unable to cleanup folder after tests \(path)")
+                XCTFail("Unable to cleanup remove folder after tests folder=\(path)", file: file, line: line)
             }
+            return
         }
+        XCTFail("Invalid path, Unable to cleanup remove folder after tests", file: file, line: line)
     }
     
     class func createTmpDir() -> String? {
