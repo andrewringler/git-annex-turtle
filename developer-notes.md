@@ -1,9 +1,9 @@
 ## TODO (move into github issues)
- * BUG: some process, I think during incremental updates, perhaps the childrenNotIgnored.sh script is adding .git/annex/objects as paths to the db
  * PERFORMANCE: childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
  * PERFORMANCE: we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
+ * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. 
  * crop or scroll large git error messages that appear in Dialogs
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)

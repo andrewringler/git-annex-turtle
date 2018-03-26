@@ -8,11 +8,6 @@
 
 import Foundation
 
-enum Priority {
-    case high
-    case low
-}
-
 fileprivate class StatusRequest: CustomStringConvertible {
     let path: String
     let watchedFolder: WatchedFolder
@@ -35,12 +30,13 @@ fileprivate class StatusRequest: CustomStringConvertible {
     public var description: String { return "StatusRequest: '\(path)' in \(watchedFolder) \(secondsOld) secondsOld, includeFiles=\(includeFiles) includeDirs=\(includeDirs) priority=\(priority) isDir=\(isDir)" }
 }
 
-class HandleStatusRequests: StoppableService {
+class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
     let maxConcurrentUpdatesPerWatchedFolderHighPriority = 20
     let maxConcurrentUpdatesPerWatchedFolderLowPriority = 5
     
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
+    let watchedFolder: WatchedFolder
     
     fileprivate let lowPriorityQueue =
         DispatchQueue(label: "com.andrewringler.git-annex-mac.LowPriority", attributes: .concurrent)
@@ -56,24 +52,8 @@ class HandleStatusRequests: StoppableService {
     // we still need a lock to guarantee transactions are atomic across our collections
     private var sharedResource = NSLock()
     
-    // enqueue the request
-    public func updateStatusFor(for path: String, in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
-        // Create the Request
-        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
-        let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority, isDir: isDir)
-
-        // Enqueue the request, prioritized FIFO
-        let dateAdded = Date().timeIntervalSince1970 as Double
-        sharedResource.lock()
-        if isDir || priority == .low { /* directories are always low priority */
-            dateAddedToStatusRequestQueueLowPriority[dateAdded] = statusRequest
-        } else {
-            dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
-        }
-        sharedResource.unlock()
-    }
-    
-    init(queries: Queries, gitAnnexQueries: GitAnnexQueries) {
+    init(_ watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries) {
+        self.watchedFolder = watchedFolder
         self.queries = queries
         self.gitAnnexQueries = gitAnnexQueries
         
@@ -102,6 +82,23 @@ class HandleStatusRequests: StoppableService {
                 sleep(1)
             }
         }
+    }
+    
+    // enqueue the request
+    public func updateStatusFor(for path: String, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
+        // Create the Request
+        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
+        let statusRequest = StatusRequest(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority, isDir: isDir)
+        
+        // Enqueue the request, prioritized FIFO
+        let dateAdded = Date().timeIntervalSince1970 as Double
+        sharedResource.lock()
+        if isDir || priority == .low { /* directories are always low priority */
+            dateAddedToStatusRequestQueueLowPriority[dateAdded] = statusRequest
+        } else {
+            dateAddedToStatusRequestQueueHighPriority[dateAdded] = statusRequest
+        }
+        sharedResource.unlock()
     }
     
     public func handlingRequests() -> Bool {
@@ -207,13 +204,13 @@ class HandleStatusRequests: StoppableService {
                 // add entry for this directory
                 self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: r.watchedFolder, isDir: true, needsUpdate: true)
 
-                // enqueue requests to find status for all this dirs children
+                // enqueue requests to find status for all this dir's children
                 let allChildren = PathUtils.children(path: r.path, in: r.watchedFolder)
                 for child in allChildren.files {
-                    self.updateStatusFor(for: child, in: r.watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                    self.updateStatusFor(for: child, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
                 }
                 for child in allChildren.dirs {
-                    self.updateStatusFor(for: child, in: r.watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .low)
+                    self.updateStatusFor(for: child, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .low)
                 }
             } else {
                 /* File

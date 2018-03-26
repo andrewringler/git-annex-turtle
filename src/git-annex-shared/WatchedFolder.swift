@@ -8,6 +8,7 @@
 import Foundation
 
 class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
+    public var handleStatusRequests: HandleStatusRequests? = nil
     let uuid: UUID
     let pathString: String
     
@@ -24,7 +25,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
         return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString)>" }.joined(separator: ",")
     }
     static func ==(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
-        return lhs.uuid == rhs.uuid
+        return lhs.uuid == rhs.uuid && lhs.pathString == rhs.pathString
     }
     static func <(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
         return lhs.pathString < rhs.pathString

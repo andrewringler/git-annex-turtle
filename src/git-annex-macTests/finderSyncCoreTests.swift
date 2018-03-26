@@ -39,11 +39,10 @@ class finderSyncCoreTests: XCTestCase {
         //        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitCmd: "/Applications/git-annex.app/Contents/MacOS/git")
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
-        let handleStatusRequests = HandleStatusRequests(queries: queries!, gitAnnexQueries: gitAnnexQueries!)
         
         finderSyncCore = FinderSyncCore(finderSync: finderSyncTesting, data: data)
         
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, handleStatusRequests: handleStatusRequests, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage())
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage())
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)

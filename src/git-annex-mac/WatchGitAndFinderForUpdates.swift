@@ -16,19 +16,17 @@ class WatchGitAndFinderForUpdates: StoppableService {
     let gitAnnexQueries: GitAnnexQueries
     let visibleFolders: VisibleFolders
     let fullScan: FullScan
-    let handleStatusRequests: HandleStatusRequests
     let dialogs: Dialogs
     
     var watchedFolders = Set<WatchedFolder>()
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     
-    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, handleStatusRequests: HandleStatusRequests, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs) {
+    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs) {
         self.gitAnnexTurtle = gitAnnexTurtle
         self.config = config
         self.data = data
         self.fullScan = fullScan
-        self.handleStatusRequests = handleStatusRequests
         self.gitAnnexQueries = gitAnnexQueries
         self.dialogs = dialogs
         
@@ -112,7 +110,19 @@ class WatchGitAndFinderForUpdates: StoppableService {
         var newWatchedFolders = Set<WatchedFolder>()
         for watchedFolder in config.listWatchedRepos() {
             if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
-                newWatchedFolders.insert(WatchedFolder(uuid: uuid, pathString: watchedFolder))
+                if let existingWatchedFolder = (watchedFolders.filter {
+                    return $0.uuid == uuid && $0.pathString == watchedFolder }).first {
+                    // If we already have this WatchedFolder, re-use the object
+                    // so current queries are not interrupted
+                    newWatchedFolders.insert(existingWatchedFolder)
+                } else {
+                    // OK, we don't already have this watched folder
+                    // create a new object with a new handleStatusRequests
+                    let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder)
+                    let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries)
+                    newWatchedFolder.handleStatusRequests = handleStatusRequests
+                    newWatchedFolders.insert(newWatchedFolder)
+                }
             } else {
                 // TODO let the user know this?
                 TurtleLog.error("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder)
@@ -248,7 +258,7 @@ class WatchGitAndFinderForUpdates: StoppableService {
             // so infer them from the files within
             queries.addAllMissingParentFolders(for: path, in: watchedFolder)
             
-            handleStatusRequests.updateStatusFor(for: path, in: watchedFolder, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
+            watchedFolder.handleStatusRequests!.updateStatusFor(for: path, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
         }
         
         // OK, we have queued all changed paths for updates
@@ -324,7 +334,7 @@ class WatchGitAndFinderForUpdates: StoppableService {
                     } else {
                         // We have no information about this file
                         // enqueue it for inspection
-                        handleStatusRequests.updateStatusFor(for: path, in: watchedFolder, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                        watchedFolder.handleStatusRequests!.updateStatusFor(for: path, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
                     }
                 }
             }
@@ -337,8 +347,16 @@ class WatchGitAndFinderForUpdates: StoppableService {
         return watchedFolders
     }
     
+    func handlingStatusRequests() -> Bool {
+        for watchedFolder in watchedFolders {
+            if watchedFolder.handleStatusRequests!.handlingRequests() {
+                return true
+            }
+        }
+        return false
+    }
+    
     override public func stop() {
-        handleStatusRequests.stop()
         fileSystemMonitors.forEach { $0.stop() }
         fileSystemMonitors = []
         listenForWatchedFolderChanges = nil

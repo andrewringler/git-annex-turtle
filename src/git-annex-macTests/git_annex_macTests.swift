@@ -20,7 +20,14 @@ class git_annex_turtleTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+
+    func testWatchedFolder_equals_equal_sameobject() {
+        let uuidString = UUID().uuidString
+        let a = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
+        
+        XCTAssertEqual(a, a)
+    }
+
     func testWatchedFolder_equals_equal() {
         let uuidString = UUID().uuidString
         let a = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
@@ -29,12 +36,12 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertEqual(a, b)
     }
     
-    func testWatchedFolder_equals_path_ignored() {
+    func testWatchedFolder_not_equals_path_different() {
         let uuidString = UUID().uuidString
         let a = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "a")
         let b = WatchedFolder(uuid: UUID(uuidString: uuidString)!, pathString: "b")
         
-        XCTAssertEqual(a, b)
+        XCTAssertNotEqual(a, b)
     }
     
     func testWatchedFolder_equals_not_equal_uuid() {

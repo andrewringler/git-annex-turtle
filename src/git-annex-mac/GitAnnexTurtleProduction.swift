@@ -28,7 +28,6 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
     let fullScan: FullScan
-    let handleStatusRequests: HandleStatusRequests
     let dialogs = TurtleDialogs()
     
     var menuBarButton :NSStatusBarButton?
@@ -53,7 +52,6 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         data = DataEntrypoint()
         queries = Queries(data: data)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries, queries: queries)
-        handleStatusRequests = HandleStatusRequests(queries: queries, gitAnnexQueries: gitAnnexQueries)
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -65,7 +63,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         constructMenu(watchedFolders: []) // generate an empty menu stub
         
         // Start the main database and git-annex loop
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, handleStatusRequests: handleStatusRequests, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
         
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
@@ -197,7 +195,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     //
     //
     private func handleAnimateMenubarIcon() {
-        let handlingRequests = handleStatusRequests.handlingRequests()
+        let handlingRequests = watchGitAndFinderForUpdates?.handlingStatusRequests() ?? false
         if handlingRequests || fullScan.isScanning() {
             startAnimatingMenubarIcon()
         } else {
