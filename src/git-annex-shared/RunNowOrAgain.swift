@@ -17,12 +17,21 @@ class RunNowOrAgain: StoppableService {
     private var lock = NSLock()
     private var runningNow: Bool = false
     private var runAgain: Bool = false
+    
     private let task: (() -> Void)
+    private var queue: DispatchQueue?
     
     init(_ task: @escaping (() -> Void)) {
         self.task = task
+        super.init()
     }
-    
+
+    init(_ task: @escaping (() -> Void), queue: DispatchQueue) {
+        self.task = task
+        self.queue = queue
+        super.init()
+    }
+
     public func runTaskAgain() {
         if running.isRunning() {
             lock.lock()
@@ -34,8 +43,14 @@ class RunNowOrAgain: StoppableService {
                 // not currently running
                 // lets run it
                 runningNow = true
-                DispatchQueue.global(qos: .background).async {
-                    self.runIt()
+                if let customQueue = queue {
+                    customQueue.async {
+                        self.runIt()
+                    }
+                } else {
+                    DispatchQueue.global(qos: .background).async {
+                        self.runIt()
+                    }
                 }
             }
             lock.unlock()
@@ -68,12 +83,19 @@ class RunNowOrAgain1<T>: StoppableService {
     private var runningNow: Bool = false
     private var runAgain: Bool = false
     private let task: ((T) -> Void)
+    private var queue: DispatchQueue?
     
     init(_ task: @escaping ((T) -> Void)) {
         self.task = task
         super.init()
     }
-    
+
+    init(_ task: @escaping ((T) -> Void), queue: DispatchQueue) {
+        self.task = task
+        self.queue = queue
+        super.init()
+    }
+
     public func runTaskAgain(p1: T) {
         if running.isRunning() {
             lock.lock()
@@ -85,8 +107,14 @@ class RunNowOrAgain1<T>: StoppableService {
                 // not currently running
                 // lets run it
                 runningNow = true
-                DispatchQueue.global(qos: .background).async {
-                    self.runIt(p1: p1)
+                if let customQueue = queue {
+                    customQueue.async {
+                        self.runIt(p1: p1)
+                    }
+                } else {
+                    DispatchQueue.global(qos: .background).async {
+                        self.runIt(p1: p1)
+                    }
                 }
             }
             lock.unlock()

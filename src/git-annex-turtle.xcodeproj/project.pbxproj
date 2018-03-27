@@ -103,6 +103,17 @@
 		49AF863720693CB900945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
 		49AF863820693CBA00945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
 		49AF863920693CBA00945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
+		49AF863B20697DD700945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
+		49AF863D2069801A00945F57 /* QueueThreadSafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863C2069801A00945F57 /* QueueThreadSafe.swift */; };
+		49AF863F2069844200945F57 /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863E2069844200945F57 /* LinkedList.swift */; };
+		49AF86402069845700945F57 /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863E2069844200945F57 /* LinkedList.swift */; };
+		49AF86412069845900945F57 /* LinkedList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863E2069844200945F57 /* LinkedList.swift */; };
+		49AF86422069845F00945F57 /* QueueThreadSafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863C2069801A00945F57 /* QueueThreadSafe.swift */; };
+		49AF86432069845F00945F57 /* QueueThreadSafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863C2069801A00945F57 /* QueueThreadSafe.swift */; };
+		49AF8645206986EF00945F57 /* dispatchQueueFIFOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */; };
+		49AF86462069871B00945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
+		49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
+		49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86482069A0C400945F57 /* SetThreadsafe.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
 		49D000662040B215008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
 		49D000672040B252008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
@@ -275,6 +286,11 @@
 		499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "git-annex-turtle-cmd"; sourceTree = BUILT_PRODUCTS_DIR; };
 		499B44741DE54A250091E0E3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		49AF86322069371900945F57 /* HandleStatusRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleStatusRequests.swift; sourceTree = "<group>"; };
+		49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchQueueFIFO.swift; sourceTree = "<group>"; };
+		49AF863C2069801A00945F57 /* QueueThreadSafe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueThreadSafe.swift; sourceTree = "<group>"; };
+		49AF863E2069844200945F57 /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
+		49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dispatchQueueFIFOTests.swift; sourceTree = "<group>"; };
+		49AF86482069A0C400945F57 /* SetThreadsafe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetThreadsafe.swift; sourceTree = "<group>"; };
 		49B65D4B201787A400485852 /* BadgeIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIcons.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D000652040B215008DC76A /* FolderTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderTracking.swift; sourceTree = "<group>"; };
@@ -381,6 +397,10 @@
 				4936D9582064761900FB76C7 /* RunNowOrAgain.swift */,
 				4936D9622066FCC400FB76C7 /* Running.swift */,
 				49AF86322069371900945F57 /* HandleStatusRequests.swift */,
+				49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */,
+				49AF863C2069801A00945F57 /* QueueThreadSafe.swift */,
+				49AF863E2069844200945F57 /* LinkedList.swift */,
+				49AF86482069A0C400945F57 /* SetThreadsafe.swift */,
 			);
 			path = "git-annex-shared";
 			sourceTree = "<group>";
@@ -445,6 +465,7 @@
 				499AFFE8205B1251008BD34A /* queriesTests.swift */,
 				4981033D205EB0C7006084B2 /* finderSyncCoreTests.swift */,
 				4936D95C2064889C00FB76C7 /* runOnceTests.swift */,
+				49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -837,14 +858,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */,
+				49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */,
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
 				490982F0204EDA6100096C92 /* TurtleLog.swift in Sources */,
 				490982EA204E213400096C92 /* WatchedFolder.swift in Sources */,
 				4936D9632066FCC400FB76C7 /* Running.swift in Sources */,
 				49AF86332069371900945F57 /* HandleStatusRequests.swift in Sources */,
+				49AF863B20697DD700945F57 /* DispatchQueueFIFO.swift in Sources */,
+				49AF863D2069801A00945F57 /* QueueThreadSafe.swift in Sources */,
 				49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */,
 				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
 				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
+				49AF863F2069844200945F57 /* LinkedList.swift in Sources */,
 				49DDE1792059CC22008C55AC /* TurtleDialogs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -856,12 +881,14 @@
 				49EFD1F82006D08A005742DB /* ViewController.swift in Sources */,
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
+				49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
 				490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */,
 				49D149232049F64700CA10F2 /* StreamReader.swift in Sources */,
 				490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */,
 				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
 				4936D9652066FE3800FB76C7 /* Running.swift in Sources */,
+				49AF86402069845700945F57 /* LinkedList.swift in Sources */,
 				497D1FC820113F3300106566 /* FileEvent.swift in Sources */,
 				49D000662040B215008DC76A /* FolderTracking.swift in Sources */,
 				49DDE1852059E8D6008C55AC /* GitAnnexTurtleProduction.swift in Sources */,
@@ -883,6 +910,7 @@
 				49DDE17A2059CC67008C55AC /* TurtleDialogs.swift in Sources */,
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
+				49AF86422069845F00945F57 /* QueueThreadSafe.swift in Sources */,
 				49EF626F200E75D5002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 				49AF86342069372A00945F57 /* HandleStatusRequests.swift in Sources */,
 			);
@@ -910,10 +938,13 @@
 				4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */,
 				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,
 				49DDE18F2059F54B008C55AC /* Witness.swift in Sources */,
+				49AF86462069871B00945F57 /* DispatchQueueFIFO.swift in Sources */,
 				49DDE1892059F099008C55AC /* Dialogs.swift in Sources */,
 				49D149242049F6AF00CA10F2 /* StreamReader.swift in Sources */,
 				492492002040A14E00F8D8A0 /* WatchedFolder.swift in Sources */,
 				49DDE17C2059D71D008C55AC /* watchGitAndFinderForUpdatesTests.swift in Sources */,
+				49AF86412069845900945F57 /* LinkedList.swift in Sources */,
+				49AF86432069845F00945F57 /* QueueThreadSafe.swift in Sources */,
 				490BCB961DE5444D00734FF4 /* git_annex_macTests.swift in Sources */,
 				492492052040A17F00F8D8A0 /* Config.swift in Sources */,
 				490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */,
@@ -931,6 +962,7 @@
 				492491FB20406A8800F8D8A0 /* TestingUtil.swift in Sources */,
 				49AF86352069372B00945F57 /* HandleStatusRequests.swift in Sources */,
 				49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */,
+				49AF8645206986EF00945F57 /* dispatchQueueFIFOTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
