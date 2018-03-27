@@ -111,7 +111,7 @@ class FolderTracking {
     // a folder is ready to display badge icons
     // once all of its children have their data computed
     //
-    public static func handleFolderUpdatesFromFullScan(watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries, fullScan: FullScan) -> Bool {
+    public static func handleFolderUpdatesFromFullScan(watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries, stopProcessingWatchedFolder: StopProcessingWatchedFolder) -> Bool {
         let foldersNeedingUpdates = queries.foldersIncompleteOrInvalidBlocking(in: watchedFolder)
         
         /* handle longest paths first, to ensure all children are handled
@@ -120,7 +120,7 @@ class FolderTracking {
         let sortedByLongestPath = PathUtils.sortedDeepestDirFirst(foldersNeedingUpdates)
         TurtleLog.debug("Handling folder updates in order: \(sortedByLongestPath)")
         for folderNeedingUpdate in sortedByLongestPath {
-            if fullScan.shouldStop(watchedFolder) {
+            if stopProcessingWatchedFolder.shouldStop(watchedFolder) {
                 return false
             }
             

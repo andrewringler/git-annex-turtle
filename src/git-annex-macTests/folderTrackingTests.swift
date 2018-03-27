@@ -63,6 +63,20 @@ class folderTrackingTests: XCTestCase {
         }
     }
     
+    func testHandleFolderUpdatesFromFullScan_up_to_date() {
+        let file1 = "a name with spaces.log"
+        queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: file1, key: "some key", in: repo1!, isDir: false, needsUpdate: false)
+        FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!, stopProcessingWatchedFolder: StopProcessingWatchedFolderNeverStop())
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, Present.present)
+            XCTAssertEqual(status.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+    }
+    
     // TODO, write test for BUG: FolderTracking is incorrectly assuming that every file in the db
     // needs to be up-to-date, this is not the case, since deleted files could potentially be up-to-date
     // and should actually be deleted from the database (too)
@@ -71,4 +85,10 @@ class folderTrackingTests: XCTestCase {
         let managedObjectModel = NSManagedObjectModel.mergedModel(from: [Bundle(for: type(of: self))] )!
         return managedObjectModel
     }()
+}
+
+class StopProcessingWatchedFolderNeverStop: StopProcessingWatchedFolder {
+    func shouldStop(_ watchedFolder: WatchedFolder) -> Bool {
+        return false
+    }
 }

@@ -8,7 +8,7 @@
 
 import Foundation
 
-class FullScan: StoppableService {
+class FullScan: StoppableService, StopProcessingWatchedFolder {
     let gitAnnexQueries: GitAnnexQueries
     let queries: Queries
     
@@ -96,7 +96,7 @@ class FullScan: StoppableService {
                 }
                 
                 // update status of all folders in Db for this repo
-                if !FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: watchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, fullScan: self) {
+                if !FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: watchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, stopProcessingWatchedFolder: self) {
                     TurtleLog.debug("Stop requested. Stopped scanning early for \(watchedFolder)")
                     break
                 }

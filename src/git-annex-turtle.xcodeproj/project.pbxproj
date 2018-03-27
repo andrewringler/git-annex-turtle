@@ -115,6 +115,9 @@
 		49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
 		49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86482069A0C400945F57 /* SetThreadsafe.swift */; };
 		49AF864B206A6FE900945F57 /* folderTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864A206A6FE900945F57 /* folderTrackingTests.swift */; };
+		49AF864D206A77D800945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
+		49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
+		49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
 		49D000662040B215008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
 		49D000672040B252008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
@@ -293,6 +296,7 @@
 		49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dispatchQueueFIFOTests.swift; sourceTree = "<group>"; };
 		49AF86482069A0C400945F57 /* SetThreadsafe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetThreadsafe.swift; sourceTree = "<group>"; };
 		49AF864A206A6FE900945F57 /* folderTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = folderTrackingTests.swift; sourceTree = "<group>"; };
+		49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopProcessingWatchedFolder.swift; sourceTree = "<group>"; };
 		49B65D4B201787A400485852 /* BadgeIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIcons.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D000652040B215008DC76A /* FolderTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderTracking.swift; sourceTree = "<group>"; };
@@ -403,6 +407,7 @@
 				49AF863C2069801A00945F57 /* QueueThreadSafe.swift */,
 				49AF863E2069844200945F57 /* LinkedList.swift */,
 				49AF86482069A0C400945F57 /* SetThreadsafe.swift */,
+				49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */,
 			);
 			path = "git-annex-shared";
 			sourceTree = "<group>";
@@ -860,6 +865,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49AF864D206A77D800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */,
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
@@ -882,6 +888,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49EFD1F82006D08A005742DB /* ViewController.swift in Sources */,
+				49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */,
@@ -924,6 +931,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				490982F2204EDBB200096C92 /* TurtleLog.swift in Sources */,
+				49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */,
 				492492062040A18400F8D8A0 /* Constants.swift in Sources */,
 				49DDE17F2059DC09008C55AC /* HandleStatusRequestsProduction.swift in Sources */,
