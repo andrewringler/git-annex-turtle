@@ -114,6 +114,7 @@
 		49AF86462069871B00945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
 		49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */; };
 		49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86482069A0C400945F57 /* SetThreadsafe.swift */; };
+		49AF864B206A6FE900945F57 /* folderTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864A206A6FE900945F57 /* folderTrackingTests.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
 		49D000662040B215008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
 		49D000672040B252008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
@@ -291,6 +292,7 @@
 		49AF863E2069844200945F57 /* LinkedList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedList.swift; sourceTree = "<group>"; };
 		49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dispatchQueueFIFOTests.swift; sourceTree = "<group>"; };
 		49AF86482069A0C400945F57 /* SetThreadsafe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetThreadsafe.swift; sourceTree = "<group>"; };
+		49AF864A206A6FE900945F57 /* folderTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = folderTrackingTests.swift; sourceTree = "<group>"; };
 		49B65D4B201787A400485852 /* BadgeIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIcons.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D000652040B215008DC76A /* FolderTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderTracking.swift; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 				4981033D205EB0C7006084B2 /* finderSyncCoreTests.swift */,
 				4936D95C2064889C00FB76C7 /* runOnceTests.swift */,
 				49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */,
+				49AF864A206A6FE900945F57 /* folderTrackingTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -934,6 +937,7 @@
 				49810340205EB0D8006084B2 /* FinderSyncCore.swift in Sources */,
 				492492082040A1F500F8D8A0 /* PathStatus.swift in Sources */,
 				492492012040A15100F8D8A0 /* GitAnnexQueries.swift in Sources */,
+				49AF864B206A6FE900945F57 /* folderTrackingTests.swift in Sources */,
 				4936D95E206488B000FB76C7 /* RunNowOrAgain.swift in Sources */,
 				4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */,
 				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,

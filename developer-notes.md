@@ -3,6 +3,7 @@
  * PERFORMANCE: we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
+ * TODO, requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
  * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. 
  * crop or scroll large git error messages that appear in Dialogs
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
