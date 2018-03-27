@@ -32,10 +32,10 @@ class folderTrackingTests: XCTestCase {
         queries = Queries(data: data)
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
         
-        let uuid = UUID()
-        repo1 = WatchedFolder(uuid: uuid, pathString: "/tmp/notarealpathrepo1-but-absolute-looking")
+        repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
+        
         queries!.updateWatchedFoldersBlocking(to: [repo1!])
-        queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: PathUtils.CURRENT_DIR, key: nil, in: repo1!, isDir: true, needsUpdate: true)
+        queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: PathUtils.CURRENT_DIR, key: nil, in: repo1!, isDir: true, needsUpdate: true)
     }
     
     override func tearDown() {
@@ -51,8 +51,41 @@ class folderTrackingTests: XCTestCase {
     
     func testHandleFolderUpdates_up_to_date() {
         let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: file1, key: "some key", in: repo1!, isDir: false, needsUpdate: false)
-        FolderTracking.handleFolderUpdates(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!)
+        XCTAssertTrue(FolderTracking.handleFolderUpdates(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!))
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, Present.present)
+            XCTAssertEqual(status.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+    }
+    func testHandleFolderUpdates_not_up_to_date() {
+        let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: file1, key: nil, in: repo1!, isDir: false, needsUpdate: true)
+        XCTAssertTrue(FolderTracking.handleFolderUpdates(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!))
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, nil)
+            XCTAssertEqual(status.enoughCopies, nil)
+            XCTAssertEqual(status.numberOfCopies, nil)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+    }
+    func testHandleFolderUpdates_up_to_date_aDeletedFile_DoesNotNeedToBeUpToDate() {
+        let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: file1, key: "some key", in: repo1!, isDir: false, needsUpdate: false)
+        
+        let aDeletedFile = "not present deleted file.txt"
+        queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: aDeletedFile, key: nil, in: repo1!, isDir: false, needsUpdate: true)
+        
+        XCTAssertTrue(FolderTracking.handleFolderUpdates(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!))
         
         if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -65,8 +98,9 @@ class folderTrackingTests: XCTestCase {
     
     func testHandleFolderUpdatesFromFullScan_up_to_date() {
         let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: file1, key: "some key", in: repo1!, isDir: false, needsUpdate: false)
-        FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!, stopProcessingWatchedFolder: StopProcessingWatchedFolderNeverStop())
+        XCTAssertTrue(FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!, stopProcessingWatchedFolder: StopProcessingWatchedFolderNeverStop()))
         
         if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -77,10 +111,52 @@ class folderTrackingTests: XCTestCase {
         }
     }
     
-    // TODO, write test for BUG: FolderTracking is incorrectly assuming that every file in the db
-    // needs to be up-to-date, this is not the case, since deleted files could potentially be up-to-date
-    // and should actually be deleted from the database (too)
-    
+    /* here we are simulating the case in which a file was deleted during a full scan
+     * but after the full scan had enumerated it, in this case the fullscan method will return incomplete
+     * but the more rigorous scan during our incremental scan will pick up the change */
+    func testHandleFolderUpdatesFromFullScan_up_to_date_aDeletedFile_MeansUpdateLater() {
+        let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        queries!.updateStatusForPathV2Blocking(presentStatus: Present.present, enoughCopies: EnoughCopies.enough, numberOfCopies: 1, isGitAnnexTracked: true, for: file1, key: "some key", in: repo1!, isDir: false, needsUpdate: false)
+        
+        let aDeletedFile = "not present deleted file.txt"
+        queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: aDeletedFile, key: nil, in: repo1!, isDir: false, needsUpdate: true)
+        
+        XCTAssertTrue(FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!, stopProcessingWatchedFolder: StopProcessingWatchedFolderNeverStop()))
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, nil)
+            XCTAssertEqual(status.enoughCopies, nil)
+            XCTAssertEqual(status.numberOfCopies, nil)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+        
+        XCTAssertTrue(FolderTracking.handleFolderUpdates(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!))
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, Present.present)
+            XCTAssertEqual(status.enoughCopies, EnoughCopies.enough)
+            XCTAssertEqual(status.numberOfCopies, 1)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+    }
+    func testHandleFolderUpdatesFromFullScan_not_up_to_date() {
+        let file1 = "a name with spaces.log"
+        TestingUtil.gitAnnexCreateAndAdd(content: "file1 content", to: file1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+        queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: file1, key: nil, in: repo1!, isDir: false, needsUpdate: true)
+        XCTAssertTrue(FolderTracking.handleFolderUpdatesFromFullScan(watchedFolder: repo1!, queries: queries!, gitAnnexQueries: gitAnnexQueries!, stopProcessingWatchedFolder: StopProcessingWatchedFolderNeverStop()))
+        
+        if let status = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo1!) {
+            XCTAssertEqual(status.presentStatus, nil)
+            XCTAssertEqual(status.enoughCopies, nil)
+            XCTAssertEqual(status.numberOfCopies, nil)
+        } else {
+            XCTFail("could not retrieve status for root")
+        }
+    }
+        
     lazy var managedObjectModel: NSManagedObjectModel = {
         let managedObjectModel = NSManagedObjectModel.mergedModel(from: [Bundle(for: type(of: self))] )!
         return managedObjectModel

@@ -50,7 +50,14 @@ class FolderTracking {
             
             var complete = true
             var allEmptyFolders = true
-            for status in statuses {
+            
+            // if files or folders have been deleted we will have statuses for them in the database
+            // ignore them
+            let statusesActualWorkingTree = statuses.filter { children.contains($0.path) }
+            
+            // TODO delete statuses that are no longer in working tree?
+            
+            for status in statusesActualWorkingTree {
                 if status.isEmptyFolder() {
                     // ignore empty folders, they do not contribute to any counts
                     continue
@@ -184,7 +191,6 @@ class FolderTracking {
                 }
             } else {
                 TurtleLog.info("Unable to complete folder information for \(folderNeedingUpdate) in \(watchedFolder)")
-                return false
             }
         }
         
