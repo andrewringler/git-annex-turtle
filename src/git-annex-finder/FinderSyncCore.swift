@@ -51,7 +51,7 @@ class FinderSyncCore: StoppableService {
     }
     
     func requestBadgeIdentifier(for url: URL) {
-        TurtleLog.debug("requestBadgeIdentifier for \(url) \(finderSync.id())")
+        TurtleLog.debug("requestBadgeIdentifier for \(url) isDir=\(url.hasDirectoryPath) \(finderSync.id())")
         
         if let absolutePath = PathUtils.path(for: url) {
             if let watchedFolder = self.watchedFolderParent(for: absolutePath) {

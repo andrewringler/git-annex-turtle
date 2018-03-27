@@ -26,7 +26,7 @@ class FolderTracking {
          */
         let sortedByLongestPath = PathUtils.sortedDeepestDirFirst(foldersNeedingUpdates)
         for folderNeedingUpdate in sortedByLongestPath {
-            TurtleLog.debug("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
+            TurtleLog.debug("Checking if folder is now up to date from incremental scan \(folderNeedingUpdate) in \(watchedFolder)")
             var enoughCopiesAllChildren: EnoughCopies?
             var leastCopies: UInt8?
             var presentAll: Present?
@@ -124,7 +124,7 @@ class FolderTracking {
                 return false
             }
             
-            TurtleLog.debug("Checking if folder is now up to date \(folderNeedingUpdate) in \(watchedFolder)")
+            TurtleLog.debug("Checking if folder is now up to date from fullscan \(folderNeedingUpdate) in \(watchedFolder)")
             var enoughCopiesAllChildren: EnoughCopies?
             var leastCopies: UInt8?
             var presentAll: Present?

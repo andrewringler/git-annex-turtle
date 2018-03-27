@@ -9,21 +9,21 @@ import Foundation
 
 fileprivate class StatusRequest: CustomStringConvertible {
     let path: String
-    let priority: Priority
+    let source: PathSource
     let isDir: Bool
 
-    init(for path: String, priority: Priority, isDir: Bool) {
+    init(for path: String, source: PathSource, isDir: Bool) {
         self.path = path
-        self.priority = priority
+        self.source = source
         self.isDir = isDir
     }
     
-    public var description: String { return "StatusRequest: '\(path)' priority=\(priority) isDir=\(isDir)" }
+    public var description: String { return "StatusRequest: '\(path)' source=\(source) isDir=\(isDir)" }
 }
 
 class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
-    let lowPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 10)
-    let highPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 5)
+    let lowPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 5)
+    let highPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 15)
 
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
@@ -37,14 +37,18 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
    }
     
     // enqueue the request
-    public func updateStatusFor(for path: String, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
-        let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
-        let statusRequest = StatusRequest(for: path, priority: priority, isDir: isDir)
-        
-        if isDir || priority == .low { /* directories are always low priority */
-            lowPriorityQueue.submitTask { self.handleRequest(statusRequest) }
-        } else {
-            highPriorityQueue.submitTask { self.handleRequest(statusRequest) }
+    public func updateStatusFor(for path: String, source: PathSource, isDir: Bool? = nil, priority: Priority = .low) {
+        if let isDirectory = isDir != nil ? isDir : GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder) {
+            let statusRequest = StatusRequest(for: path, source: source, isDir: isDirectory)
+            
+            if priority == .low || isDirectory || source == .badgerequest {
+                /* directories can be slow to complete so are low priority
+                 * badge requests are likely just duplicates of requests we will get from gitlog, so are low priority
+                 */
+                lowPriorityQueue.submitTask { self.handleRequest(statusRequest) }
+            } else {
+                highPriorityQueue.submitTask { self.handleRequest(statusRequest) }
+            }
         }
     }
     
@@ -67,10 +71,10 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
             // enqueue requests to find status for all this dir's children
             let allChildren = PathUtils.children(path: r.path, in: watchedFolder)
             for child in allChildren.files {
-                self.updateStatusFor(for: child, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                self.updateStatusFor(for: child, source: r.source)
             }
             for child in allChildren.dirs {
-                self.updateStatusFor(for: child, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .low)
+                self.updateStatusFor(for: child, source: r.source)
             }
         } else {
             /* File

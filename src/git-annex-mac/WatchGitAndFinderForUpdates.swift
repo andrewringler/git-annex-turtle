@@ -258,7 +258,7 @@ class WatchGitAndFinderForUpdates: StoppableService {
             // so infer them from the files within
             queries.addAllMissingParentFolders(for: path, in: watchedFolder)
             
-            watchedFolder.handleStatusRequests!.updateStatusFor(for: path, secondsOld: secondsOld, includeFiles: includeFiles, includeDirs: includeDirs, priority: priority)
+            watchedFolder.handleStatusRequests!.updateStatusFor(for: path, source: .gitlog, isDir: nil, priority: priority)
         }
         
         // OK, we have queued all changed paths for updates
@@ -334,7 +334,7 @@ class WatchGitAndFinderForUpdates: StoppableService {
                     } else {
                         // We have no information about this file
                         // enqueue it for inspection
-                        watchedFolder.handleStatusRequests!.updateStatusFor(for: path, secondsOld: 0, includeFiles: true, includeDirs: true, priority: .high)
+                        watchedFolder.handleStatusRequests!.updateStatusFor(for: path, source: .badgerequest, isDir: nil, priority: .low)
                     }
                 }
             }

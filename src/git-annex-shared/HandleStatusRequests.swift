@@ -8,19 +8,23 @@
 
 import Foundation
 
+enum PathSource {
+    case gitlog
+    case badgerequest
+}
 enum Priority {
-    case high
     case low
+    case high
 }
 
 protocol HandleStatusRequests {
-    func updateStatusFor(for path: String, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority)
+    func updateStatusFor(for path: String, source: PathSource, isDir: Bool?, priority: Priority)
     
     func handlingRequests() -> Bool
 }
 
 class HandleStatusRequestsStub: HandleStatusRequests {
-    func updateStatusFor(for path: String, secondsOld: Double, includeFiles: Bool, includeDirs: Bool, priority: Priority) {
+    func updateStatusFor(for path: String, source: PathSource, isDir: Bool?, priority: Priority) {
         // nothing
     }
     
