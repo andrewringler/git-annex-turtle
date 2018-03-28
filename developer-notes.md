@@ -1,40 +1,50 @@
-## TODO (move into github issues)
- * PERFORMANCE: childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
- * PERFORMANCE: we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa
- * BUG: some process is adding just filenames (not complete relative paths) to the database
- * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
- * TODO, requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
- * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
- * crop or scroll large git error messages that appear in Dialogs
- * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
- * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
- * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle
- * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
- * nice, renice git during full scan (or always?)
- * BUG: quiting from menubar icon should quit running git processes too
- * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
- * how can we get more control over how and when Finder Sync is actually launched?, do we actually need to restart Finder when installing extension, this kills and reloads all finder windows…
- * get tests running on https://travis-ci.org/
- * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
- * Menubar window should show list of remote transfers 
- * let user view/set git and git-annex binary paths from GUI
- * let user view/set per repo git-annex-turtle settings from GUI
+## Bugs, definitely fix
  * Test with v6 repos
  * Test with git annex watch
- * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
+ * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
+ * quiting from menubar icon should quit running git processes too, verify fixed?
+ * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle, verify fixed?
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
- * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
- * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
- * don't display git-annex lock context menu in v5 repos, it always fails without force?
- * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right?
- * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
+
+## Not greats, should fix & UX issues
+ * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
+ * crop or scroll large git error messages that appear in Dialogs
+ * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
+ * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
+ * how can we get more control over how and when Finder Sync is actually launched?, do we actually need to restart Finder when installing extension, this kills and reloads all finder windows…
+ * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
+
+## New Features, yes
+ * let user view/set git and git-annex binary paths from GUI
+ * let user view/set per repo git-annex-turtle settings from GUI
+ * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
+
+## New Features, maybe
+ * Change main icon to blocky turtle, animated menubar icon to swimming turtle
+ * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
+ * Menubar window should show list of remote transfers 
+ * get tests running on https://travis-ci.org/
+ * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
+ * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
+ * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right? don't display git-annex lock context menu in v5 repos, it always fails without force?
+ * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
+ * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
+
+## Chores
+ * get tests running on https://travis-ci.org/
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
- * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
- * Change main icon to blocky turtle, animated menubar icon to swimming turtle
+ * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
+
+## Performance, probably
+ * nice, renice git during full scan (or always?)
+ * childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
+ * we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa. We probably need to have FinderSync processes directly communicate with the App if we want to implement progress bars.
+ * requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
+ * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
 
 ## New Users (Thoughts) UX
 Should git-annex-turtle be usable by people who have never used git-annex?
