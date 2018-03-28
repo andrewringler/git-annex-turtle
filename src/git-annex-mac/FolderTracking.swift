@@ -43,6 +43,7 @@ class FolderTracking {
                 TurtleLog.debug("Children of folder has changed \(folderNeedingUpdate) in \(watchedFolder) missing \(childrenWithoutEntries)")
                 for child in childrenWithoutEntries {
                     TurtleLog.debug("Adding missing entry for \(child) in \(folderNeedingUpdate) in \(watchedFolder)")
+                    // TODO add these to HandleStatusRequests directly?
                     queries.addRequestV2Async(for: child, in: watchedFolder)
                 }
                 break // check this folder again later
@@ -125,13 +126,13 @@ class FolderTracking {
          * before their parent
          */
         let sortedByLongestPath = PathUtils.sortedDeepestDirFirst(foldersNeedingUpdates)
-        TurtleLog.debug("Handling folder updates in order: \(sortedByLongestPath)")
+        TurtleLog.trace("Handling folder updates in order: \(sortedByLongestPath)")
         for folderNeedingUpdate in sortedByLongestPath {
             if stopProcessingWatchedFolder.shouldStop(watchedFolder) {
                 return false
             }
             
-            TurtleLog.debug("Checking if folder is now up to date from fullscan \(folderNeedingUpdate) in \(watchedFolder)")
+            TurtleLog.trace("Checking if folder is now up to date from fullscan \(folderNeedingUpdate) in \(watchedFolder)")
             var enoughCopiesAllChildren: EnoughCopies?
             var leastCopies: UInt8?
             var presentAll: Present?
@@ -190,7 +191,7 @@ class FolderTracking {
                     queries.invalidateDirectory(path: parent, in: watchedFolder)
                 }
             } else {
-                TurtleLog.info("Unable to complete folder information for \(folderNeedingUpdate) in \(watchedFolder)")
+                TurtleLog.trace("Unable to complete folder information for \(folderNeedingUpdate) in \(watchedFolder)")
             }
         }
         

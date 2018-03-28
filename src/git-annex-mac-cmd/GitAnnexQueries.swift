@@ -81,7 +81,7 @@ class GitAnnexQueries {
             let startTime = Date()
             task.launch()
             task.waitUntilExit()
-            TurtleLog.debug("Task ran in \(Date().timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args)")
+            let endTime = Date()
             
             let outputFileHandle = outpipe.fileHandleForReading
             let outdata = outputFileHandle.readDataToEndOfFile()
@@ -110,6 +110,8 @@ class GitAnnexQueries {
             let status = task.terminationStatus
             
             ret = (output, error, status)
+            
+            TurtleLog.debug("Task ran in \(endTime.timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args) result=\(ret)")
         }
         
         return ret
@@ -284,7 +286,7 @@ class GitAnnexQueries {
     }
     
     func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
-        TurtleLog.debug("git-annex info \(path)")
+        TurtleLog.debug("git-annex info \(path) in \(watchedFolder)")
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
         if isDir {
             // Directory

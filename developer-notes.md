@@ -4,7 +4,7 @@
  * BUG: some process is adding just filenames (not complete relative paths) to the database
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * TODO, requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
- * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. 
+ * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
  * crop or scroll large git error messages that appear in Dialogs
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
@@ -33,6 +33,8 @@
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
+ * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
+ * Change main icon to blocky turtle, animated menubar icon to swimming turtle
 
 ## New Users (Thoughts) UX
 Should git-annex-turtle be usable by people who have never used git-annex?
@@ -46,6 +48,10 @@ Create a new local directory for them, lets say at `~/annex` by default with the
    git annex adjust --unlock
    
 Clone this repo to a USB hard drive, say `/Volumes/USB-4TB/annex`. Then they can move files back and forth, drop files etc…
+
+It would be nice if there was some affordable, scalable cloud options for new users…
+
+Combining annex.thin with say a bup repo stored in the .git directory, might provide some safety while limiting disk usage?
  
 ## Internal: Tutorials, References, XCode & Swift Help
  * https://www.raywenderlich.com/98178/os-x-tutorial-menus-popovers-menu-bar-apps menubar tutorial

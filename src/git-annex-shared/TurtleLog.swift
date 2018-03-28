@@ -9,15 +9,17 @@
 import Foundation
 
 class TurtleLog {
-    private static var LOG_LEVEL = TurtleLogLogLevel.debug
+    /* Set the LOG_LEVEL to see all logs equal to and less-then this level */
+    private static var LOG_LEVEL = TurtleLogLogLevel.info
     private static let pound = "\u{0023}"
     
     enum TurtleLogLogLevel: Int {
-        case debug = 5
-        case info = 4
-        case todo = 3
-        case error = 2
-        case fatal = 1
+        case trace = 6  // very-verbose debugging, including internal loops
+        case debug = 5  // verbose debugging, should only be generated from user initiated actions
+        case info = 4   // **** Production default ****
+        case todo = 3   // internal TODOs / known bugs
+        case error = 2  // things that shouldn't happen
+        case fatal = 1  // things that should be detected immediately by a developer after a configuration change
         case none = 0
         
         public func allow() -> Bool {
@@ -29,6 +31,12 @@ class TurtleLog {
         LOG_LEVEL = loggingLevel
     }
     
+    public static func trace(_ format: String, _ args: CVarArg..., function: String = #function, filePath: String = #file, line: Int = #line) {
+        if TurtleLogLogLevel.trace.allow() {
+            let file =  (filePath as NSString).lastPathComponent
+            NSLog("[trace] \(format) @\(file)->\(function) line \(pound)\(line)", args)
+        }
+    }
     public static func debug(_ format: String, _ args: CVarArg..., function: String = #function, filePath: String = #file, line: Int = #line) {
         if TurtleLogLogLevel.debug.allow() {
             let file =  (filePath as NSString).lastPathComponent

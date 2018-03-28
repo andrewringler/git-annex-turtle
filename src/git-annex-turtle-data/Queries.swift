@@ -113,12 +113,47 @@ class Queries: StoppableService {
         changeLastModifedUpdatesSync(lastModified: modificationDate)
     }
     
+    func removeStatusForPathBlocking(for path: String, in watchedFolder: WatchedFolder) {
+        let moc = data.persistentContainer.viewContext
+        moc.stalenessInterval = 0
+        moc.mergePolicy = NSOverwriteMergePolicy
+        
+        let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        privateMOC.parent = moc
+        privateMOC.performAndWait {
+            do {
+                let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: PathStatusEntityName)
+                fetchRequest.predicate = NSPredicate(format: "\(PathStatusAttributes.pathString.rawValue) == %@ && \(PathStatusAttributes.watchedFolderUUIDString.rawValue) == %@", path, watchedFolder.uuid.uuidString)
+
+                let results = try privateMOC.fetch(fetchRequest)
+                for result in results {
+                    privateMOC.delete(result)
+                }
+                try privateMOC.save()
+                moc.performAndWait {
+                    do {
+                        try moc.save()
+                        self.updateLastModifiedAsync.runTaskAgain()
+                    } catch {
+                        TurtleLog.fatal("could not save main context, deleting path: \(path) in watchedFolder: \(watchedFolder) \(error)")
+                        fatalError("could not save main context, deleting path: \(path) in watchedFolder: \(watchedFolder) \(error)")
+                    }
+                }
+            } catch {
+                TurtleLog.fatal("could not save private context, deleting path: \(path) in watchedFolder: \(watchedFolder) \(error)")
+                fatalError("could not save private context, deleting path: \(path) in watchedFolder: \(watchedFolder) \(error)")
+            }
+        }
+    }
+    
     // NOTE all CoreData operations must happen on the main thread
     // or in a private context, then merged back into the main context (from any thread)
     // https://stackoverflow.com/questions/33562842/swift-coredata-error-serious-application-error-exception-was-caught-during-co/33566199
     // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/CoreData/Concurrency.html
     func updateStatusForPathV2Blocking(presentStatus: Present?, enoughCopies: EnoughCopies?, numberOfCopies: UInt8?, isGitAnnexTracked: Bool, for path: String, key: String?, in watchedFolder:
         WatchedFolder, isDir: Bool, needsUpdate: Bool) {
+        TurtleLog.debug("updating status for \(path) in \(watchedFolder) to \(presentStatus), enoughCopies: \(enoughCopies), numberOfCopies: \(numberOfCopies), isGitAnnexTracked: \(isGitAnnexTracked), key: \(key), isDir: \(isDir), needsUpdate: \(needsUpdate) ")
+
         let modificationDate = Date().timeIntervalSince1970 as Double + TIME_OFFSET
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
@@ -810,8 +845,10 @@ class Queries: StoppableService {
     }
     
     func invalidateDirectory(path: String, in watchedFolder: WatchedFolder) {
+        TurtleLog.debug("invalidating \(path) in \(watchedFolder)")
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
+        moc.mergePolicy = NSOverwriteMergePolicy
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {

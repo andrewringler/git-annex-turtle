@@ -23,7 +23,7 @@ fileprivate class StatusRequest: CustomStringConvertible {
 
 class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
     let lowPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 5)
-    let highPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 15)
+    let highPriorityQueue = DispatchQueueFIFO(maxConcurrentThreads: 20)
 
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
@@ -57,24 +57,28 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
     }
     
     private func handleRequest(_ r: StatusRequest) {
-        TurtleLog.debug("handling \(r)")
+        TurtleLog.trace("handling \(r) in \(watchedFolder)")
+        
+        if PathUtils.isCurrent(r.path) == false,
+            PathUtils.pathExists(for: r.path, in: watchedFolder) == false {
+            /* Path (file or directory) no longer exists in the working tree
+             * just delete the entry from the database, so that it won't appear in future db queries */
+            TurtleLog.debug("removing path=\(r.path) that is no longer in the work tree in \(watchedFolder)")
+            self.queries.removeStatusForPathBlocking(for: r.path, in: watchedFolder)
+            return
+        }
         
         /* Folder
-         * we have a folder that has no entry in the database
-         * that means we need to enumerate all of his children
-         * and enqueue them for completion
+         * we have a folder
          */
         if r.isDir {
-            // add entry for this directory
-            self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: watchedFolder, isDir: true, needsUpdate: true)
-
-            // enqueue requests to find status for all this dir's children
-            let allChildren = PathUtils.children(path: r.path, in: watchedFolder)
-            for child in allChildren.files {
-                self.updateStatusFor(for: child, source: r.source)
-            }
-            for child in allChildren.dirs {
-                self.updateStatusFor(for: child, source: r.source)
+            if let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: watchedFolder), oldStatus.needsUpdate == false {
+                // our folder already has a status, just mark it as invalid
+                // so that our FolderTracking processing will re check all of its children
+                self.queries.invalidateDirectory(path: r.path, in: watchedFolder)
+            } else {
+                // no entry in db for this directory, add one
+                self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: watchedFolder, isDir: true, needsUpdate: true)
             }
         } else {
             /* File
@@ -82,7 +86,7 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
              */
             let statusTuple = self.gitAnnexQueries.gitAnnexPathInfo(for: r.path, in: watchedFolder.pathString, in: watchedFolder, includeFiles: true, includeDirs: true)
             if statusTuple.error {
-                TurtleLog.error("HandleStatusRequests: error trying to get git annex info for path='\(r.path)'")
+                TurtleLog.error("HandleStatusRequests: error trying to get git annex info for path='\(r.path)' in \(watchedFolder)")
             } else if let status = statusTuple.pathStatus {
                 let oldStatus = self.queries.statusForPathV2Blocking(path: r.path, in: watchedFolder)
                 

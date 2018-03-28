@@ -161,6 +161,7 @@ class FinderSyncCore: StoppableService {
             for status in statuses {
                 if let cachedStatus = statusCache.get(for: status.path, in: watchedFolder), cachedStatus == status {
                     // OK, this value is identical to the one in our cache, ignore
+                    TurtleLog.trace("ignoring identical value old=\(cachedStatus) new \(status) \(finderSync.id())")
                 } else {
                     // updated value
                     TurtleLog.debug("updating to \(status) \(finderSync.id())")

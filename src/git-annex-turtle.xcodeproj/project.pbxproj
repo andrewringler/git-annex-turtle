@@ -151,6 +151,8 @@
 		49DDE191205AA584008C55AC /* allChangedGitFiles.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */; };
 		49DDE192205AA7CA008C55AC /* allChangedGitFiles.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */; };
 		49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */; };
+		49ED1FFB206A88FA0092AC6D /* pathUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */; };
+		49ED1FFD206BE6890092AC6D /* pathStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */; };
 		49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626C200E70B3002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49EF626D200E70B5002D1585 /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
@@ -311,6 +313,8 @@
 		49DDE190205AA3B1008C55AC /* allChangedGitFiles.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = allChangedGitFiles.sh; sourceTree = "<group>"; };
 		49E13FBE2013AD4B00EE3DBE /* VisibleFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolder.swift; sourceTree = "<group>"; };
 		49E13FC02013B17B00EE3DBE /* VisibleFolders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleFolders.swift; sourceTree = "<group>"; };
+		49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pathUtilsTests.swift; sourceTree = "<group>"; };
+		49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pathStatusTests.swift; sourceTree = "<group>"; };
 		49EFD1CC2006CEF7005742DB /* git-annex-preferences.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "git-annex-preferences.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49EFD1D02006CEF7005742DB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		49EFD1D22006CEF7005742DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -474,6 +478,8 @@
 				4936D95C2064889C00FB76C7 /* runOnceTests.swift */,
 				49AF8644206986EF00945F57 /* dispatchQueueFIFOTests.swift */,
 				49AF864A206A6FE900945F57 /* folderTrackingTests.swift */,
+				49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */,
+				49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -940,6 +946,7 @@
 				492492042040A16A00F8D8A0 /* DataEntrypoint.swift in Sources */,
 				492492022040A15600F8D8A0 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 				49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */,
+				49ED1FFB206A88FA0092AC6D /* pathUtilsTests.swift in Sources */,
 				492492072040A1A900F8D8A0 /* FullScan.swift in Sources */,
 				49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */,
 				49810340205EB0D8006084B2 /* FinderSyncCore.swift in Sources */,
@@ -967,6 +974,7 @@
 				49DDE17D2059D877008C55AC /* WatchGitAndFinderForUpdates.swift in Sources */,
 				49DDE18D2059F546008C55AC /* EventStream.swift in Sources */,
 				492492092040A21400F8D8A0 /* TurtleConfigV1.swift in Sources */,
+				49ED1FFD206BE6890092AC6D /* pathStatusTests.swift in Sources */,
 				49810341205EB0E3006084B2 /* StatusCache.swift in Sources */,
 				4924920C2040A24500F8D8A0 /* ShellScripts.swift in Sources */,
 				49D000672040B252008DC76A /* FolderTracking.swift in Sources */,

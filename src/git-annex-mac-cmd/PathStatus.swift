@@ -39,7 +39,7 @@ class PathStatus: Equatable, Hashable, CustomStringConvertible {
         return lhs.isGitAnnexTracked == rhs.isGitAnnexTracked
             && lhs.presentStatus == rhs.presentStatus
         && lhs.enoughCopies == rhs.enoughCopies
-        && lhs.numberOfCopies == lhs.numberOfCopies
+        && lhs.numberOfCopies == rhs.numberOfCopies
         && lhs.path == rhs.path
         && lhs.watchedFolder == rhs.watchedFolder
         && lhs.parentPath == rhs.parentPath

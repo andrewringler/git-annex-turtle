@@ -253,6 +253,16 @@ class PathUtils {
         let absolutePath = self.absolutePath(for: relativePath, in: watchedFolder)
         return PathUtils.directoryExistsAt(absolutePath: absolutePath)
     }
+    class func pathExists(for relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+        let absolutePath = self.absolutePath(for: relativePath, in: watchedFolder)
+        do {
+            try FileManager.default.attributesOfItem(atPath: absolutePath)
+            return true
+        } catch {
+            // if we can't get attributesOfItem it means there is no file pointer of any kind there
+            return false
+        }
+    }
 }
 
 enum CommandType: String {

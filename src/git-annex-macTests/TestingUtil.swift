@@ -75,6 +75,18 @@ class TestingUtil {
         }
     }
     
+    class func createSymlink(from fromRelativePath: String, to toRelativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+        do {
+            let fromAbsolutePath = PathUtils.absolutePath(for: fromRelativePath, in: watchedFolder)
+            let toAbsolutePath = PathUtils.absolutePath(for: toRelativePath, in: watchedFolder)
+            try FileManager.default.createSymbolicLink(atPath: fromAbsolutePath, withDestinationPath: toAbsolutePath)
+            return true
+        } catch {
+            TurtleLog.error("Unable to create symlink from=\(fromRelativePath) to=\(toRelativePath) in \(watchedFolder)")
+            return false
+        }
+    }
+    
     class func gitAnnexAdd(file: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) {
         let gitAddResult = gitAnnexQueries.gitAnnexCommand(for: file, in: watchedFolder.pathString, cmd: CommandString.add)
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
