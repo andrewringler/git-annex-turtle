@@ -1,7 +1,7 @@
 ## General Design
 The main application, `git-annex-turtle`, is responsible for launching/re-launching the Finder Sync Extension (`git-annex-turtle-finder`), displaying a Menubar Icon, and periodically monitoring the state of watched folders.
 
-When `git-annex-turtle-finder` is launched it checks the database table `WatchedFolderEntity` for the list of folders to watch. It then registers these so macOS will notify when any of these folders (or their children) become visible/invisible in a Finder window.
+When `git-annex-turtle-finder` is launched it checks the database table `WatchedFolderEntity` for the list of folders to watch. It then registers these so macOS will notify us when any of these folders (or their children) become visible/invisible in a Finder window.
 
 When `git-annex-turtle-finder` receives a `requestBadgeIdentifier` it means a new file path (file or folder) is visible in a Finder window that it is observing. So, it first checks if there is an entry in `PathStatus`, if so, it uses it; If not, it adds a new database entry to `PathRequestEntity`. `git-annex-turtle-finder` periodically checks the `PathStatus` table for updates, IE as status of files change in git-annex, present / not-present / number of copies, this is reflected in `PathStatus` and `git-annex-turtle-finder` sees these updates.
 
@@ -26,8 +26,12 @@ One way to do that is to use the `find` command with git-annex matching options.
 For directories this will recursively check for each file. For large directories this can be quite slow. For git-annex-turtle we could mark a directory as “lacking copies” if any file contained within is lacking copies. With the find command, git-annex, incrementally returns results as it finds them. Since we only care if there is at least one result, we could save time stopping the search as soon as we find one result. 
 
 Alternatively, (to querying lackingcopies) we could count the copies for a given file then compare that to the numcopies setting. Since numcopies can be set on a per file basis, we would also have to manually parse the .gitattributes file. This doesn't seem too future proof, since more complicated expressions for calculating desired numcopies on a per file basis could be added at any time (by Joey).
-
-### caching
-For files, all of the questions we want to ask of git-annex are quite speedy. For directories they can get quite slow. We could cache these results, then update the cache as the counts change. We can detect changes in the counts by added a git hook at `git/hooks/post-update-annex`. We would then parse the latest commit `git show git-annex`, and update counts for all files mentioned.
  
 Also see https://git-annex.branchable.com/forum/_Does_git_annex_find___40____38___friends__41___batch_queries_to_the_location_log__63__/ for some related thoughts on pulling git-annex information directly from the branch
+
+## Caching
+Since git-annex-turtle wants to give a lot of information on a per-file AND per-folder basis I decided to cache all information. If at some future time Joey adds folder-level caches to git-annex, then we could remove this.
+
+We perform our caching in two ways. When a new repository is first added to be monitored we perform a `full scan` of all of its files. Then we register a file watch on the .git directory and perform incremental updates anytime a commit is made to the master or git-annex branch. The master branch indicates changes in the working directory, the git-annex branch indicates changes in content and tracking.
+
+Instead of monitoring the .git directory for filesystem changes we could probably add a git hook and git annex hook at `git/hooks/post-update-annex`. But, monitoring the repo for filesystem changes could prove useful in the future when I add information for untracked files.
