@@ -10,14 +10,14 @@
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
- 
+ * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
+
 ## Not greats, should fix & UX issues
  * PDF icons are super large, compress when exporting from Illustrator?
  * even though all of the icons are scalable PDFs XCode is not scaling them, even with “preserve vector data” checked. Maybe this checkbox still does not work in all cases.
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * crop or scroll large git error messages that appear in Dialogs
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
- * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode
  * how can we get more control over how and when Finder Sync is actually launched?, do we actually need to restart Finder when installing extension, this kills and reloads all finder windows…
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
 
@@ -25,6 +25,8 @@
  * let user view/set git and git-annex binary paths from GUI
  * let user view/set per repo git-annex-turtle settings from GUI
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
+ * enable verbose logging in UI, link to open logs folder from UI
+ * log to our own logs folder in ~/Library/Logs/git-annex-turtle/git-annex-turtle.log, ~/Library/Logs/git-annex-turtle/git-annex-finder-{process-id}.log, etc… instead of directly to Console, see logging frameworks, https://stackoverflow.com/a/5938021/8671834, https://github.com/DaveWoodCom/XCGLogger, https://github.com/CocoaLumberjack/CocoaLumberjack#readme
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle

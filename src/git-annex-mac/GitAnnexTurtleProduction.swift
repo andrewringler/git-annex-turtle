@@ -73,7 +73,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             while true {
                 self.handleAnimateMenubarIcon()
                 // PERFORMANCE, this is spiking the CPU
-                usleep(100000)
+                usleep(150000)
             }
         }
         
