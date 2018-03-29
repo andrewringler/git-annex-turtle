@@ -45,6 +45,7 @@ class WatchGitAndFinderForUpdates: StoppableService {
                 let foundUpdates = self.handleDatabaseUpdates()
                 if !foundUpdates {
                     // if we didn't get any database updates, lets give the CPU a rest
+                    // PERFORMANCE, this is spiking the CPU
                     usleep(150000)
                 }
             }

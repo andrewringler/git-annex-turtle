@@ -7,7 +7,6 @@
 //
 
 import XCTest
-@testable import git_annex_turtle
 
 class git_annex_turtleTests: XCTestCase {
     

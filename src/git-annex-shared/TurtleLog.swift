@@ -10,7 +10,7 @@ import Foundation
 
 class TurtleLog {
     /* Set the LOG_LEVEL to see all logs equal to and less-then this level */
-    private static var LOG_LEVEL = TurtleLogLogLevel.info
+    private static var LOG_LEVEL = TurtleLogLogLevel.debug
     private static let pound = "\u{0023}"
     
     enum TurtleLogLogLevel: Int {

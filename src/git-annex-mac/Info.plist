@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>GIT_COMMIT_HASH</key>
-	<string>e969251</string>
+	<string>c3c0070</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>LSUIElement</key>

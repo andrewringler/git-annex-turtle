@@ -1,4 +1,6 @@
 ## Bugs, definitely fix
+ * rev db to v2 before 0.2 release, since dbs created with v1 probably have some incorrect infos
+ * handleDatabaseUpdates and handleAnimateMenubarIcon are spiking the CPU heavily
  * Test with v6 repos
  * Test with git annex watch
  * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
@@ -7,7 +9,8 @@
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
-
+ * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
+ 
 ## Not greats, should fix & UX issues
  * PDF icons are super large, compress when exporting from Illustrator?
  * even though all of the icons are scalable PDFs XCode is not scaling them, even with “preserve vector data” checked. Maybe this checkbox still does not work in all cases.
@@ -90,6 +93,12 @@ Combining annex.thin with say a bup repo stored in the .git directory, might pro
  Check if our Finder Sync extension is running:
 
      pluginkit -m | grep finder
+
+     show installed location of plugin
+     pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder
+     
+     remove plugin at installed location
+     pluginkit -r <path>
 
  Depending on which target is running, debug output might not show up in the XCode console. But if you launch the system Console app, it should be there.
 

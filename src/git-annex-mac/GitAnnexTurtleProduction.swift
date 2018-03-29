@@ -72,6 +72,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         DispatchQueue.global(qos: .background).async {
             while true {
                 self.handleAnimateMenubarIcon()
+                // PERFORMANCE, this is spiking the CPU
                 usleep(100000)
             }
         }
