@@ -9,6 +9,8 @@
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
 
 ## Not greats, should fix & UX issues
+ * PDF icons are super large, compress when exporting from Illustrator?
+ * even though all of the icons are scalable PDFs XCode is not scaling them, even with “preserve vector data” checked. Maybe this checkbox still does not work in all cases.
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * crop or scroll large git error messages that appear in Dialogs
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
