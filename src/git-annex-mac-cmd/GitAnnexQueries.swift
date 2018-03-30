@@ -306,7 +306,7 @@ class GitAnnexQueries {
             TurtleLog.error("path='\(path)' in='\(workingDirectory) status= \(status) output=\(output) error=\(error)")
         }
         
-        let modificationDate = Date().timeIntervalSinceNow as Double
+        let modificationDate = Date().timeIntervalSince1970 as Double
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift

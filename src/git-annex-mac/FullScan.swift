@@ -156,7 +156,7 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         //
         // calculate git-annex status information for all files
         //
-        let modificationDate = Date().timeIntervalSinceNow as Double
+        let modificationDate = Date().timeIntervalSince1970 as Double
         if let filesWithCopiesLacking = self.gitAnnexQueries.gitAnnexAllFilesLackingCopies(in: watchedFolder), let resultsFileName = self.gitAnnexQueries.gitAnnexWhereisAllFiles(in: watchedFolder) {
             var s = StreamReader(url: PathUtils.urlFor(absolutePath: resultsFileName))
             while let line = s?.nextLine() {
