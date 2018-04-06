@@ -1,5 +1,4 @@
 ## Bugs, definitely fix
- * rev db to v2 before 0.2 release, since dbs created with v1 probably have some incorrect infos
  * handleDatabaseUpdates and handleAnimateMenubarIcon are spiking the CPU heavily
  * Test with v6 repos
  * Test with git annex watch
