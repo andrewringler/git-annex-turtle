@@ -1,4 +1,9 @@
 v0.2
+This release contains primarily bug fixes and performance improvements.
+
+**Upgrade Notes from v0.1**
+ * I have rev-ed the database version to v2. All full-scans will automatically re-occur, sorry, I know this is slow on large repositories. There were too many consistency issues in v0.1 to attempt a data migration. You may safely delete the old databases with suffix v1 stored at ~/Library/Group Containers/group.com.andrewringler.git-annex-mac.sharedgroup.
+ 
 **Features**
  * clicking on watched repo from menubar drop-down now opens folder in Finder
 
@@ -7,7 +12,7 @@ v0.2
  * added about dialog accessible from the menubar drop-down
 
 **Bug Fixes**
- * fixed: PathStatus equals method was ignoring number of copies field causing us to miss many updates
+ * fixed: PathStatus equals method was ignoring number of copies field causing us to miss many updates, creating database inconsistencies.
  * fixed: issue with running shell commands, resulting in a minimum of a 1-second delay, now badge icons should appear much quicker after commands like get/add/etc…
  * more expansive testing
  * fixed: after new files are created, added and committed, their badge icon are now correctly updated without having to navigate away from the folder

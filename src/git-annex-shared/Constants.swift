@@ -9,7 +9,7 @@
 import Foundation
 
 let groupID = "group.com.andrewringler.git-annex-mac.sharedgroup"
-let databaseName = "git_annex_turtle_data_v1.sqlite"
+let databaseName = "git_annex_turtle_data_v2.sqlite"
 
 struct GitConfig {
     let name :String
