@@ -17,6 +17,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "menubaricon-0"))
+    let serviceThread: DispatchQueue
     
     var menubarIcons: [NSImage] = []
     var menubarAnimationIndex: Int = 0
@@ -52,6 +53,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         data = DataEntrypoint()
         queries = Queries(data: data)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries, queries: queries)
+        serviceThread = DispatchQueue(label: "com.andrewringler.git-annex-mac.ServiceThread")
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -68,6 +70,16 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
         
+        // Start Service to communicate with Finder Sync extension instances
+        serviceThread.async {
+            // CFMessagePort expects a runloop, so give it one inside a custom GCD thread
+            // this seems like a reasonable way to interop with these Object-C libraries from Swift
+            // see https://stackoverflow.com/a/38001438/8671834 for more discussions
+            let server = TurtleServer(name: messagePortName, toRunLoop: CFRunLoopGetCurrent())
+//            server.addSourceForNewLocalMessagePort()
+            CFRunLoopRun()
+        }
+
         // Animated icon
         DispatchQueue.global(qos: .background).async {
             while true {

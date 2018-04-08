@@ -10,12 +10,48 @@ import Cocoa
 import CoreData
 import Foundation
 
+class AppTurtleMessagePort {
+    let stoppable: StoppableService
+    let id: String
+    
+    init(id: String, stoppable: StoppableService) {
+        self.id = id
+        self.stoppable = stoppable
+    
+        while stoppable.running.isRunning() {
+            if let serverPort = CFMessagePortCreateRemote(nil, messagePortName as CFString) {
+                do {
+                    let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
+                    let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
+                    let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
+                    if status == Int32(kCFMessagePortSuccess) {
+                        TurtleLog.info("success sending \(sendPingData) to App Turtle Service")
+                    }
+                    else {
+                        TurtleLog.error("could not communicate with App Turtle service error=\(status)")
+                        break
+                    }
+                } catch {
+                    TurtleLog.error("unable to serialize payload for SendPingData")
+                    break
+                }
+            } else {
+                TurtleLog.error("unable to open port connecting with App Turtle Service")
+                break
+            }
+            
+            sleep(2)
+        }
+    }
+}
+
 class FinderSyncCore: StoppableService {
     let finderSync: FinderSyncProtocol
     let data: DataEntrypoint
     let queries: Queries
     let statusCache: StatusCache
-
+    var app: AppTurtleMessagePort?
+    
     private var watchedFolders = Set<WatchedFolder>()
     private var lastHandledDatabaseChangesDateSinceEpochAsDouble: Double = 0
     
@@ -25,6 +61,8 @@ class FinderSyncCore: StoppableService {
         statusCache = StatusCache(data: data)
         queries = Queries(data: data)
         super.init()
+        app = AppTurtleMessagePort(id: finderSync.id(), stoppable: self)
+        
 
         //
         // Watched Folders

@@ -119,6 +119,12 @@
 		49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
+		49BC72E62079573B00D840AC /* TurtleServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServer.swift */; };
+		49BC72E72079573B00D840AC /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
+		49BC72F1207A97D300D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
+		49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
+		49BC72F3207A97E800D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
+		49BC72F4207A97E900D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
 		49D000662040B215008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
 		49D000672040B252008DC76A /* FolderTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D000652040B215008DC76A /* FolderTracking.swift */; };
 		49D149232049F64700CA10F2 /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D149212049E94600CA10F2 /* StreamReader.swift */; };
@@ -300,6 +306,11 @@
 		49AF864A206A6FE900945F57 /* folderTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = folderTrackingTests.swift; sourceTree = "<group>"; };
 		49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopProcessingWatchedFolder.swift; sourceTree = "<group>"; };
 		49B65D4B201787A400485852 /* BadgeIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIcons.swift; sourceTree = "<group>"; };
+		49BC72E22079573A00D840AC /* TurtleServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TurtleServer.swift; sourceTree = "<group>"; };
+		49BC72E32079573A00D840AC /* HandlersObjc.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = HandlersObjc.h; sourceTree = "<group>"; };
+		49BC72E42079573A00D840AC /* HandlersObjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HandlersObjc.m; sourceTree = "<group>"; };
+		49BC72E920795D1A00D840AC /* git_annex_turtle-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "git_annex_turtle-Bridging-Header.h"; sourceTree = "<group>"; };
+		49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleServiceObjects.swift; sourceTree = "<group>"; };
 		49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GitAnnexQueries.swift; sourceTree = "<group>"; };
 		49D000652040B215008DC76A /* FolderTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderTracking.swift; sourceTree = "<group>"; };
 		49D149212049E94600CA10F2 /* StreamReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
@@ -412,6 +423,7 @@
 				49AF863E2069844200945F57 /* LinkedList.swift */,
 				49AF86482069A0C400945F57 /* SetThreadsafe.swift */,
 				49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */,
+				49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */,
 			);
 			path = "git-annex-shared";
 			sourceTree = "<group>";
@@ -447,6 +459,10 @@
 		490BCB841DE5444C00734FF4 /* git-annex-mac */ = {
 			isa = PBXGroup;
 			children = (
+				49BC72E22079573A00D840AC /* TurtleServer.swift */,
+				49BC72E32079573A00D840AC /* HandlersObjc.h */,
+				49BC72E42079573A00D840AC /* HandlersObjc.m */,
+				49BC72E920795D1A00D840AC /* git_annex_turtle-Bridging-Header.h */,
 				49178B9C201E92AD00B98A46 /* shell-scripts */,
 				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
 				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
@@ -871,6 +887,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49BC72F1207A97D300D840AC /* TurtleServiceObjects.swift in Sources */,
 				49AF864D206A77D800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */,
@@ -893,6 +910,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49BC72E62079573B00D840AC /* TurtleServer.swift in Sources */,
 				49EFD1F82006D08A005742DB /* ViewController.swift in Sources */,
 				49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
@@ -918,7 +936,9 @@
 				49635EF42019208500AB95E5 /* PathStatus.swift in Sources */,
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */,
+				49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
+				49BC72E72079573B00D840AC /* HandlersObjc.m in Sources */,
 				490982FD204F136500096C92 /* FullScan.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
@@ -968,6 +988,7 @@
 				492492052040A17F00F8D8A0 /* Config.swift in Sources */,
 				490982EE204E26EE00096C92 /* VisibleFolder.swift in Sources */,
 				4936D9642066FE3600FB76C7 /* Running.swift in Sources */,
+				49BC72F3207A97E800D840AC /* TurtleServiceObjects.swift in Sources */,
 				49DDE18E2059F548008C55AC /* FileEvent.swift in Sources */,
 				4981033F205EB0D1006084B2 /* FinderSyncProtocol.swift in Sources */,
 				492492032040A16800F8D8A0 /* Queries.swift in Sources */,
@@ -1001,6 +1022,7 @@
 				497D1FCE20116EB200106566 /* debounce-throttle.swift in Sources */,
 				49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */,
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
+				49BC72F4207A97E900D840AC /* TurtleServiceObjects.swift in Sources */,
 				49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */,
 				499AFFED205C0885008BD34A /* FinderSyncProtocol.swift in Sources */,
 				49AF863620693CB100945F57 /* HandleStatusRequests.swift in Sources */,
@@ -1209,6 +1231,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1263,6 +1286,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1286,14 +1310,18 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "git-annex-mac/git-annex-mac.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = ASJ7K8YJ25;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_SWIFT3_OBJC_INFERENCE = On;
 				SWIFT_VERSION = 4.0;
 			};
@@ -1304,14 +1332,17 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "git-annex-mac/git-annex-mac.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = ASJ7K8YJ25;
 				INFOPLIST_FILE = "git-annex-mac/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
 				SWIFT_SWIFT3_OBJC_INFERENCE = On;
 				SWIFT_VERSION = 4.0;
 			};
