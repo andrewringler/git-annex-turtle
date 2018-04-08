@@ -17,7 +17,7 @@ public class TurtleServer: NSObject {
         do {
             // parse received message
             let receivedMsg = try JSONDecoder().decode(SendPingData.self, from: data)
-            TurtleLog.info("ping received msgid=\(msgid) msg=\(receivedMsg)")
+            TurtleLog.trace("ping received msgid=\(msgid) msg=\(receivedMsg)")
             
             // prepare a response
             let responseData = try JSONEncoder().encode(PingResponseData(id: receivedMsg.id, timeStamp: Date().timeIntervalSince1970))

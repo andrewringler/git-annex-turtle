@@ -19,30 +19,37 @@ class AppTurtleMessagePort {
         self.id = id
         self.stoppable = stoppable
     
-        while stoppable.running.isRunning() {
-            if let serverPort = CFMessagePortCreateRemote(nil, messagePortName as CFString) {
-                do {
-                    let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
-                    let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
-                    let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
-                    if status == Int32(kCFMessagePortSuccess) {
-                        TurtleLog.info("success sending \(sendPingData) to App Turtle Service")
+        // Ping keep-alive
+        DispatchQueue.global(qos: .background).async {
+            while stoppable.running.isRunning() {
+                if let serverPort = CFMessagePortCreateRemote(nil, messagePortName as CFString) {
+                    do {
+                        let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
+                        let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
+                        let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
+                        if status == Int32(kCFMessagePortSuccess) {
+                            TurtleLog.trace("success sending \(sendPingData) to App Turtle Service")
+                        } else {
+                            TurtleLog.error("could not communicate with App Turtle service error=\(status)")
+                            self.doQuit()
+                        }
+                    } catch {
+                        TurtleLog.error("unable to serialize payload for SendPingData")
+                        self.doQuit()
                     }
-                    else {
-                        TurtleLog.error("could not communicate with App Turtle service error=\(status)")
-                        break
-                    }
-                } catch {
-                    TurtleLog.error("unable to serialize payload for SendPingData")
-                    break
+                } else {
+                    TurtleLog.error("unable to open port connecting with App Turtle Service")
+                    self.doQuit()
                 }
-            } else {
-                TurtleLog.error("unable to open port connecting with App Turtle Service")
-                break
+                
+                sleep(2)
             }
-            
-            sleep(2)
         }
+    }
+    
+    private func doQuit() {
+        stoppable.stop()
+        exit(0)
     }
 }
 
