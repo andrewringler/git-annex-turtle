@@ -10,6 +10,7 @@ import Cocoa
 import CoreData
 import Foundation
 
+// proof of concept message port communication with parent app
 class AppTurtleMessagePort {
     let stoppable: StoppableService
     let id: String
