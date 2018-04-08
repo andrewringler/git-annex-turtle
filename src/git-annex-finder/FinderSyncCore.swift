@@ -48,6 +48,7 @@ class AppTurtleMessagePort {
     }
     
     private func doQuit() {
+        TurtleLog.info("unable to connect with Turtle App service, quiting…")
         stoppable.stop()
         exit(0)
     }

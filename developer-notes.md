@@ -9,7 +9,6 @@
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
- * Finder Sync extension should quit automatically if menubar app is not running, this could happen if it crashes and doesn't tell the Finder Sync extension to quit, or is killed by a user or XCode. Hmmm, I am not sure this is possible, I think macOS wants to manage the lifecycle of extensions so you can't call exit from them, or your will get a crash report…
 
 ## Not greats, should fix & UX issues
  * PDF icons are super large, compress when exporting from Illustrator?
