@@ -15,7 +15,7 @@ class FinderSyncCore: StoppableService {
     let data: DataEntrypoint
     let queries: Queries
     let statusCache: StatusCache
-    let app: AppTurtleMessagePort
+    let appTurtleMessagePort: AppTurtleMessagePort
     
     private var watchedFolders = Set<WatchedFolder>()
     private var lastHandledDatabaseChangesDateSinceEpochAsDouble: Double = 0
@@ -25,10 +25,9 @@ class FinderSyncCore: StoppableService {
         self.data = data
         statusCache = StatusCache(data: data)
         queries = Queries(data: data)
-        app = AppTurtleMessagePort(id: finderSync.id())
+        appTurtleMessagePort = AppTurtleMessagePort(id: finderSync.id())
         super.init()
         
-
         //
         // Watched Folders
         //

@@ -52,13 +52,19 @@ class AppTurtleMessagePortPingKeepAlive {
 }
 
 class AppTurtleMessagePort {
-    let id: String
-    
+    private let id: String
+    public lazy var notifyCommandRequestsPendingDebounce: () -> Void = {
+        return debounce(delay: .milliseconds(50), queue: DispatchQueue.global(qos: .background), action: self.notifyCommandRequestsPending)
+    }()
+    public lazy var notifyBadgeRequestsPendingDebounce: () -> Void = {
+        return debounce(delay: .milliseconds(50), queue: DispatchQueue.global(qos: .background), action: self.notifyBadgeRequestsPending)
+    }()
+
     init(id: String) {
         self.id = id
     }
     
-    public func notifyCommandRequestsPending() {
+    private func notifyCommandRequestsPending() {
         if let serverPort = CFMessagePortCreateRemote(nil, messagePortNameCommandRequests as CFString) {
             do {
                 let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
@@ -77,7 +83,7 @@ class AppTurtleMessagePort {
         }
     }
     
-    public func notifyBadgeRequestsPending() {
+    private func notifyBadgeRequestsPending() {
         if let serverPort = CFMessagePortCreateRemote(nil, messagePortNameBadgeRequests as CFString) {
             do {
                 let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)

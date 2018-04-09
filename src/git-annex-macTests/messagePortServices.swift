@@ -29,11 +29,11 @@ class messagePortServices: XCTestCase {
     func testNotifiesGitAnnexTurtle() {
         wait(for: 2) // wait for ports to startup
         
-        appTurtleMessagePortClient!.notifyBadgeRequestsPending()
+        appTurtleMessagePortClient!.notifyBadgeRequestsPendingDebounce()
         wait(for: 2)
         XCTAssertEqual(gitAnnexTurtle?.badgeRequestsArePendingCalled, 1)
         
-        appTurtleMessagePortClient!.notifyCommandRequestsPending()
+        appTurtleMessagePortClient!.notifyCommandRequestsPendingDebounce()
         wait(for: 2)
         XCTAssertEqual(gitAnnexTurtle?.commandRequestsArePendingCalled, 1)
     }
