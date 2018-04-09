@@ -29,3 +29,59 @@ public class TurtleServerPing: NSObject {
         return nil
     }
 }
+
+public class TurtleServerCommandRequests: NSObject {
+    init(toRunLoop runLoop: CFRunLoop) {
+        super.init()
+        let cfname = messagePortNameCommandRequests as CFString
+        var context = CFMessagePortContext(version: 0, info: bridgedPtrCommandRequests(self), retain: nil, release: nil, copyDescription: nil)
+        var shouldFreeInfo: DarwinBoolean = false
+        let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, commandRequestHandler(), &context, &shouldFreeInfo)
+        let source = CFMessagePortCreateRunLoopSource(nil, port, 0)
+        CFRunLoopAddSource(runLoop, source, CFRunLoopMode.commonModes)
+    }
+    
+    @objc func handleCommandRequests(_ msgid: Int32, data: Data) -> Data? {
+        do {
+            // parse received message
+            let receivedMsg = try JSONDecoder().decode(SendPingData.self, from: data)
+            TurtleLog.trace("handle command requests received msgid=\(msgid) msg=\(receivedMsg)")
+            
+            // prepare a response
+            let responseData = try JSONEncoder().encode(PingResponseData(id: receivedMsg.id, timeStamp: Date().timeIntervalSince1970))
+            return responseData
+        } catch {
+            TurtleLog.error("unable to parse handle command requests message or create response \(error)")
+        }
+        
+        return nil
+    }
+}
+
+public class TurtleServerBadgeRequests: NSObject {
+    init(toRunLoop runLoop: CFRunLoop) {
+        super.init()
+        let cfname = messagePortNameBadgeRequests as CFString
+        var context = CFMessagePortContext(version: 0, info: bridgedPtrBadgeRequests(self), retain: nil, release: nil, copyDescription: nil)
+        var shouldFreeInfo: DarwinBoolean = false
+        let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, badgeRequestHandler(), &context, &shouldFreeInfo)
+        let source = CFMessagePortCreateRunLoopSource(nil, port, 0)
+        CFRunLoopAddSource(runLoop, source, CFRunLoopMode.commonModes)
+    }
+    
+    @objc func handleBadgeRequests(_ msgid: Int32, data: Data) -> Data? {
+        do {
+            // parse received message
+            let receivedMsg = try JSONDecoder().decode(SendPingData.self, from: data)
+            TurtleLog.trace("handle badge requests received msgid=\(msgid) msg=\(receivedMsg)")
+            
+            // prepare a response
+            let responseData = try JSONEncoder().encode(PingResponseData(id: receivedMsg.id, timeStamp: Date().timeIntervalSince1970))
+            return responseData
+        } catch {
+            TurtleLog.error("unable to parse handle badge requests message or create response \(error)")
+        }
+        
+        return nil
+    }
+}

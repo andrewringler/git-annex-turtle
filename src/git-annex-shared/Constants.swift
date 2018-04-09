@@ -10,7 +10,10 @@ import Foundation
 
 let groupID = "group.com.andrewringler.git-annex-mac.sharedgroup"
 let databaseName = "git_annex_turtle_data_v2.sqlite"
+// CFMessagePort names must be preceeded by group id for sandboxing
 let messagePortNamePing = "\(groupID).MessagePortPing"
+let messagePortNameCommandRequests = "\(groupID).MessagePortBadgeRequests"
+let messagePortNameBadgeRequests = "\(groupID).MessagePortCommandRequests"
 
 struct GitConfig {
     let name :String

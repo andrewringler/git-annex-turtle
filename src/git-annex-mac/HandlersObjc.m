@@ -12,11 +12,46 @@ static CFDataRef handlePingCFData(CFMessagePortRef local, SInt32 msgid, CFDataRe
         return NULL;
     }
 }
-
 CFMessagePortCallBack pingHandler() {
     return handlePingCFData;
 }
-
 void *bridgedPtr(TurtleServerPing *server) {
+    return (__bridge void *)server;
+}
+
+
+static CFDataRef handleCommandRequestCFData(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void *info) {
+    TurtleServerCommandRequests *server = (__bridge TurtleServerCommandRequests *)info;
+    NSData *responseData = [server handleCommandRequests:msgid data:(__bridge NSData *)(data)];
+    if (responseData != NULL) {
+        CFDataRef cfdata = CFDataCreate(nil, responseData.bytes, responseData.length);
+        return cfdata;
+    }
+    else {
+        return NULL;
+    }
+}
+CFMessagePortCallBack commandRequestHandler() {
+    return handleCommandRequestCFData;
+}
+void *bridgedPtrCommandRequests(TurtleServerCommandRequests *server) {
+    return (__bridge void *)server;
+}
+
+static CFDataRef handleBadgeRequestCFData(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void *info) {
+    TurtleServerBadgeRequests *server = (__bridge TurtleServerBadgeRequests *)info;
+    NSData *responseData = [server handleBadgeRequests:msgid data:(__bridge NSData *)(data)];
+    if (responseData != NULL) {
+        CFDataRef cfdata = CFDataCreate(nil, responseData.bytes, responseData.length);
+        return cfdata;
+    }
+    else {
+        return NULL;
+    }
+}
+CFMessagePortCallBack badgeRequestHandler() {
+    return handleBadgeRequestCFData;
+}
+void *bridgedPtrBadgeRequests(TurtleServerBadgeRequests *server) {
     return (__bridge void *)server;
 }
