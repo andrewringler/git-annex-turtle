@@ -47,8 +47,7 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
         DispatchQueue.global(qos: .background).async {
             while super.running.isRunning() {
                 self.updateWatchedAndVisibleFolders()
-                // PERFORMANCE, this is spiking the CPU
-                usleep(150000)
+                usleep(500000)
             }
         }
         updateWatchedAndVisibleFolders() // check Db for updates, once now
