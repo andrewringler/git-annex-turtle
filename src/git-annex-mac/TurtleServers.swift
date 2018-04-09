@@ -31,7 +31,10 @@ public class TurtleServerPing: NSObject {
 }
 
 public class TurtleServerCommandRequests: NSObject {
+    let gitAnnexTurtle: GitAnnexTurtle
+    
     init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
+        self.gitAnnexTurtle = gitAnnexTurtle
         super.init()
         let cfname = messagePortNameCommandRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrCommandRequests(self), retain: nil, release: nil, copyDescription: nil)
@@ -49,6 +52,7 @@ public class TurtleServerCommandRequests: NSObject {
             
             // prepare a response
             let responseData = try JSONEncoder().encode(PingResponseData(id: receivedMsg.id, timeStamp: Date().timeIntervalSince1970))
+            gitAnnexTurtle.commandRequestsArePending()
             return responseData
         } catch {
             TurtleLog.error("unable to parse handle command requests message or create response \(error)")
@@ -59,7 +63,10 @@ public class TurtleServerCommandRequests: NSObject {
 }
 
 public class TurtleServerBadgeRequests: NSObject {
+    let gitAnnexTurtle: GitAnnexTurtle
+
     init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
+        self.gitAnnexTurtle = gitAnnexTurtle
         super.init()
         let cfname = messagePortNameBadgeRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrBadgeRequests(self), retain: nil, release: nil, copyDescription: nil)
@@ -77,6 +84,7 @@ public class TurtleServerBadgeRequests: NSObject {
             
             // prepare a response
             let responseData = try JSONEncoder().encode(PingResponseData(id: receivedMsg.id, timeStamp: Date().timeIntervalSince1970))
+            gitAnnexTurtle.badgeRequestsArePending()
             return responseData
         } catch {
             TurtleLog.error("unable to parse handle badge requests message or create response \(error)")

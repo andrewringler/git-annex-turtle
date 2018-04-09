@@ -89,6 +89,7 @@ Combining annex.thin with say a bup repo stored in the .git directory, might pro
  * See https://developer.apple.com/documentation/foundation/userdefaults section Persisting File References for advice on preserving permalink links to folders that work even across renames, probably better to do this, instead of using string paths :)
  * Interprocess communication http://ddeville.me/2015/02/interprocess-communication-on-ios-with-berkeley-sockets
  * https://stackoverflow.com/questions/2405305/how-to-tell-if-a-file-is-git-tracked-by-shell-exit-code maybe useful tricks for files that are in git, but not annex, also see https://git-scm.com/docs/git-ls-files for more details
+ * get bridging headers to build in test targets this https://medium.com/if-let-swift-programming/ios-tests-working-with-objective-c-and-swift-class-together-aaf40f91a27c plus this https://stackoverflow.com/a/26855206/8671834
  
 ## Useful Troubleshooting Notes 
  Check if our Finder Sync extension is running:

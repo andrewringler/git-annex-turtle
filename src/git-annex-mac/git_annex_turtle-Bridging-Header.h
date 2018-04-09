@@ -6,9 +6,9 @@
 //  Copyright © 2018 Andrew Ringler. All rights reserved.
 //
 
-#ifndef git_annex_turtle_Bridging_Header_h
-#define git_annex_turtle_Bridging_Header_h
+//#ifndef git_annex_turtle_Bridging_Header_h
+//#define git_annex_turtle_Bridging_Header_h
 
 #import "HandlersObjc.h"
 
-#endif /* git_annex_turtle_Bridging_Header_h */
+//#endif /* git_annex_turtle_Bridging_Header_h */

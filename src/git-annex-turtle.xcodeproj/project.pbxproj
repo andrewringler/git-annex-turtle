@@ -120,7 +120,6 @@
 		49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
 		49BC72E62079573B00D840AC /* TurtleServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServers.swift */; };
-		49BC72E72079573B00D840AC /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
 		49BC72F1207A97D300D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
 		49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
 		49BC72F3207A97E800D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
@@ -199,6 +198,11 @@
 		49FDAADE207AED7200FE6043 /* RunMessagePortServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */; };
 		49FDAAE0207AF03F00FE6043 /* AppTurtleMessagePort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */; };
 		49FDAAE1207AF05200FE6043 /* AppTurtleMessagePort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */; };
+		49FDAAE3207AF25E00FE6043 /* messagePortServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */; };
+		49FDAAE4207AF30300FE6043 /* RunMessagePortServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */; };
+		49FDAAE9207B017D00FE6043 /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
+		49FDAAEA207B01AC00FE6043 /* TurtleServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServers.swift */; };
+		49FDAAEB207B030000FE6043 /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -349,6 +353,7 @@
 		49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
 		49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMessagePortServices.swift; sourceTree = "<group>"; };
 		49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTurtleMessagePort.swift; sourceTree = "<group>"; };
+		49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = messagePortServices.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -502,6 +507,7 @@
 				49AF864A206A6FE900945F57 /* folderTrackingTests.swift */,
 				49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */,
 				49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */,
+				49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -933,6 +939,7 @@
 				49AF86402069845700945F57 /* LinkedList.swift in Sources */,
 				497D1FC820113F3300106566 /* FileEvent.swift in Sources */,
 				49D000662040B215008DC76A /* FolderTracking.swift in Sources */,
+				49FDAAE9207B017D00FE6043 /* HandlersObjc.m in Sources */,
 				49DDE1852059E8D6008C55AC /* GitAnnexTurtleProduction.swift in Sources */,
 				49F0ECFC200E5F5E00C8BBCB /* Queries.swift in Sources */,
 				497D1FCB20114BF200106566 /* debounce-throttle.swift in Sources */,
@@ -946,7 +953,6 @@
 				4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
-				49BC72E72079573B00D840AC /* HandlersObjc.m in Sources */,
 				490982FD204F136500096C92 /* FullScan.swift in Sources */,
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
@@ -972,9 +978,12 @@
 				49DDE17F2059DC09008C55AC /* HandleStatusRequestsProduction.swift in Sources */,
 				492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */,
 				4981033E205EB0C7006084B2 /* finderSyncCoreTests.swift in Sources */,
+				49FDAAE3207AF25E00FE6043 /* messagePortServices.swift in Sources */,
 				492492042040A16A00F8D8A0 /* DataEntrypoint.swift in Sources */,
 				492492022040A15600F8D8A0 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 				49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */,
+				49FDAAEA207B01AC00FE6043 /* TurtleServers.swift in Sources */,
+				49FDAAE4207AF30300FE6043 /* RunMessagePortServices.swift in Sources */,
 				49ED1FFB206A88FA0092AC6D /* pathUtilsTests.swift in Sources */,
 				492492072040A1A900F8D8A0 /* FullScan.swift in Sources */,
 				49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */,
@@ -986,6 +995,7 @@
 				4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */,
 				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,
 				49DDE18F2059F54B008C55AC /* Witness.swift in Sources */,
+				49FDAAEB207B030000FE6043 /* HandlersObjc.m in Sources */,
 				49AF86462069871B00945F57 /* DispatchQueueFIFO.swift in Sources */,
 				49DDE1892059F099008C55AC /* Dialogs.swift in Sources */,
 				49D149242049F6AF00CA10F2 /* StreamReader.swift in Sources */,
@@ -1362,10 +1372,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$CONFIGURATION_TEMP_DIR/git-annex-turtle.build/DerivedSources";
 				INFOPLIST_FILE = "git-annex-macTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -1374,10 +1386,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = "$CONFIGURATION_TEMP_DIR/git-annex-turtle.build/DerivedSources";
 				INFOPLIST_FILE = "git-annex-macTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-macTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;

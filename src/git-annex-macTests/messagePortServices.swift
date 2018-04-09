@@ -1,0 +1,39 @@
+//
+//  messagePortServices.swift
+//  git-annex-turtleTests
+//
+//  Created by Andrew Ringler on 4/8/18.
+//  Copyright © 2018 Andrew Ringler. All rights reserved.
+//
+
+import Foundation
+import XCTest
+
+class messagePortServices: XCTestCase {
+    var runMessagePortServices: RunMessagePortServices?
+    var appTurtleMessagePortClient: AppTurtleMessagePort?
+    var gitAnnexTurtle: GitAnnexTurtleStub?
+    
+    override func setUp() {
+        super.setUp()
+        gitAnnexTurtle = GitAnnexTurtleStub()
+        runMessagePortServices = RunMessagePortServices(gitAnnexTurtle: gitAnnexTurtle!)
+        appTurtleMessagePortClient = AppTurtleMessagePort(id: "FinderSyncID 1", stoppable: StoppableStub())
+    }
+    
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+    }
+
+    func testNotifiesGitAnnexTurtle() {
+        appTurtleMessagePortClient!.notifyBadgeRequestsPending()
+        wait(for: 2)
+        XCTAssertEqual(gitAnnexTurtle?.badgeRequestsArePendingCalled, 1)
+        
+        appTurtleMessagePortClient!.notifyCommandRequestsPending()
+        wait(for: 2)
+        XCTAssertEqual(gitAnnexTurtle?.commandRequestsArePendingCalled, 1)
+    }
+}
+class StoppableStub: StoppableService {}

@@ -35,12 +35,50 @@ class AppTurtleMessagePort {
                         self.doQuit()
                     }
                 } else {
-                    TurtleLog.error("unable to open port connecting with App Turtle Service")
+                    TurtleLog.error("unable to open ping port \(messagePortNamePing) connecting with App Turtle Service")
                     self.doQuit()
                 }
                 
                 sleep(2)
             }
+        }
+    }
+    
+    public func notifyCommandRequestsPending() {
+        if let serverPort = CFMessagePortCreateRemote(nil, messagePortNameCommandRequests as CFString) {
+            do {
+                let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
+                let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
+                let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
+                if status == Int32(kCFMessagePortSuccess) {
+                    TurtleLog.trace("success sending \(sendPingData) to App Turtle Service command request port")
+                } else {
+                    TurtleLog.error("could not communicate with App Turtle service on command request port error=\(status)")
+                }
+            } catch {
+                TurtleLog.error("unable to serialize payload for SendPingData on command request port")
+            }
+        } else {
+            TurtleLog.error("unable to open command request port \(messagePortNameCommandRequests) connecting with App Turtle Service")
+        }
+    }
+    
+    public func notifyBadgeRequestsPending() {
+        if let serverPort = CFMessagePortCreateRemote(nil, messagePortNameBadgeRequests as CFString) {
+            do {
+                let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
+                let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
+                let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
+                if status == Int32(kCFMessagePortSuccess) {
+                    TurtleLog.trace("success sending \(sendPingData) to App Turtle Service badge request port")
+                } else {
+                    TurtleLog.error("could not communicate with App Turtle service on badge request port error=\(status)")
+                }
+            } catch {
+                TurtleLog.error("unable to serialize payload for SendPingData on badge request port")
+            }
+        } else {
+            TurtleLog.error("unable to open badge request port \(messagePortNameCommandRequests) connecting with App Turtle Service")
         }
     }
     
