@@ -66,6 +66,9 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
         
         // Setup file system watches for any folder that has completed its full scan
         // that we aren't already watching
+        //
+        // TODO / PERFORMANCE, just set these up on App launch
+        // and after full scans have completed they can do this add
         for watchedFolder in self.watchedFolders {
             // A folder we need to start a file system watch for, is one
             // that has a commit hash in the database (meaning it is done with a full scan)
