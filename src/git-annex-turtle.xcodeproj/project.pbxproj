@@ -71,6 +71,8 @@
 		4936D9662067020800FB76C7 /* Running.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9622066FCC400FB76C7 /* Running.swift */; };
 		4936EA002000482700200973 /* git-annex-turtle-cmd in CopyFiles */ = {isa = PBXBuildFile; fileRef = 499B44721DE54A250091E0E3 /* git-annex-turtle-cmd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
+		4956B9F5207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */; };
+		4956B9F6207BF7D900D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */; };
 		495DD1B61DE5EEBB00219E03 /* Finder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495DD1B51DE5EEBB00219E03 /* Finder.swift */; };
 		49635EF42019208500AB95E5 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
 		49635EF62019244100AB95E5 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
@@ -288,6 +290,7 @@
 		4936D95C2064889C00FB76C7 /* runOnceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = runOnceTests.swift; sourceTree = "<group>"; };
 		4936D9622066FCC400FB76C7 /* Running.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Running.swift; sourceTree = "<group>"; };
 		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
+		4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleServerVisibleFolderUpdates.swift; sourceTree = "<group>"; };
 		495DD1B51DE5EEBB00219E03 /* Finder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Finder.swift; sourceTree = "<group>"; };
 		49635EF32019208500AB95E5 /* PathStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathStatus.swift; sourceTree = "<group>"; };
 		497D1FC420113F3300106566 /* EventStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventStream.swift; sourceTree = "<group>"; };
@@ -475,10 +478,8 @@
 		490BCB841DE5444C00734FF4 /* git-annex-mac */ = {
 			isa = PBXGroup;
 			children = (
-				49BC72E22079573A00D840AC /* TurtleServers.swift */,
-				49BC72E32079573A00D840AC /* HandlersObjc.h */,
-				49BC72E42079573A00D840AC /* HandlersObjc.m */,
 				49BC72E920795D1A00D840AC /* git_annex_turtle-Bridging-Header.h */,
+				4956B9F7207BF8E300D366D4 /* services */,
 				49178B9C201E92AD00B98A46 /* shell-scripts */,
 				49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */,
 				490BCB851DE5444C00734FF4 /* AppDelegate.swift */,
@@ -492,7 +493,6 @@
 				492491F42040665A00F8D8A0 /* FullScan.swift */,
 				49D000652040B215008DC76A /* FolderTracking.swift */,
 				49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */,
-				49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */,
 				49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */,
 				49FDAAF0207BD52D00FE6043 /* HandleBadgeRequests.swift */,
 			);
@@ -530,6 +530,18 @@
 				49977D512029155000FA9527 /* childrenNotIgnored.sh */,
 			);
 			path = "shell-scripts";
+			sourceTree = "<group>";
+		};
+		4956B9F7207BF8E300D366D4 /* services */ = {
+			isa = PBXGroup;
+			children = (
+				49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */,
+				49BC72E22079573A00D840AC /* TurtleServers.swift */,
+				4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */,
+				49BC72E32079573A00D840AC /* HandlersObjc.h */,
+				49BC72E42079573A00D840AC /* HandlersObjc.m */,
+			);
+			path = services;
 			sourceTree = "<group>";
 		};
 		499B44611DE544F00091E0E3 /* git-annex-finder */ = {
@@ -971,6 +983,7 @@
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
 				49AF86422069845F00945F57 /* QueueThreadSafe.swift in Sources */,
+				4956B9F5207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */,
 				49EF626F200E75D5002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 				49AF86342069372A00945F57 /* HandleStatusRequests.swift in Sources */,
 			);
@@ -1034,6 +1047,7 @@
 				49AF86352069372B00945F57 /* HandleStatusRequests.swift in Sources */,
 				49FDAAEF207BC2B800FE6043 /* HandleCommandRequests.swift in Sources */,
 				49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */,
+				4956B9F6207BF7D900D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */,
 				49AF8645206986EF00945F57 /* dispatchQueueFIFOTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1285,6 +1299,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -1333,6 +1348,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
@@ -1354,7 +1370,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -1375,7 +1391,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "git-annex-mac/git_annex_turtle-Bridging-Header.h";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
@@ -1418,7 +1434,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac.git-annex-finder";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -1433,7 +1449,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.andrewringler.git-annex-mac.git-annex-finder";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;

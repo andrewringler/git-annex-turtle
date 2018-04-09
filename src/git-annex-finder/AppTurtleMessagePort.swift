@@ -8,6 +8,7 @@
 
 import Foundation
 
+// // see parsing return data example http://ddeville.me/2015/02/interprocess-communication-on-ios-with-mach-messages
 class AppTurtleMessagePortPingKeepAlive {
     let stoppable: StoppableService
     let id: String
@@ -59,6 +60,9 @@ class AppTurtleMessagePort {
     public lazy var notifyBadgeRequestsPendingDebounce: () -> Void = {
         return debounce(delay: .milliseconds(50), queue: DispatchQueue.global(qos: .background), action: self.notifyBadgeRequestsPending)
     }()
+    public lazy var notifyVisibleFolderUpdatesPendingDebounce: () -> Void = {
+        return debounce(delay: .milliseconds(50), queue: DispatchQueue.global(qos: .background), action: self.notifyVisibleFolderUpdatesPending)
+    }()
 
     init(id: String) {
         self.id = id
@@ -98,7 +102,26 @@ class AppTurtleMessagePort {
                 TurtleLog.error("unable to serialize payload for SendPingData on badge request port")
             }
         } else {
-            TurtleLog.error("unable to open badge request port \(messagePortNameCommandRequests) connecting with App Turtle Service")
+            TurtleLog.error("unable to open badge request port \(messagePortNameBadgeRequests) connecting with App Turtle Service")
+        }
+    }
+    
+    private func notifyVisibleFolderUpdatesPending() {
+        if let serverPort = CFMessagePortCreateRemote(nil, messagePortNameVisibleFolderUpdates as CFString) {
+            do {
+                let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
+                let data: CFData = try JSONEncoder().encode(sendPingData) as CFData
+                let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
+                if status == Int32(kCFMessagePortSuccess) {
+                    TurtleLog.trace("success sending \(sendPingData) to App Turtle Service visible folder updates port")
+                } else {
+                    TurtleLog.error("could not communicate with App Turtle service on visible folder updates port error=\(status)")
+                }
+            } catch {
+                TurtleLog.error("unable to serialize payload for SendPingData on visible folder updates port")
+            }
+        } else {
+            TurtleLog.error("unable to open visible folder updates port \(messagePortNameVisibleFolderUpdates) connecting with App Turtle Service")
         }
     }
 }

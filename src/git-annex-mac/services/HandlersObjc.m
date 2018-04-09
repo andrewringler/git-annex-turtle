@@ -55,3 +55,21 @@ CFMessagePortCallBack badgeRequestHandler() {
 void *bridgedPtrBadgeRequests(TurtleServerBadgeRequests *server) {
     return (__bridge void *)server;
 }
+
+static CFDataRef handleVisibleFolderUpdatesCFData(CFMessagePortRef local, SInt32 msgid, CFDataRef data, void *info) {
+    TurtleServerVisibleFolderUpdates *server = (__bridge TurtleServerVisibleFolderUpdates *)info;
+    NSData *responseData = [server handleVisibleFolderUpdates:msgid data:(__bridge NSData *)(data)];
+    if (responseData != NULL) {
+        CFDataRef cfdata = CFDataCreate(nil, responseData.bytes, responseData.length);
+        return cfdata;
+    }
+    else {
+        return NULL;
+    }
+}
+CFMessagePortCallBack visibleFolderUpdatesHandler() {
+    return handleVisibleFolderUpdatesCFData;
+}
+void *bridgedPtrVU(TurtleServerVisibleFolderUpdates *server) {
+    return (__bridge void *)server;
+}

@@ -261,4 +261,8 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     func badgeRequestsArePending() {
         handleBadgeRequests?.handleNewRequests()
     }
+    
+    func visibleFolderUpdatesArePending() {
+        TurtleLog.todo("implement me")
+    }
 }

@@ -14,6 +14,7 @@ let databaseName = "git_annex_turtle_data_v2.sqlite"
 let messagePortNamePing = "\(groupID).MessagePortPing"
 let messagePortNameCommandRequests = "\(groupID).MessagePortBadgeRequests"
 let messagePortNameBadgeRequests = "\(groupID).MessagePortCommandRequests"
+let messagePortNameVisibleFolderUpdates = "\(groupID).MessagePortVisibleFolderUpdates"
 
 struct GitConfig {
     let name :String

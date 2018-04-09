@@ -12,17 +12,20 @@ class RunMessagePortServices: StoppableService {
     let serviceThreadPing: DispatchQueue
     let serviceThreadCommandRequests: DispatchQueue
     let serviceThreadBadgeRequests: DispatchQueue
-    
+    let serviceThreadVisibleFolderUpdates: DispatchQueue
+
     // hold onto to references to our CFMessagePort servers here
     // so they aren't garbage collected within the thread
     var turtleServerPing: TurtleServerPing?
     var turtleServerCommandRequests: TurtleServerCommandRequests?
     var turtleServerBadgeRequests: TurtleServerBadgeRequests?
+    var turtleServerVisibleFolderUpdates: TurtleServerVisibleFolderUpdates?
 
     init(gitAnnexTurtle: GitAnnexTurtle) {
         serviceThreadPing = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortPing")
         serviceThreadCommandRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortCommandRequests")
         serviceThreadBadgeRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortBadgeRequests")
+        serviceThreadVisibleFolderUpdates = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortVisibleFolderUpdates")
 
         super.init()
         
@@ -46,15 +49,23 @@ class RunMessagePortServices: StoppableService {
             self.turtleServerCommandRequests = TurtleServerCommandRequests(toRunLoop: CFRunLoopGetCurrent(), gitAnnexTurtle: gitAnnexTurtle)
             CFRunLoopRun()
         }
+        
+        // Notify of new Visible Folder Updates from Finder Sync extensions
+        serviceThreadVisibleFolderUpdates.async {
+            self.turtleServerVisibleFolderUpdates = TurtleServerVisibleFolderUpdates(toRunLoop: CFRunLoopGetCurrent(), gitAnnexTurtle: gitAnnexTurtle)
+            CFRunLoopRun()
+        }
     }
     
     public override func stop() {
         turtleServerPing?.invalidate()
         turtleServerCommandRequests?.invalidate()
         turtleServerBadgeRequests?.invalidate()
+        turtleServerVisibleFolderUpdates?.invalidate()
         turtleServerPing = nil
         turtleServerCommandRequests = nil
         turtleServerBadgeRequests = nil
+        turtleServerVisibleFolderUpdates = nil
         
         super.stop()
     }

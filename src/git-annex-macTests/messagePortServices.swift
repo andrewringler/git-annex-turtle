@@ -12,6 +12,7 @@ import XCTest
 class messagePortServices: XCTestCase {
     var runMessagePortServices: RunMessagePortServices?
     var appTurtleMessagePortClient: AppTurtleMessagePort?
+    var appTurtleMessagePortClient2: AppTurtleMessagePort?
     var gitAnnexTurtle: GitAnnexTurtleStub?
     
     override func setUp() {
@@ -19,6 +20,7 @@ class messagePortServices: XCTestCase {
         gitAnnexTurtle = GitAnnexTurtleStub()
         runMessagePortServices = RunMessagePortServices(gitAnnexTurtle: gitAnnexTurtle!)
         appTurtleMessagePortClient = AppTurtleMessagePort(id: "FinderSyncID 1")
+        appTurtleMessagePortClient2 = AppTurtleMessagePort(id: "FinderSyncID 2")
     }
     
     override func tearDown() {
@@ -36,6 +38,10 @@ class messagePortServices: XCTestCase {
         appTurtleMessagePortClient!.notifyCommandRequestsPendingDebounce()
         wait(for: 2)
         XCTAssertEqual(gitAnnexTurtle?.commandRequestsArePendingCalled, 1)
+        
+        appTurtleMessagePortClient!.notifyVisibleFolderUpdatesPendingDebounce()
+        wait(for: 2)
+        XCTAssertEqual(gitAnnexTurtle?.visibleFolderUpdatesArePendingCalled, 1)
     }
 }
 class StoppableStub: StoppableService {}
