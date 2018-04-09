@@ -205,6 +205,8 @@
 		49FDAAEB207B030000FE6043 /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
 		49FDAAEE207BC2A700FE6043 /* HandleCommandRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */; };
 		49FDAAEF207BC2B800FE6043 /* HandleCommandRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */; };
+		49FDAAF2207BD75A00FE6043 /* HandleBadgeRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAF0207BD52D00FE6043 /* HandleBadgeRequests.swift */; };
+		49FDAAF3207BD75B00FE6043 /* HandleBadgeRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAF0207BD52D00FE6043 /* HandleBadgeRequests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -357,6 +359,7 @@
 		49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTurtleMessagePort.swift; sourceTree = "<group>"; };
 		49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = messagePortServices.swift; sourceTree = "<group>"; };
 		49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleCommandRequests.swift; sourceTree = "<group>"; };
+		49FDAAF0207BD52D00FE6043 /* HandleBadgeRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleBadgeRequests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -491,6 +494,7 @@
 				49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */,
 				49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */,
 				49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */,
+				49FDAAF0207BD52D00FE6043 /* HandleBadgeRequests.swift */,
 			);
 			path = "git-annex-mac";
 			sourceTree = "<group>";
@@ -934,6 +938,7 @@
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
+				49FDAAF3207BD75B00FE6043 /* HandleBadgeRequests.swift in Sources */,
 				490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */,
 				49D149232049F64700CA10F2 /* StreamReader.swift in Sources */,
 				490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */,
@@ -1001,6 +1006,7 @@
 				49DDE18A2059F495008C55AC /* VisibleFolders.swift in Sources */,
 				49DDE18F2059F54B008C55AC /* Witness.swift in Sources */,
 				49FDAAEB207B030000FE6043 /* HandlersObjc.m in Sources */,
+				49FDAAF2207BD75A00FE6043 /* HandleBadgeRequests.swift in Sources */,
 				49AF86462069871B00945F57 /* DispatchQueueFIFO.swift in Sources */,
 				49DDE1892059F099008C55AC /* Dialogs.swift in Sources */,
 				49D149242049F6AF00CA10F2 /* StreamReader.swift in Sources */,

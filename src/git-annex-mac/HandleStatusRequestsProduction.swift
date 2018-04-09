@@ -57,7 +57,7 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
     }
     
     private func handleRequest(_ r: StatusRequest) {
-        TurtleLog.trace("handling \(r) in \(watchedFolder)")
+        TurtleLog.debug("handling \(r) in \(watchedFolder)")
         
         if PathUtils.isCurrent(r.path) == false,
             PathUtils.pathExists(for: r.path, in: watchedFolder) == false {

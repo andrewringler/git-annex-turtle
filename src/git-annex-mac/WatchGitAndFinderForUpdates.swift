@@ -46,25 +46,12 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
         // check if incomplete folders have finished scanning their children
         DispatchQueue.global(qos: .background).async {
             while super.running.isRunning() {
-                let foundUpdates = self.handleDatabaseUpdates()
-                if !foundUpdates {
-                    // if we didn't get any database updates, lets give the CPU a rest
-                    // PERFORMANCE, this is spiking the CPU
-                    usleep(150000)
-                }
+                self.updateWatchedAndVisibleFolders()
+                // PERFORMANCE, this is spiking the CPU
+                usleep(150000)
             }
         }
-        _ = handleDatabaseUpdates() // check Db for updates, once now
-    }
-    
-    private func handleDatabaseUpdates() -> Bool {
-        let foundUpdatesBadges = handleBadgeRequests()
-        
-        // does not contribute to foundUpdates, since these are all things
-        // that don't necessary change rapidly
-        updateWatchedAndVisibleFolders()
-        
-        return foundUpdatesBadges
+        updateWatchedAndVisibleFolders() // check Db for updates, once now
     }
     
     private func updateWatchedAndVisibleFolders() {
@@ -269,39 +256,6 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
         // from the last handled commit, up-to and including the
         // latest commit (that was available before we started)
         queries.updateLatestHandledCommit(gitCommitHash: currentGitCommitHash, gitAnnexCommitHash: currentGitAnnexCommitHash, in: watchedFolder)
-    }
-    
-    //
-    // Badge Icon Requests
-    //
-    // handle requests for updated badge icons from our Finder Sync extension
-    //
-    private func handleBadgeRequests() -> Bool {
-        var foundUpdates = false
-        
-        for watchedFolder in self.watchedFolders {
-            // Only handle badge requests for folders that aren't currently being scanned
-            // TODO, give immediate feedback to the user here on some files?
-            // TODO, we can miss some files if they appear after full scan enumeration
-            if !fullScan.isScanning(watchedFolder: watchedFolder) {
-                for path in queries.allPathRequestsV2Blocking(in: watchedFolder) {
-                    foundUpdates = true
-                    
-                    if queries.statusForPathV2Blocking(path: path, in: watchedFolder) != nil {
-                        // OK, we already have a status for this path, maybe
-                        // Finder Sync missed it, lets update our last modified flag
-                        // to ensure Finder Sync see it
-                        queries.updateLastModifiedAsync.runTaskAgain()
-                    } else {
-                        // We have no information about this file
-                        // enqueue it for inspection
-                        watchedFolder.handleStatusRequests!.updateStatusFor(for: path, source: .badgerequest, isDir: nil, priority: .low)
-                    }
-                }
-            }
-        }
-        
-        return foundUpdates
     }
     
     func getWatchedFolders() -> Set<WatchedFolder> {
