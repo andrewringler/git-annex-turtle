@@ -55,6 +55,8 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
     }
     
     private func updateWatchedAndVisibleFolders() {
+        // PERFORMANCE, this could be triggered instead with a RunNowOrAgain
+        // after every file update
         // Handle folder updates, for any folder that is not doing a full scan
         for watchedFolder in self.watchedFolders {
             if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
