@@ -197,6 +197,8 @@
 		49F0ED01200E663500C8BBCB /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */; };
 		49FDAADE207AED7200FE6043 /* RunMessagePortServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */; };
+		49FDAAE0207AF03F00FE6043 /* AppTurtleMessagePort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */; };
+		49FDAAE1207AF05200FE6043 /* AppTurtleMessagePort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -346,6 +348,7 @@
 		49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataEntrypoint.swift; sourceTree = "<group>"; };
 		49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
 		49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMessagePortServices.swift; sourceTree = "<group>"; };
+		49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTurtleMessagePort.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -525,6 +528,7 @@
 				499B44621DE544F00091E0E3 /* Supporting Files */,
 				499AFFEA205C0855008BD34A /* FinderSyncCore.swift */,
 				499AFFEC205C0885008BD34A /* FinderSyncProtocol.swift */,
+				49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */,
 			);
 			path = "git-annex-finder";
 			sourceTree = "<group>";
@@ -963,6 +967,7 @@
 				490982F2204EDBB200096C92 /* TurtleLog.swift in Sources */,
 				49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				49977D58202A323600FA9527 /* gitAnnexQueriesTests.swift in Sources */,
+				49FDAAE1207AF05200FE6043 /* AppTurtleMessagePort.swift in Sources */,
 				492492062040A18400F8D8A0 /* Constants.swift in Sources */,
 				49DDE17F2059DC09008C55AC /* HandleStatusRequestsProduction.swift in Sources */,
 				492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */,
@@ -1025,6 +1030,7 @@
 				497D1FD120116EB200106566 /* Witness.swift in Sources */,
 				497D1FCE20116EB200106566 /* debounce-throttle.swift in Sources */,
 				49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */,
+				49FDAAE0207AF03F00FE6043 /* AppTurtleMessagePort.swift in Sources */,
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49BC72F4207A97E900D840AC /* TurtleServiceObjects.swift in Sources */,
 				49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */,

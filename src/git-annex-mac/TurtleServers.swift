@@ -31,7 +31,7 @@ public class TurtleServerPing: NSObject {
 }
 
 public class TurtleServerCommandRequests: NSObject {
-    init(toRunLoop runLoop: CFRunLoop) {
+    init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
         super.init()
         let cfname = messagePortNameCommandRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrCommandRequests(self), retain: nil, release: nil, copyDescription: nil)
@@ -59,7 +59,7 @@ public class TurtleServerCommandRequests: NSObject {
 }
 
 public class TurtleServerBadgeRequests: NSObject {
-    init(toRunLoop runLoop: CFRunLoop) {
+    init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
         super.init()
         let cfname = messagePortNameBadgeRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrBadgeRequests(self), retain: nil, release: nil, copyDescription: nil)

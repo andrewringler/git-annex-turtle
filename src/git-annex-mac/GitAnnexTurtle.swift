@@ -10,7 +10,9 @@ import Foundation
 
 protocol GitAnnexTurtleSwift {
     func updateMenubarData(with watchedFolders: Set<WatchedFolder>)
-
+    func commandRequestsArePending()
+    func badgeRequestsArePending()
+    
     func applicationDidFinishLaunching(_ aNotification: Notification)
     func applicationWillTerminate(_ aNotification: Notification)
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply
@@ -24,6 +26,10 @@ protocol GitAnnexTurtleSwift {
 typealias GitAnnexTurtle = GitAnnexTurtleSwift & GitAnnexTurtleViewModel
 
 class GitAnnexTurtleStub: GitAnnexTurtle {
+    var updateMenubarDataCalled: Int32 = 0
+    var commandRequestsArePendingCalled: Int32 = 0
+    var badgeRequestsArePendingCalled: Int32 = 0
+
     func applicationDidFinishLaunching(_ aNotification: Notification) {}
     func applicationWillTerminate(_ aNotification: Notification) {}
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -33,7 +39,10 @@ class GitAnnexTurtleStub: GitAnnexTurtle {
         return nil
     }
     
-    func updateMenubarData(with watchedFolders: Set<WatchedFolder>) {}
+    func updateMenubarData(with watchedFolders: Set<WatchedFolder>) { OSAtomicIncrement32(&updateMenubarDataCalled) }
+    func commandRequestsArePending() { OSAtomicIncrement32(&commandRequestsArePendingCalled) }
+    func badgeRequestsArePending() { OSAtomicIncrement32(&badgeRequestsArePendingCalled) }
+
     @objc func showPreferencesWindow(_ sender: Any?) {}
     @objc func showAboutWindow(_ sender: Any?) {}
     @objc func showInFinder(_ sender: NSMenuItem) {}

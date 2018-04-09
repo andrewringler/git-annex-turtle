@@ -70,7 +70,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
         
         // Run MessagePort Services for Finder Sync communications
-        runMessagePortServices = RunMessagePortServices()
+        runMessagePortServices = RunMessagePortServices(gitAnnexTurtle: self)
 
         // Animated icon
         DispatchQueue.global(qos: .background).async {
@@ -248,5 +248,13 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         menubarIconAnimationLock.lock()
         menubarAnimating = false
         menubarIconAnimationLock.unlock()
+    }
+    
+    func commandRequestsArePending() {
+        TurtleLog.todo("implement me")
+    }
+    
+    func badgeRequestsArePending() {
+        TurtleLog.todo("implement me")
     }
 }

@@ -19,7 +19,7 @@ class RunMessagePortServices {
     var turtleServerCommandRequests: TurtleServerCommandRequests?
     var turtleServerBadgeRequests: TurtleServerBadgeRequests?
 
-    init() {
+    init(gitAnnexTurtle: GitAnnexTurtle) {
         serviceThreadPing = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortPing")
         serviceThreadCommandRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortCommandRequests")
         serviceThreadBadgeRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortBadgeRequests")
@@ -35,13 +35,13 @@ class RunMessagePortServices {
         
         // Notify of new Badge Requests from Finder Sync extensions
         serviceThreadBadgeRequests.async {
-            self.turtleServerBadgeRequests = TurtleServerBadgeRequests(toRunLoop: CFRunLoopGetCurrent())
+            self.turtleServerBadgeRequests = TurtleServerBadgeRequests(toRunLoop: CFRunLoopGetCurrent(), gitAnnexTurtle: gitAnnexTurtle)
             CFRunLoopRun()
         }
         
         // Notify of new Command Requests from Finder Sync extensions
         serviceThreadCommandRequests.async {
-            self.turtleServerCommandRequests = TurtleServerCommandRequests(toRunLoop: CFRunLoopGetCurrent())
+            self.turtleServerCommandRequests = TurtleServerCommandRequests(toRunLoop: CFRunLoopGetCurrent(), gitAnnexTurtle: gitAnnexTurtle)
             CFRunLoopRun()
         }
     }
