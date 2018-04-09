@@ -2,10 +2,10 @@ import Foundation
 
 // https://stackoverflow.com/a/41165920/8671834
 // http://nshipster.com/inter-process-communication/
-public class TurtleServer: NSObject {
-    init(name: String, toRunLoop runLoop: CFRunLoop) {
+public class TurtleServerPing: NSObject {
+    init(toRunLoop runLoop: CFRunLoop) {
         super.init()
-        let cfname = name as CFString
+        let cfname = messagePortNamePing as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtr(self), retain: nil, release: nil, copyDescription: nil)
         var shouldFreeInfo: DarwinBoolean = false
         let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, pingHandler(), &context, &shouldFreeInfo)

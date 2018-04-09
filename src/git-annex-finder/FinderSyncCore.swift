@@ -10,7 +10,6 @@ import Cocoa
 import CoreData
 import Foundation
 
-// proof of concept message port communication with parent app
 class AppTurtleMessagePort {
     let stoppable: StoppableService
     let id: String
@@ -22,7 +21,7 @@ class AppTurtleMessagePort {
         // Ping keep-alive
         DispatchQueue.global(qos: .background).async {
             while stoppable.running.isRunning() {
-                if let serverPort = CFMessagePortCreateRemote(nil, messagePortName as CFString) {
+                if let serverPort = CFMessagePortCreateRemote(nil, messagePortNamePing as CFString) {
                     do {
                         let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
                         let data: CFData = try JSONEncoder().encode(sendPingData) as CFData

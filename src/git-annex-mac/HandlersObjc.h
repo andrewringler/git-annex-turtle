@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
 
-@class TurtleServer;
+@class TurtleServerPing;
 extern CFMessagePortCallBack pingHandler(void);
-extern void *bridgedPtr(TurtleServer *server);
+extern void *bridgedPtr(TurtleServerPing *server);

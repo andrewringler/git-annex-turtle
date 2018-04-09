@@ -37,6 +37,10 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
     
+    // hold onto references of CFMessagePort servers
+    // so they aren't garbage collected
+    var turtleServerPing: TurtleServerPing?
+    
     init() {
         for i in 0...16 {
             menubarIcons.append(NSImage(named:NSImage.Name(rawValue: "menubaricon-\(String(i))"))!)
@@ -75,8 +79,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
             // CFMessagePort expects a runloop, so give it one inside a custom GCD thread
             // this seems like a reasonable way to interop with these Object-C libraries from Swift
             // see https://stackoverflow.com/a/38001438/8671834 for more discussions
-            let server = TurtleServer(name: messagePortName, toRunLoop: CFRunLoopGetCurrent())
-//            server.addSourceForNewLocalMessagePort()
+            self.turtleServerPing = TurtleServerPing(toRunLoop: CFRunLoopGetCurrent())
             CFRunLoopRun()
         }
 

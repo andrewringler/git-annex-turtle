@@ -119,7 +119,7 @@
 		49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49AF864F206A785900945F57 /* StopProcessingWatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */; };
 		49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B65D4B201787A400485852 /* BadgeIcons.swift */; };
-		49BC72E62079573B00D840AC /* TurtleServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServer.swift */; };
+		49BC72E62079573B00D840AC /* TurtleServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServers.swift */; };
 		49BC72E72079573B00D840AC /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
 		49BC72F1207A97D300D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
 		49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72F0207A97D300D840AC /* TurtleServiceObjects.swift */; };
@@ -306,7 +306,7 @@
 		49AF864A206A6FE900945F57 /* folderTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = folderTrackingTests.swift; sourceTree = "<group>"; };
 		49AF864C206A77D800945F57 /* StopProcessingWatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopProcessingWatchedFolder.swift; sourceTree = "<group>"; };
 		49B65D4B201787A400485852 /* BadgeIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIcons.swift; sourceTree = "<group>"; };
-		49BC72E22079573A00D840AC /* TurtleServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TurtleServer.swift; sourceTree = "<group>"; };
+		49BC72E22079573A00D840AC /* TurtleServers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TurtleServers.swift; sourceTree = "<group>"; };
 		49BC72E32079573A00D840AC /* HandlersObjc.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = HandlersObjc.h; sourceTree = "<group>"; };
 		49BC72E42079573A00D840AC /* HandlersObjc.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HandlersObjc.m; sourceTree = "<group>"; };
 		49BC72E920795D1A00D840AC /* git_annex_turtle-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "git_annex_turtle-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -459,7 +459,7 @@
 		490BCB841DE5444C00734FF4 /* git-annex-mac */ = {
 			isa = PBXGroup;
 			children = (
-				49BC72E22079573A00D840AC /* TurtleServer.swift */,
+				49BC72E22079573A00D840AC /* TurtleServers.swift */,
 				49BC72E32079573A00D840AC /* HandlersObjc.h */,
 				49BC72E42079573A00D840AC /* HandlersObjc.m */,
 				49BC72E920795D1A00D840AC /* git_annex_turtle-Bridging-Header.h */,
@@ -910,7 +910,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49BC72E62079573B00D840AC /* TurtleServer.swift in Sources */,
+				49BC72E62079573B00D840AC /* TurtleServers.swift in Sources */,
 				49EFD1F82006D08A005742DB /* ViewController.swift in Sources */,
 				49AF864E206A785800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
