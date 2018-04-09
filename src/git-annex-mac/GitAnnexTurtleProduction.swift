@@ -36,6 +36,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
     var runMessagePortServices: RunMessagePortServices?
+    var handleCommandRequests: HandleCommandRequests?
 
     init() {
         for i in 0...16 {
@@ -65,7 +66,8 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         
         // Start the main database and git-annex loop
         watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
-        
+        handleCommandRequests = HandleCommandRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
+
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
         
@@ -251,7 +253,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     }
     
     func commandRequestsArePending() {
-        TurtleLog.todo("implement me")
+        handleCommandRequests?.handleNewRequests()
     }
     
     func badgeRequestsArePending() {

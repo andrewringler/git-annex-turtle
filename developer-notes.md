@@ -1,4 +1,5 @@
 ## Bugs, definitely fix
+ * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
  * handleDatabaseUpdates and handleAnimateMenubarIcon are spiking the CPU heavily
  * Test with v6 repos
  * Test with git annex watch

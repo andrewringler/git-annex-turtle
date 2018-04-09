@@ -203,6 +203,8 @@
 		49FDAAE9207B017D00FE6043 /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
 		49FDAAEA207B01AC00FE6043 /* TurtleServers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E22079573A00D840AC /* TurtleServers.swift */; };
 		49FDAAEB207B030000FE6043 /* HandlersObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 49BC72E42079573A00D840AC /* HandlersObjc.m */; };
+		49FDAAEE207BC2A700FE6043 /* HandleCommandRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */; };
+		49FDAAEF207BC2B800FE6043 /* HandleCommandRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -354,6 +356,7 @@
 		49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMessagePortServices.swift; sourceTree = "<group>"; };
 		49FDAADF207AF03F00FE6043 /* AppTurtleMessagePort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTurtleMessagePort.swift; sourceTree = "<group>"; };
 		49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = messagePortServices.swift; sourceTree = "<group>"; };
+		49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleCommandRequests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -487,6 +490,7 @@
 				49D000652040B215008DC76A /* FolderTracking.swift */,
 				49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */,
 				49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */,
+				49FDAAEC207BC09300FE6043 /* HandleCommandRequests.swift */,
 			);
 			path = "git-annex-mac";
 			sourceTree = "<group>";
@@ -957,6 +961,7 @@
 				49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */,
 				49EF626B200E6771002D1585 /* DataEntrypoint.swift in Sources */,
 				49E13FC12013B17B00EE3DBE /* VisibleFolders.swift in Sources */,
+				49FDAAEE207BC2A700FE6043 /* HandleCommandRequests.swift in Sources */,
 				49DDE17A2059CC67008C55AC /* TurtleDialogs.swift in Sources */,
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
@@ -1021,6 +1026,7 @@
 				499AFFE9205B1251008BD34A /* queriesTests.swift in Sources */,
 				492491FB20406A8800F8D8A0 /* TestingUtil.swift in Sources */,
 				49AF86352069372B00945F57 /* HandleStatusRequests.swift in Sources */,
+				49FDAAEF207BC2B800FE6043 /* HandleCommandRequests.swift in Sources */,
 				49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */,
 				49AF8645206986EF00945F57 /* dispatchQueueFIFOTests.swift in Sources */,
 			);

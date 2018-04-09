@@ -80,6 +80,7 @@ class FinderSyncCore: StoppableService {
                         } else {
                             // status is not in the Db, request it
                             self.queries.addRequestV2Async(for: path, in: watchedFolder)
+                            self.appTurtleMessagePort.notifyBadgeRequestsPendingDebounce()
                         }
                     }
                 } else {
@@ -100,7 +101,7 @@ class FinderSyncCore: StoppableService {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                         queries.addVisibleFolderAsync(for: path, in: watchedFolder, processID: finderSync.id())
-                        
+
                         return
                     } else {
                         TurtleLog.error("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -120,6 +121,7 @@ class FinderSyncCore: StoppableService {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                         queries.removeVisibleFolderAsync(for: path, in: watchedFolder, processID: finderSync.id())
+
                         return
                     } else {
                         TurtleLog.error("endObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -183,6 +185,7 @@ class FinderSyncCore: StoppableService {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                         queries.submitCommandRequest(for: path, in: watchedFolder, commandType: command.commandType, commandString: command.commandString)
+                        appTurtleMessagePort.notifyCommandRequestsPendingDebounce()
                     } else {
                         TurtleLog.error("could not find relative path for \(absolutePath) in \(watchedFolder)")
                     }

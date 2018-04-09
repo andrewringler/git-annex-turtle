@@ -8,7 +8,11 @@
 
 import Foundation
 
-class WatchGitAndFinderForUpdates: StoppableService {
+protocol HasWatchedFolders {
+    func getWatchedFolders() -> Set<WatchedFolder>
+}
+
+class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
     let config: Config
     let gitAnnexTurtle: GitAnnexTurtle
     let data: DataEntrypoint
@@ -54,14 +58,13 @@ class WatchGitAndFinderForUpdates: StoppableService {
     }
     
     private func handleDatabaseUpdates() -> Bool {
-        let foundUpdatesCommands = handleCommandRequests()
         let foundUpdatesBadges = handleBadgeRequests()
         
         // does not contribute to foundUpdates, since these are all things
         // that don't necessary change rapidly
         updateWatchedAndVisibleFolders()
         
-        return foundUpdatesCommands || foundUpdatesBadges
+        return foundUpdatesBadges
     }
     
     private func updateWatchedAndVisibleFolders() {
@@ -266,49 +269,6 @@ class WatchGitAndFinderForUpdates: StoppableService {
         // from the last handled commit, up-to and including the
         // latest commit (that was available before we started)
         queries.updateLatestHandledCommit(gitCommitHash: currentGitCommitHash, gitAnnexCommitHash: currentGitAnnexCommitHash, in: watchedFolder)
-    }
-    
-    //
-    // Command Requests
-    //
-    // handle command requests "git annex get/add/drop/etc…" comming from our Finder Sync extensions
-    //
-    private func handleCommandRequests() -> Bool {
-        let queries = Queries(data: self.data)
-        let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
-        
-        for commandRequest in commandRequests {
-            for watchedFolder in self.watchedFolders {
-                if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
-                    // Is this a Git Annex Command?
-                    if commandRequest.commandType.isGitAnnex {
-                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                        if !status.success {
-                            // git-annex has very nice error message, use them as-is
-                            dialogs.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
-                    }
-                    
-                    // Is this a Git Command?
-                    if commandRequest.commandType.isGit {
-                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
-                        if !status.success {
-                            dialogs.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
-                    }
-                    
-                    break
-                }
-            }
-        }
-        
-        return commandRequests.count > 0
     }
     
     //
