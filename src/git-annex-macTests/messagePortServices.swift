@@ -18,7 +18,7 @@ class messagePortServices: XCTestCase {
         super.setUp()
         gitAnnexTurtle = GitAnnexTurtleStub()
         runMessagePortServices = RunMessagePortServices(gitAnnexTurtle: gitAnnexTurtle!)
-        appTurtleMessagePortClient = AppTurtleMessagePort(id: "FinderSyncID 1", stoppable: StoppableStub())
+        appTurtleMessagePortClient = AppTurtleMessagePort(id: "FinderSyncID 1")
     }
     
     override func tearDown() {
@@ -27,6 +27,8 @@ class messagePortServices: XCTestCase {
     }
 
     func testNotifiesGitAnnexTurtle() {
+        wait(for: 2) // wait for ports to startup
+        
         appTurtleMessagePortClient!.notifyBadgeRequestsPending()
         wait(for: 2)
         XCTAssertEqual(gitAnnexTurtle?.badgeRequestsArePendingCalled, 1)

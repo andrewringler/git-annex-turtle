@@ -8,7 +8,7 @@
 
 import Foundation
 
-class RunMessagePortServices {
+class RunMessagePortServices: StoppableService {
     let serviceThreadPing: DispatchQueue
     let serviceThreadCommandRequests: DispatchQueue
     let serviceThreadBadgeRequests: DispatchQueue
@@ -24,6 +24,8 @@ class RunMessagePortServices {
         serviceThreadCommandRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortCommandRequests")
         serviceThreadBadgeRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortBadgeRequests")
 
+        super.init()
+        
         // Ping requests from Finder Sync extensions
         serviceThreadPing.async {
             // CFMessagePort expects a runloop, so give it one inside a custom GCD thread
@@ -44,5 +46,16 @@ class RunMessagePortServices {
             self.turtleServerCommandRequests = TurtleServerCommandRequests(toRunLoop: CFRunLoopGetCurrent(), gitAnnexTurtle: gitAnnexTurtle)
             CFRunLoopRun()
         }
+    }
+    
+    public override func stop() {
+        turtleServerPing?.invalidate()
+        turtleServerCommandRequests?.invalidate()
+        turtleServerBadgeRequests?.invalidate()
+        turtleServerPing = nil
+        turtleServerCommandRequests = nil
+        turtleServerBadgeRequests = nil
+        
+        super.stop()
     }
 }

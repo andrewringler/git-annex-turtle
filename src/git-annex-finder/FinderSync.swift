@@ -15,7 +15,8 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
     let processID: String = ProcessInfo().globallyUniqueString
 
     var finderSyncCore: FinderSyncCore?
-        
+    var keepAlive: AppTurtleMessagePortPingKeepAlive?
+    
     let badgeIcons: BadgeIcons
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
@@ -25,6 +26,7 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
 
         super.init()
         finderSyncCore = FinderSyncCore(finderSync: self, data: DataEntrypoint())
+        keepAlive = AppTurtleMessagePortPingKeepAlive(id: id(), stoppable: finderSyncCore!)
     }
     
     func setWatchedFolders(to newWatchedFolders: Set<URL>) {

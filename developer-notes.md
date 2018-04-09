@@ -47,6 +47,7 @@
 
 ## Performance, probably
  * nice, renice git during full scan (or always?)
+ * add back in ignoring of duplicate path requests in HandleStatusRequestsProduction, this is especially noticeable during something like drop all files
  * childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
  * we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa. it seems XPC communication is not possible with Finder Sync extensions. We probably need to have FinderSync processes directly communicate with the App if we want to implement progress bars.
  * requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate

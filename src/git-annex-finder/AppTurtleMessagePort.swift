@@ -8,7 +8,7 @@
 
 import Foundation
 
-class AppTurtleMessagePort {
+class AppTurtleMessagePortPingKeepAlive {
     let stoppable: StoppableService
     let id: String
     
@@ -42,6 +42,20 @@ class AppTurtleMessagePort {
                 sleep(2)
             }
         }
+    }
+    
+    private func doQuit() {
+        TurtleLog.info("unable to connect with Turtle App service, quiting…")
+        stoppable.stop()
+        exit(0)
+    }
+}
+
+class AppTurtleMessagePort {
+    let id: String
+    
+    init(id: String) {
+        self.id = id
     }
     
     public func notifyCommandRequestsPending() {
@@ -80,11 +94,5 @@ class AppTurtleMessagePort {
         } else {
             TurtleLog.error("unable to open badge request port \(messagePortNameCommandRequests) connecting with App Turtle Service")
         }
-    }
-    
-    private func doQuit() {
-        TurtleLog.info("unable to connect with Turtle App service, quiting…")
-        stoppable.stop()
-        exit(0)
     }
 }

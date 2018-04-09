@@ -3,12 +3,14 @@ import Foundation
 // https://stackoverflow.com/a/41165920/8671834
 // http://nshipster.com/inter-process-communication/
 public class TurtleServerPing: NSObject {
+    var port: CFMessagePort?
+
     init(toRunLoop runLoop: CFRunLoop) {
         super.init()
         let cfname = messagePortNamePing as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtr(self), retain: nil, release: nil, copyDescription: nil)
         var shouldFreeInfo: DarwinBoolean = false
-        let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, pingHandler(), &context, &shouldFreeInfo)
+        port = CFMessagePortCreateLocal(nil, cfname, pingHandler(), &context, &shouldFreeInfo)
         let source = CFMessagePortCreateRunLoopSource(nil, port, 0)
         CFRunLoopAddSource(runLoop, source, CFRunLoopMode.commonModes)
     }
@@ -28,18 +30,25 @@ public class TurtleServerPing: NSObject {
         
         return nil
     }
+    
+    public func invalidate() {
+        if let portCreated = port {
+            CFMessagePortInvalidate(portCreated)
+        }
+    }
 }
 
 public class TurtleServerCommandRequests: NSObject {
     let gitAnnexTurtle: GitAnnexTurtle
-    
+    var port: CFMessagePort?
+
     init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
         self.gitAnnexTurtle = gitAnnexTurtle
         super.init()
         let cfname = messagePortNameCommandRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrCommandRequests(self), retain: nil, release: nil, copyDescription: nil)
         var shouldFreeInfo: DarwinBoolean = false
-        let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, commandRequestHandler(), &context, &shouldFreeInfo)
+        port = CFMessagePortCreateLocal(nil, cfname, commandRequestHandler(), &context, &shouldFreeInfo)
         let source = CFMessagePortCreateRunLoopSource(nil, port, 0)
         CFRunLoopAddSource(runLoop, source, CFRunLoopMode.commonModes)
     }
@@ -60,18 +69,25 @@ public class TurtleServerCommandRequests: NSObject {
         
         return nil
     }
+    
+    public func invalidate() {
+        if let portCreated = port {
+            CFMessagePortInvalidate(portCreated)
+        }
+    }
 }
 
 public class TurtleServerBadgeRequests: NSObject {
     let gitAnnexTurtle: GitAnnexTurtle
-
+    var port: CFMessagePort?
+    
     init(toRunLoop runLoop: CFRunLoop, gitAnnexTurtle: GitAnnexTurtle) {
         self.gitAnnexTurtle = gitAnnexTurtle
         super.init()
         let cfname = messagePortNameBadgeRequests as CFString
         var context = CFMessagePortContext(version: 0, info: bridgedPtrBadgeRequests(self), retain: nil, release: nil, copyDescription: nil)
         var shouldFreeInfo: DarwinBoolean = false
-        let port: CFMessagePort = CFMessagePortCreateLocal(nil, cfname, badgeRequestHandler(), &context, &shouldFreeInfo)
+        port = CFMessagePortCreateLocal(nil, cfname, badgeRequestHandler(), &context, &shouldFreeInfo)
         let source = CFMessagePortCreateRunLoopSource(nil, port, 0)
         CFRunLoopAddSource(runLoop, source, CFRunLoopMode.commonModes)
     }
@@ -91,5 +107,11 @@ public class TurtleServerBadgeRequests: NSObject {
         }
         
         return nil
+    }
+    
+    public func invalidate() {
+        if let portCreated = port {
+            CFMessagePortInvalidate(portCreated)
+        }
     }
 }
