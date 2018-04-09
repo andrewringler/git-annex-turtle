@@ -101,7 +101,8 @@ class FinderSyncCore: StoppableService {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                         queries.addVisibleFolderAsync(for: path, in: watchedFolder, processID: finderSync.id())
-
+                        self.appTurtleMessagePort.notifyVisibleFolderUpdatesPendingDebounce()
+                        
                         return
                     } else {
                         TurtleLog.error("beginObservingDirectory: could not get relative path for \(absolutePath) in \(watchedFolder)")
@@ -121,6 +122,7 @@ class FinderSyncCore: StoppableService {
                 if absolutePath.starts(with: watchedFolder.pathString) {
                     if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                         queries.removeVisibleFolderAsync(for: path, in: watchedFolder, processID: finderSync.id())
+                        self.appTurtleMessagePort.notifyVisibleFolderUpdatesPendingDebounce()
 
                         return
                     } else {

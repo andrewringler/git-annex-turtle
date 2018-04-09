@@ -26,16 +26,16 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
     var fileSystemMonitors: [WatchedFolderMonitor] = []
     var listenForWatchedFolderChanges: Witness? = nil
     
-    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs) {
+    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs, visibleFolders: VisibleFolders) {
         self.gitAnnexTurtle = gitAnnexTurtle
         self.config = config
         self.data = data
         self.fullScan = fullScan
         self.gitAnnexQueries = gitAnnexQueries
         self.dialogs = dialogs
+        self.visibleFolders = visibleFolders
         
         queries = Queries(data: data)
-        visibleFolders = VisibleFolders(queries: queries)
 
         super.init()
 
@@ -55,8 +55,6 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
     }
     
     private func updateWatchedAndVisibleFolders() {
-        self.visibleFolders.updateListOfVisibleFolders(with: self.watchedFolders)
-        
         // Handle folder updates, for any folder that is not doing a full scan
         for watchedFolder in self.watchedFolders {
             if !self.fullScan.isScanning(watchedFolder: watchedFolder) {

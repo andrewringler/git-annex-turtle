@@ -35,11 +35,12 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
         let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
+        let visibleFolders = VisibleFolders(queries: queries!)
 //        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
         gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitCmd: "/Applications/git-annex.app/Contents/MacOS/git")
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
 
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage())
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage(), visibleFolders: visibleFolders)
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)

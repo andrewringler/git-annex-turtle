@@ -11,17 +11,13 @@ import Foundation
 class HandleBadgeRequests: StoppableService {
     private let hasWatchedFolders: HasWatchedFolders
     private let queries: Queries
-    private let gitAnnexQueries: GitAnnexQueries
-    private let dialogs: Dialogs
     private let fullScan: FullScan
     private var handler: RunNowOrAgain?
     
-    init(hasWatchedFolders: HasWatchedFolders, fullScan: FullScan, queries: Queries, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs) {
+    init(hasWatchedFolders: HasWatchedFolders, fullScan: FullScan, queries: Queries) {
         self.hasWatchedFolders = hasWatchedFolders
         self.fullScan = fullScan
         self.queries = queries
-        self.gitAnnexQueries = gitAnnexQueries
-        self.dialogs = dialogs
         super.init()
         handler = RunNowOrAgain({
             self.handleBadgeRequests()

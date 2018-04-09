@@ -29,7 +29,8 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     let gitAnnexQueries: GitAnnexQueries
     let fullScan: FullScan
     let dialogs = TurtleDialogs()
-    
+    let visibleFolders: VisibleFolders
+
     var menuBarButton :NSStatusBarButton?
     var preferencesViewController: ViewController? = nil
     var preferencesWindow: NSWindow? = nil
@@ -38,6 +39,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     var runMessagePortServices: RunMessagePortServices?
     var handleCommandRequests: HandleCommandRequests?
     var handleBadgeRequests: HandleBadgeRequests?
+    var handleVisibleFolderUpdates: HandleVisibleFolderUpdates?
 
     init() {
         for i in 0...16 {
@@ -54,6 +56,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         
         data = DataEntrypoint()
         queries = Queries(data: data)
+        visibleFolders = VisibleFolders(queries: queries)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries, queries: queries)
     }
     
@@ -66,10 +69,11 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         constructMenu(watchedFolders: []) // generate an empty menu stub
         
         // Start the main database and git-annex loop
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs, visibleFolders: visibleFolders)
         handleCommandRequests = HandleCommandRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
-        handleBadgeRequests = HandleBadgeRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, fullScan: fullScan, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
-        
+        handleBadgeRequests = HandleBadgeRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, fullScan: fullScan, queries: queries)
+        handleVisibleFolderUpdates = HandleVisibleFolderUpdates(hasWatchedFolders: watchGitAndFinderForUpdates!, visibleFolders: visibleFolders)
+
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
         
