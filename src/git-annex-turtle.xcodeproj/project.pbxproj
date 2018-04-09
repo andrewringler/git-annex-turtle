@@ -196,6 +196,7 @@
 		49F0ECFE200E5F6300C8BBCB /* Queries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFA200E5D8C00C8BBCB /* Queries.swift */; };
 		49F0ED01200E663500C8BBCB /* DataEntrypoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */; };
 		49F8C0CE1DE5DFF0005FA39D /* ConsoleIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */; };
+		49FDAADE207AED7200FE6043 /* RunMessagePortServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -344,6 +345,7 @@
 		49F0ECFA200E5D8C00C8BBCB /* Queries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Queries.swift; sourceTree = "<group>"; };
 		49F0ECFF200E653500C8BBCB /* DataEntrypoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataEntrypoint.swift; sourceTree = "<group>"; };
 		49F8C0CD1DE5DFF0005FA39D /* ConsoleIO.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsoleIO.swift; sourceTree = "<group>"; };
+		49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMessagePortServices.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -476,6 +478,7 @@
 				492491F42040665A00F8D8A0 /* FullScan.swift */,
 				49D000652040B215008DC76A /* FolderTracking.swift */,
 				49DDE1832059E8B5008C55AC /* GitAnnexTurtleProduction.swift */,
+				49FDAADD207AED7200FE6043 /* RunMessagePortServices.swift */,
 			);
 			path = "git-annex-mac";
 			sourceTree = "<group>";
@@ -920,6 +923,7 @@
 				490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */,
 				49D149232049F64700CA10F2 /* StreamReader.swift in Sources */,
 				490982E5204E1D5600096C92 /* VisibleFolder.swift in Sources */,
+				49FDAADE207AED7200FE6043 /* RunMessagePortServices.swift in Sources */,
 				49F058AC203E225F00157DFB /* TurtleConfigV1.swift in Sources */,
 				4936D9652066FE3800FB76C7 /* Running.swift in Sources */,
 				49AF86402069845700945F57 /* LinkedList.swift in Sources */,

@@ -17,10 +17,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
     let gitAnnexLogoSquareColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-color"))
     let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "menubaricon-0"))
-    let serviceThreadPing: DispatchQueue
-    let serviceThreadCommandRequests: DispatchQueue
-    let serviceThreadBadgeRequests: DispatchQueue
-
+    
     var menubarIcons: [NSImage] = []
     var menubarAnimationIndex: Int = 0
     let menubarIconAnimationLock = NSLock()
@@ -38,12 +35,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     var preferencesWindow: NSWindow? = nil
     
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
-    
-    // hold onto references of CFMessagePort servers
-    // so they aren't garbage collected
-    var turtleServerPing: TurtleServerPing?
-    var turtleServerCommandRequests: TurtleServerCommandRequests?
-    var turtleServerBadgeRequests: TurtleServerBadgeRequests?
+    var runMessagePortServices: RunMessagePortServices?
 
     init() {
         for i in 0...16 {
@@ -61,9 +53,6 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         data = DataEntrypoint()
         queries = Queries(data: data)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries, queries: queries)
-        serviceThreadPing = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortPing")
-        serviceThreadCommandRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortCommandRequests")
-        serviceThreadBadgeRequests = DispatchQueue(label: "com.andrewringler.git-annex-mac.MessagePortBadgeRequests")
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
@@ -80,24 +69,8 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
         
-        // Ping requests from Finder Sync extensions
-        serviceThreadPing.async {
-            // CFMessagePort expects a runloop, so give it one inside a custom GCD thread
-            // this seems like a reasonable way to interop with these Object-C libraries from Swift
-            // see https://stackoverflow.com/a/38001438/8671834 for more discussions
-            self.turtleServerPing = TurtleServerPing(toRunLoop: CFRunLoopGetCurrent())
-            CFRunLoopRun()
-        }
-        // Notify of new Badge Requests from Finder Sync extensions
-        serviceThreadBadgeRequests.async {
-            self.turtleServerBadgeRequests = TurtleServerBadgeRequests(toRunLoop: CFRunLoopGetCurrent())
-            CFRunLoopRun()
-        }
-        // Notify of new Command Requests from Finder Sync extensions
-        serviceThreadCommandRequests.async {
-            self.turtleServerCommandRequests = TurtleServerCommandRequests(toRunLoop: CFRunLoopGetCurrent())
-            CFRunLoopRun()
-        }
+        // Run MessagePort Services for Finder Sync communications
+        runMessagePortServices = RunMessagePortServices()
 
         // Animated icon
         DispatchQueue.global(qos: .background).async {
