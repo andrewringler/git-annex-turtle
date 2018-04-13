@@ -11,8 +11,7 @@
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
 
 ## Not greats, should fix & UX issues
- * PDF icons are super large, compress when exporting from Illustrator?
- * even though all of the icons are scalable PDFs XCode is not scaling them, even with “preserve vector data” checked. Maybe this checkbox still does not work in all cases.
+ * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * crop or scroll large git error messages that appear in Dialogs
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
