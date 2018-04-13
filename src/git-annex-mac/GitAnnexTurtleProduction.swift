@@ -266,6 +266,6 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     }
     
     func visibleFolderUpdatesArePending() {
-        TurtleLog.todo("implement me")
+        handleVisibleFolderUpdates?.handleNewRequests()
     }
 }
