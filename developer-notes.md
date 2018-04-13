@@ -53,6 +53,7 @@
  * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
  * re-use Process and Shells for the same repo? 
  * during incremental updates combine multiple queries for the same repo into a single request, saves the overhead of spinning up a Process and Shell for each request and git-annex is probably faster at serving a single request for multiple files, than multiple requests
+ * .app size (uncompressed) is now down to 14.2mb. 11.1mb of this is from embedded frameworks, apparently this is required because of ever-changing Swift (see https://www.reddit.com/r/swift/comments/3fq7dy/what_affects_libswiftcoredylibs_size/ and https://owensd.io/2016/08/22/swift-app-bundle-sizes/). currently the only way around this is to place your App in the app store (in which case “thinning” will occur before download, or to include less stuff in your build like no 32-bit version
 
 ## New Users (Thoughts) UX
 Should git-annex-turtle be usable by people who have never used git-annex?
