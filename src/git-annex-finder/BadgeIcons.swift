@@ -9,148 +9,168 @@
 import Cocoa
 import FinderSync
 
-class BadgeIcons {
+struct BadgeIconSpec {
+    let name: String
+    let imagePath: String
+    let label: String
+    
+    init(_ name: String, _ imagePath: String, _ label: String) {
+        self.name = name
+        self.imagePath = imagePath
+        self.label = label
+    }
+}
+class BadgeIconSpecs {
     // still calculating number of copies and presentness
-    private let unknownStateInGitAnnex = NSImage(named:NSImage.Name(rawValue: "Clear12x12"))!
+    static let unknownStateInGitAnnex = BadgeIconSpec("unknownStateInGitAnnex", "", "Unknown")
     
     // not tracked by git-annex
-    private let notTracked = NSImage(named:NSImage.Name(rawValue: "QuestionGray12x12"))!
-    
+    static let notTracked = BadgeIconSpec("notTracked", "QuestionGray12x12", "Not Tracked")
+
     // there are no known copies of this file
-    private let zeroCopies = NSImage(named:NSImage.Name(rawValue: "Red12x12_0"))!
+    static let zeroCopies = BadgeIconSpec("zeroCopies", "Red12x12_0", "Zero Copies")
     
     // directory with some absent and some present files, we haven't counted known copies yet
-    private let partialPresentUnknownCopies = NSImage(named:NSImage.Name(rawValue: "HalfGray12x12"))!
+    static let partialPresentUnknownCopies = BadgeIconSpec("partialPresentUnknownCopies", "HalfGray12x12", "Partially Present Unknown Copies")
     
     // directory with all present files, we haven't counted known copies yet
-    private let presentUnknownCopies = NSImage(named:NSImage.Name(rawValue: "SolidGray12x12"))!
+    static let presentUnknownCopies = BadgeIconSpec("presentUnknownCopies", "SolidGray12x12", "Present Unknown Copies")
     
     // directory with all absent files, we haven't counted known copies yet
-    private let absentUnknownCopies = NSImage(named:NSImage.Name(rawValue: "OutlineGray12x12"))!
+    static let absentUnknownCopies = BadgeIconSpec("absentUnknownCopies", "OutlineGray12x12", "Absent Unknown Copies")
     
     // directory that is empty, or contains only empty directories, or contains only
     // git files (not annexed files)
-    private let emptyOrNotAnnexFolder = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12"))!
+    static let emptyOrNotAnnexFolder = BadgeIconSpec("emptyOrNotAnnexFolder", "SolidGreen12x12", "Empty or Not Annexed")
     
     // file or directory that is present, has n-copies
     // and this amount is greater than or equal to user's numcopies setting
-    private let present1CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_1"))!
-    private let present2CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_2"))!
-    private let present3CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_3"))!
-    private let present4CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_4"))!
-    private let presentMoreThan4CopyEnough = NSImage(named:NSImage.Name(rawValue: "SolidGreen12x12_Star"))!
+    static let present1CopyEnough = BadgeIconSpec("present1CopyEnough", "SolidGreen12x12_1", "Present 1 Copy Enough")
+    static let present2CopyEnough = BadgeIconSpec("present2CopyEnough", "SolidGreen12x12_2", "Present 2 Copies Enough")
+    static let present3CopyEnough = BadgeIconSpec("present3CopyEnough", "SolidGreen12x12_3", "Present 3 Copies Enough")
+    static let present4CopyEnough = BadgeIconSpec("present4CopyEnough", "SolidGreen12x12_4", "Present 4 Copies Enough")
+    static let presentMoreThan4CopyEnough = BadgeIconSpec("presentMoreThan4CopyEnough", "SolidGreen12x12_Star", "Present More than 4 Copies Enough")
     
     // file or directory that is present, has n-copiesm
     // but this amount is less than the user's numcopies setting
-    private let present1CopyLacking = NSImage(named:NSImage.Name(rawValue: "SolidRed12x12_1"))!
-    private let present2CopyLacking = NSImage(named:NSImage.Name(rawValue: "SolidRed12x12_2"))!
-    private let present3CopyLacking = NSImage(named:NSImage.Name(rawValue: "SolidRed12x12_3"))!
-    private let present4CopyLacking = NSImage(named:NSImage.Name(rawValue: "SolidRed12x12_4"))!
-    private let presentMoreThan4CopyLacking = NSImage(named:NSImage.Name(rawValue: "SolidRed12x12_Star"))!
+    static let present1CopyLacking = BadgeIconSpec("present1CopyLacking", "SolidRed12x12_1", "Present 1 Copy and Lacking")
+    static let present2CopyLacking = BadgeIconSpec("present2CopyLacking", "SolidRed12x12_2", "Present 2 Copies and Lacking")
+    static let present3CopyLacking = BadgeIconSpec("present3CopyLacking", "SolidRed12x12_3", "Present 3 Copies and Lacking")
+    static let present4CopyLacking = BadgeIconSpec("present4CopyLacking", "SolidRed12x12_4", "Present 4 Copies and Lacking")
+    static let presentMoreThan4CopyLacking = BadgeIconSpec("presentMoreThan4CopyLacking", "SolidRed12x12_Star", "Present More Than 4 Copies and Lacking")
     
     // directory with present and absent files, the least copy count of the file with
     // the least amount of copies is greater than or equal to the user's numcopies setting
-    private let partial1CopyEnough = NSImage(named:NSImage.Name(rawValue: "HalfGreen12x12_1"))!
-    private let partial2CopyEnough = NSImage(named:NSImage.Name(rawValue: "HalfGreen12x12_2"))!
-    private let partial3CopyEnough = NSImage(named:NSImage.Name(rawValue: "HalfGreen12x12_3"))!
-    private let partial4CopyEnough = NSImage(named:NSImage.Name(rawValue: "HalfGreen12x12_4"))!
-    private let partialMoreThan4CopyEnough = NSImage(named:NSImage.Name(rawValue: "HalfGreen12x12_Star"))!
+    static let partial1CopyEnough = BadgeIconSpec("partial1CopyEnough", "HalfGreen12x12_1", "Partially Present 1 Copy Enough")
+    static let partial2CopyEnough = BadgeIconSpec("partial2CopyEnough", "HalfGreen12x12_2", "Partially Present 2 Copies Enough")
+    static let partial3CopyEnough = BadgeIconSpec("partial3CopyEnough", "HalfGreen12x12_3", "Partially Present 3 Copies Enough")
+    static let partial4CopyEnough = BadgeIconSpec("partial4CopyEnough", "HalfGreen12x12_4", "Partially Present 4 Copies Enough")
+    static let partialMoreThan4CopyEnough = BadgeIconSpec("partialMoreThan4CopyEnough", "HalfGreen12x12_Star", "Partially More Than 4 Copies Enough")
     
     // directory with present and absent files, the least copy count of the file with
     // the least amount of copies is less than the user's numcopies setting
-    private let partial1CopyLacking = NSImage(named:NSImage.Name(rawValue: "HalfRed12x12_1"))!
-    private let partial2CopyLacking = NSImage(named:NSImage.Name(rawValue: "HalfRed12x12_2"))!
-    private let partial3CopyLacking = NSImage(named:NSImage.Name(rawValue: "HalfRed12x12_3"))!
-    private let partial4CopyLacking = NSImage(named:NSImage.Name(rawValue: "HalfRed12x12_4"))!
-    private let partialMoreThan4CopyLacking = NSImage(named:NSImage.Name(rawValue: "HalfRed12x12_Star"))!
+    static let partial1CopyLacking = BadgeIconSpec("partial1CopyLacking", "HalfRed12x12_1", "Partially Present 1 Copy and Lacking")
+    static let partial2CopyLacking = BadgeIconSpec("partial2CopyLacking", "HalfRed12x12_2", "Partially Present 2 Copies and Lacking")
+    static let partial3CopyLacking = BadgeIconSpec("partial3CopyLacking", "HalfRed12x12_3", "Partially Present 3 Copies and Lacking")
+    static let partial4CopyLacking = BadgeIconSpec("partial4CopyLacking", "HalfRed12x12_4", "Partially Present 4 Copies and Lacking")
+    static let partialMoreThan4CopyLacking = BadgeIconSpec("partialMoreThan4CopyLacking", "HalfRed12x12_Star", "Partially Present More Than 4 Copies and Lacking")
     
     // directory with only absent files, the least copy count of the file with
     // the least amount of copies is greater than or equal to the user's numcopies setting
-    private let absent1CopyEnough = NSImage(named:NSImage.Name(rawValue: "OutlineGreen12x12_1"))!
-    private let absent2CopyEnough = NSImage(named:NSImage.Name(rawValue: "OutlineGreen12x12_2"))!
-    private let absent3CopyEnough = NSImage(named:NSImage.Name(rawValue: "OutlineGreen12x12_3"))!
-    private let absent4CopyEnough = NSImage(named:NSImage.Name(rawValue: "OutlineGreen12x12_4"))!
-    private let absentMoreThan4CopyEnough = NSImage(named:NSImage.Name(rawValue: "OutlineGreen12x12_Star"))!
+    static let absent1CopyEnough = BadgeIconSpec("absent1CopyEnough", "OutlineGreen12x12_1", "Absent 1 Copy Enough")
+    static let absent2CopyEnough = BadgeIconSpec("absent2CopyEnough", "OutlineGreen12x12_2", "Absent 2 Copies Enough")
+    static let absent3CopyEnough = BadgeIconSpec("absent3CopyEnough", "OutlineGreen12x12_3", "Absent 3 Copies Enough")
+    static let absent4CopyEnough = BadgeIconSpec("absent4CopyEnough", "OutlineGreen12x12_4", "Absent 4 Copies Enough")
+    static let absentMoreThan4CopyEnough = BadgeIconSpec("absentMoreThan4CopyEnough", "OutlineGreen12x12_Star", "Absent More Than 4 Copies Enough")
     
     // directory with only absent files, the least copy count of the file with
     // the least amount of copies is less than the user's numcopies setting
-    private let absent1CopyLacking = NSImage(named:NSImage.Name(rawValue: "OutlineRed12x12_1"))!
-    private let absent2CopyLacking = NSImage(named:NSImage.Name(rawValue: "OutlineRed12x12_2"))!
-    private let absent3CopyLacking = NSImage(named:NSImage.Name(rawValue: "OutlineRed12x12_3"))!
-    private let absent4CopyLacking = NSImage(named:NSImage.Name(rawValue: "OutlineRed12x12_4"))!
-    private let absentMoreThan4CopyLacking = NSImage(named:NSImage.Name(rawValue: "OutlineRed12x12_Star"))!
+    static let absent1CopyLacking = BadgeIconSpec("absent1CopyLacking", "OutlineRed12x12_1", "Absent 1 Copy and Lacking")
+    static let absent2CopyLacking = BadgeIconSpec("absent2CopyLacking", "OutlineRed12x12_2", "Absent 2 Copies and Lacking")
+    static let absent3CopyLacking = BadgeIconSpec("absent3CopyLacking", "OutlineRed12x12_3", "Absent 3 Copies and Lacking")
+    static let absent4CopyLacking = BadgeIconSpec("absent4CopyLacking", "OutlineRed12x12_4", "Absent 4 Copies and Lacking")
+    static let absentMoreThan4CopyLacking = BadgeIconSpec("absentMoreThan4CopyLacking", "OutlineRed12x12_Star", "Absent More Than 4 Copies and Lacking")
     
+    static let icons: [BadgeIconSpec] = [
+        unknownStateInGitAnnex,
+        zeroCopies,
+        partialPresentUnknownCopies,
+        presentUnknownCopies,
+        absentUnknownCopies,
+        emptyOrNotAnnexFolder,
+        present1CopyEnough,
+        present2CopyEnough,
+        present3CopyEnough,
+        present4CopyEnough,
+        presentMoreThan4CopyEnough,
+        present1CopyLacking,
+        present2CopyLacking,
+        present3CopyLacking,
+        present4CopyLacking,
+        presentMoreThan4CopyLacking,
+        partial1CopyEnough,
+        partial2CopyEnough,
+        partial3CopyEnough,
+        partial4CopyEnough,
+        partialMoreThan4CopyEnough,
+        partial1CopyLacking,
+        partial2CopyLacking,
+        partial3CopyLacking,
+        partial4CopyLacking,
+        partialMoreThan4CopyLacking,
+        absent1CopyEnough,
+        absent2CopyEnough,
+        absent3CopyEnough,
+        absent4CopyEnough,
+        absentMoreThan4CopyEnough,
+        absent1CopyLacking,
+        absent2CopyLacking,
+        absent3CopyLacking,
+        absent4CopyLacking,
+        absentMoreThan4CopyLacking
+    ]
+}
+
+class BadgeIcons {
     init(finderSyncController: FIFinderSyncController) {
-        // register our icons with FinderSync controller
-        finderSyncController.setBadgeImage(unknownStateInGitAnnex, label: "Unknown" , forBadgeIdentifier: unknownStateInGitAnnex.name()!.rawValue)
-        finderSyncController.setBadgeImage(notTracked, label: "Not Tracked" , forBadgeIdentifier: notTracked.name()!.rawValue)
-        finderSyncController.setBadgeImage(zeroCopies, label: "Zero Copies" , forBadgeIdentifier: zeroCopies.name()!.rawValue)
-        finderSyncController.setBadgeImage(emptyOrNotAnnexFolder, label: "Empty or Not Annexed" , forBadgeIdentifier: emptyOrNotAnnexFolder.name()!.rawValue)
-        finderSyncController.setBadgeImage(partialPresentUnknownCopies, label: "Partially Present Unknown Copies" , forBadgeIdentifier: partialPresentUnknownCopies.name()!.rawValue)
-        finderSyncController.setBadgeImage(presentUnknownCopies, label: "Present Unknown Copies" , forBadgeIdentifier: presentUnknownCopies.name()!.rawValue)
-        finderSyncController.setBadgeImage(absentUnknownCopies, label: "Absent Unknown Copies" , forBadgeIdentifier: absentUnknownCopies.name()!.rawValue)
-        finderSyncController.setBadgeImage(present1CopyEnough, label: "Present 1 Copy Enough" , forBadgeIdentifier: present1CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(present2CopyEnough, label: "Present 2 Copies Enough" , forBadgeIdentifier: present2CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(present3CopyEnough, label: "Present 3 Copies Enough" , forBadgeIdentifier: present3CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(present4CopyEnough, label: "Present 4 Copies Enough" , forBadgeIdentifier: present4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(presentMoreThan4CopyEnough, label: "Present More than 4 Copies Enough" , forBadgeIdentifier: presentMoreThan4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(present1CopyLacking, label: "Present 1 Copy and Lacking" , forBadgeIdentifier: present1CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(present2CopyLacking, label: "Present 2 Copies and Lacking" , forBadgeIdentifier: present2CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(present3CopyLacking, label: "Present 3 Copies and Lacking" , forBadgeIdentifier: present3CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(present4CopyLacking, label: "Present 4 Copies and Lacking" , forBadgeIdentifier: present4CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(presentMoreThan4CopyLacking, label: "Present More Than 4 Copies and Lacking" , forBadgeIdentifier: presentMoreThan4CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial1CopyEnough, label: "Partially Present 1 Copy Enough" , forBadgeIdentifier: partial1CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial2CopyEnough, label: "Partially Present 2 Copies Enough" , forBadgeIdentifier: partial2CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial3CopyEnough, label: "Partially Present 3 Copies Enough" , forBadgeIdentifier: partial3CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial4CopyEnough, label: "Partially Present 4 Copies Enough" , forBadgeIdentifier: partial4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(partialMoreThan4CopyEnough, label: "Partially More Than 4 Copies Enough" , forBadgeIdentifier: partialMoreThan4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial1CopyLacking, label: "Partially Present 1 Copy and Lacking" , forBadgeIdentifier: partial1CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial2CopyLacking, label: "Partially Present 2 Copies and Lacking" , forBadgeIdentifier: partial2CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial3CopyLacking, label: "Partially Present 3 Copies and Lacking" , forBadgeIdentifier: partial3CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(partial4CopyLacking, label: "Partially Present 4 Copies and Lacking" , forBadgeIdentifier: partial4CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(partialMoreThan4CopyLacking, label: "Partially Present More Than 4 Copies and Lacking" , forBadgeIdentifier: partialMoreThan4CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent1CopyEnough, label: "Absent 1 Copy Enough" , forBadgeIdentifier: absent1CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent2CopyEnough, label: "Absent 2 Copies Enough" , forBadgeIdentifier: absent2CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent3CopyEnough, label: "Absent 3 Copies Enough" , forBadgeIdentifier: absent3CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent4CopyEnough, label: "Absent 4 Copies Enough" , forBadgeIdentifier: absent4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(absentMoreThan4CopyEnough, label: "Absent More Than 4 Copies Enough" , forBadgeIdentifier: absentMoreThan4CopyEnough.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent1CopyLacking, label: "Absent 1 Copy and Lacking" , forBadgeIdentifier: absent1CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent2CopyLacking, label: "Absent 2 Copies and Lacking" , forBadgeIdentifier: absent2CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent3CopyLacking, label: "Absent 3 Copies and Lacking" , forBadgeIdentifier: absent3CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(absent4CopyLacking, label: "Absent 4 Copies and Lacking" , forBadgeIdentifier: absent4CopyLacking.name()!.rawValue)
-        finderSyncController.setBadgeImage(absentMoreThan4CopyLacking, label: "Absent More Than 4 Copies and Lacking" , forBadgeIdentifier: absentMoreThan4CopyLacking.name()!.rawValue)
+        // load icons and register with FinderSync controller
+        for icon in BadgeIconSpecs.icons {
+            if let image = loadNSImage(for: icon) {
+                finderSyncController.setBadgeImage(image, label: icon.label , forBadgeIdentifier: icon.name)
+            }
+        }
     }
     
     public func badgeIconFor(status: PathStatus) -> String {
         // not tracked by git-annex
         if status.isGitAnnexTracked == false {
-            return notTracked.name()!.rawValue
+            return BadgeIconSpecs.notTracked.name
         }
         
         // still calculating…
         if status.presentStatus == nil, status.numberOfCopies == nil {
-            return unknownStateInGitAnnex.name()!.rawValue
+            return BadgeIconSpecs.unknownStateInGitAnnex.name
         }
         
         // empty directory, or filled with not annex files
         if status.isEmptyFolder() {
-            return emptyOrNotAnnexFolder.name()!.rawValue
+            return BadgeIconSpecs.emptyOrNotAnnexFolder.name
         }
         
         // no copies
         if let copies = status.numberOfCopies, copies == 0 {
-            return zeroCopies.name()!.rawValue
+            return BadgeIconSpecs.zeroCopies.name
         }
         
         // unknown copies
         if status.numberOfCopies == nil, let present = status.presentStatus {
             switch present {
             case .present:
-                return presentUnknownCopies.name()!.rawValue
+                return BadgeIconSpecs.presentUnknownCopies.name
             case .absent:
-                return absentUnknownCopies.name()!.rawValue
+                return BadgeIconSpecs.absentUnknownCopies.name
             case .partialPresent:
-                return partialPresentUnknownCopies.name()!.rawValue
+                return BadgeIconSpecs.partialPresentUnknownCopies.name
             }
         }
         
@@ -160,52 +180,63 @@ class BadgeIcons {
             case .present:
                 switch enoughCopies {
                 case .enough:
-                    if copies == 1 { return present1CopyEnough.name()!.rawValue }
-                    if copies == 2 { return present2CopyEnough.name()!.rawValue }
-                    if copies == 3 { return present3CopyEnough.name()!.rawValue }
-                    if copies == 4 { return present4CopyEnough.name()!.rawValue }
-                    if copies > 4 { return presentMoreThan4CopyEnough.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.present1CopyEnough.name }
+                    if copies == 2 { return BadgeIconSpecs.present2CopyEnough.name }
+                    if copies == 3 { return BadgeIconSpecs.present3CopyEnough.name }
+                    if copies == 4 { return BadgeIconSpecs.present4CopyEnough.name }
+                    if copies > 4 { return BadgeIconSpecs.presentMoreThan4CopyEnough.name }
                 case .lacking:
-                    if copies == 1 { return present1CopyLacking.name()!.rawValue }
-                    if copies == 2 { return present2CopyLacking.name()!.rawValue }
-                    if copies == 3 { return present3CopyLacking.name()!.rawValue }
-                    if copies == 4 { return present4CopyLacking.name()!.rawValue }
-                    if copies > 4 { return presentMoreThan4CopyLacking.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.present1CopyLacking.name }
+                    if copies == 2 { return BadgeIconSpecs.present2CopyLacking.name }
+                    if copies == 3 { return BadgeIconSpecs.present3CopyLacking.name }
+                    if copies == 4 { return BadgeIconSpecs.present4CopyLacking.name }
+                    if copies > 4 { return BadgeIconSpecs.presentMoreThan4CopyLacking.name }
                 }
             case .absent:
                 switch enoughCopies {
                 case .enough:
-                    if copies == 1 { return absent1CopyEnough.name()!.rawValue }
-                    if copies == 2 { return absent2CopyEnough.name()!.rawValue }
-                    if copies == 3 { return absent3CopyEnough.name()!.rawValue }
-                    if copies == 4 { return absent4CopyEnough.name()!.rawValue }
-                    if copies > 4 { return absentMoreThan4CopyEnough.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.absent1CopyEnough.name }
+                    if copies == 2 { return BadgeIconSpecs.absent2CopyEnough.name }
+                    if copies == 3 { return BadgeIconSpecs.absent3CopyEnough.name }
+                    if copies == 4 { return BadgeIconSpecs.absent4CopyEnough.name }
+                    if copies > 4 { return BadgeIconSpecs.absentMoreThan4CopyEnough.name }
                 case .lacking:
-                    if copies == 1 { return absent1CopyLacking.name()!.rawValue }
-                    if copies == 2 { return absent2CopyLacking.name()!.rawValue }
-                    if copies == 3 { return absent3CopyLacking.name()!.rawValue }
-                    if copies == 4 { return absent4CopyLacking.name()!.rawValue }
-                    if copies > 4 { return absentMoreThan4CopyLacking.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.absent1CopyLacking.name }
+                    if copies == 2 { return BadgeIconSpecs.absent2CopyLacking.name }
+                    if copies == 3 { return BadgeIconSpecs.absent3CopyLacking.name }
+                    if copies == 4 { return BadgeIconSpecs.absent4CopyLacking.name }
+                    if copies > 4 { return BadgeIconSpecs.absentMoreThan4CopyLacking.name }
                 }
             case .partialPresent:
                 switch enoughCopies {
                 case .enough:
-                    if copies == 1 { return partial1CopyEnough.name()!.rawValue }
-                    if copies == 2 { return partial2CopyEnough.name()!.rawValue }
-                    if copies == 3 { return partial3CopyEnough.name()!.rawValue }
-                    if copies == 4 { return partial4CopyEnough.name()!.rawValue }
-                    if copies > 4 { return partialMoreThan4CopyEnough.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.partial1CopyEnough.name }
+                    if copies == 2 { return BadgeIconSpecs.partial2CopyEnough.name }
+                    if copies == 3 { return BadgeIconSpecs.partial3CopyEnough.name }
+                    if copies == 4 { return BadgeIconSpecs.partial4CopyEnough.name }
+                    if copies > 4 { return BadgeIconSpecs.partialMoreThan4CopyEnough.name }
                 case .lacking:
-                    if copies == 1 { return partial1CopyLacking.name()!.rawValue }
-                    if copies == 2 { return partial2CopyLacking.name()!.rawValue }
-                    if copies == 3 { return partial3CopyLacking.name()!.rawValue }
-                    if copies == 4 { return partial4CopyLacking.name()!.rawValue }
-                    if copies > 4 { return partialMoreThan4CopyLacking.name()!.rawValue }
+                    if copies == 1 { return BadgeIconSpecs.partial1CopyLacking.name }
+                    if copies == 2 { return BadgeIconSpecs.partial2CopyLacking.name }
+                    if copies == 3 { return BadgeIconSpecs.partial3CopyLacking.name }
+                    if copies == 4 { return BadgeIconSpecs.partial4CopyLacking.name }
+                    if copies > 4 { return BadgeIconSpecs.partialMoreThan4CopyLacking.name }
                 }
             }
         }
         
         TurtleLog.debug("could not find badge icon for \(status), returning unknown state icon")
-        return unknownStateInGitAnnex.name()!.rawValue
+        return BadgeIconSpecs.unknownStateInGitAnnex.name
+    }
+    
+    private func loadNSImage(for icon: BadgeIconSpec) -> NSImage? {
+        if icon.imagePath.isEmpty {
+            return nil // empty path means no image for Badge Identifier
+        }
+        if let image = NSImage(named:NSImage.Name(rawValue: icon.imagePath)) {
+            return  image
+        }
+        TurtleLog.error("could not retrieve image for \(icon.imagePath)")
+        fatalError("could not retrieve image for \(icon.imagePath)")
     }
 }

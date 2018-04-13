@@ -40,7 +40,6 @@
 		49178BA1201EB2B000B98A46 /* changedGitFilesAfterCommit.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
-		4922DC7A1FFD5CA900448C22 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 490BCB871DE5444C00734FF4 /* Assets.xcassets */; };
 		492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F82040695D00F8D8A0 /* fullScanTests.swift */; };
 		492491FB20406A8800F8D8A0 /* TestingUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491FA20406A8800F8D8A0 /* TestingUtil.swift */; };
 		492492002040A14E00F8D8A0 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
@@ -135,6 +134,7 @@
 		49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4720016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
 		49D3AA4820016A6900A43A78 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D3AA4320016A1500A43A78 /* WatchedFolder.swift */; };
+		49D52449208102D700CB94B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49D52448208102D700CB94B2 /* Assets.xcassets */; };
 		49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
 		49DD9BA820192B0300B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
 		49DD9BA920192B0400B90DC7 /* PathStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49635EF32019208500AB95E5 /* PathStatus.swift */; };
@@ -331,6 +331,7 @@
 		49D000652040B215008DC76A /* FolderTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderTracking.swift; sourceTree = "<group>"; };
 		49D149212049E94600CA10F2 /* StreamReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
 		49D3AA4320016A1500A43A78 /* WatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFolder.swift; sourceTree = "<group>"; };
+		49D52448208102D700CB94B2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		49DDE1742058696A008C55AC /* GitAnnexTurtle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitAnnexTurtle.swift; sourceTree = "<group>"; };
 		49DDE17620588020008C55AC /* WatchGitAndFinderForUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchGitAndFinderForUpdates.swift; sourceTree = "<group>"; };
 		49DDE1782059CC22008C55AC /* TurtleDialogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleDialogs.swift; sourceTree = "<group>"; };
@@ -550,6 +551,7 @@
 		499B44611DE544F00091E0E3 /* git-annex-finder */ = {
 			isa = PBXGroup;
 			children = (
+				49D52448208102D700CB94B2 /* Assets.xcassets */,
 				499B44641DE544F00091E0E3 /* FinderSync.swift */,
 				49082F31201125D60030DE80 /* StatusCache.swift */,
 				49B65D4B201787A400485852 /* BadgeIcons.swift */,
@@ -877,7 +879,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4922DC7A1FFD5CA900448C22 /* Assets.xcassets in Resources */,
+				49D52449208102D700CB94B2 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
