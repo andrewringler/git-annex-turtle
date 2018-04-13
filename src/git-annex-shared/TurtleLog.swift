@@ -10,7 +10,12 @@ import Foundation
 
 class TurtleLog {
     /* Set the LOG_LEVEL to see all logs equal to and less-then this level */
-    private static var LOG_LEVEL = TurtleLogLogLevel.debug
+    private static var LOG_LEVEL: TurtleLogLogLevel = {
+        if amIBeingDebugged() {
+            return TurtleLogLogLevel.debug
+        }
+        return TurtleLogLogLevel.info
+    }()
     private static let pound = "\u{0023}"
     
     enum TurtleLogLogLevel: Int {
@@ -66,5 +71,15 @@ class TurtleLog {
             let file =  (filePath as NSString).lastPathComponent
             NSLog("[fatal] \(format) @\(file)->\(function) line \(pound)\(line)", args)
         }
+    }
+    
+    // https://stackoverflow.com/a/33177600/8671834
+    private static func amIBeingDebugged() -> Bool {
+        var info = kinfo_proc()
+        var mib : [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        var size = MemoryLayout.stride(ofValue: info)
+        let junk = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+        assert(junk == 0, "sysctl failed")
+        return (info.kp_proc.p_flag & P_TRACED) != 0
     }
 }
