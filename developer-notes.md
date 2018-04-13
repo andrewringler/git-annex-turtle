@@ -11,13 +11,13 @@
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
 
 ## Not greats, should fix & UX issues
- * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
  * crop or scroll large git error messages that appear in Dialogs
  * don’t do command requests for folders still scanning? or at least figure out how to handle them well, also don’t enable context menus until folders done scanning, or figure out how to handle them quickly :)
  * how can we get more control over how and when Finder Sync is actually launched?, do we actually need to restart Finder when installing extension, this kills and reloads all finder windows…
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
  * partially empty icons are hard to read, possibly switching from horizontally filled to diagonally filled would fix this.
+ * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
 
 ## New Features, yes
  * let user view/set git and git-annex binary paths from GUI
@@ -25,6 +25,7 @@
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
  * enable verbose logging in UI, link to open logs folder from UI
  * log to our own logs folder in ~/Library/Logs/git-annex-turtle/git-annex-turtle.log, ~/Library/Logs/git-annex-turtle/git-annex-finder-{process-id}.log, etc… instead of directly to Console, see logging frameworks, https://stackoverflow.com/a/5938021/8671834, https://github.com/DaveWoodCom/XCGLogger, https://github.com/CocoaLumberjack/CocoaLumberjack#readme
+ * actually use and expose in UI all per repo settings currently in turtle-monitor namely the flags: finder-integration, context-menus, track-folder-status, track-file-status
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
