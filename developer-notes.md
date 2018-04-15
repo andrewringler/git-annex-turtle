@@ -1,6 +1,6 @@
 ## Bugs, definitely fix
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
- * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits
+ * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
  * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
  * Test with v6 repos
  * Test with git annex watch
