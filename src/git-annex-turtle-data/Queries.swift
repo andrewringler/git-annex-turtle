@@ -724,7 +724,8 @@ class Queries: StoppableService {
     func changeLastModifedUpdatesSync(lastModified: Double) {
         let moc = data.persistentContainer.viewContext
         moc.stalenessInterval = 0
-        
+        moc.mergePolicy = NSOverwriteMergePolicy
+
         let privateMOC = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         privateMOC.parent = moc
         privateMOC.performAndWait {

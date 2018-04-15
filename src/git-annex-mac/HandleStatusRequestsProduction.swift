@@ -28,11 +28,13 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
     let watchedFolder: WatchedFolder
-
-    init(_ watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries) {
+    let canRecheckFoldersForUpdates: CanRecheckFoldersForUpdates
+    
+    init(_ watchedFolder: WatchedFolder, queries: Queries, gitAnnexQueries: GitAnnexQueries, canRecheckFoldersForUpdates: CanRecheckFoldersForUpdates) {
         self.watchedFolder = watchedFolder
         self.queries = queries
         self.gitAnnexQueries = gitAnnexQueries
+        self.canRecheckFoldersForUpdates = canRecheckFoldersForUpdates
         super.init()
    }
     
@@ -80,6 +82,7 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
                 // no entry in db for this directory, add one
                 self.queries.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: r.path, key: nil, in: watchedFolder, isDir: true, needsUpdate: true)
             }
+            canRecheckFoldersForUpdates.recheckFolderUpdates()
         } else {
             /* File
              * we have a file, get its status
@@ -95,8 +98,10 @@ class HandleStatusRequestsProduction: StoppableService, HandleStatusRequests {
                 self.queries.updateStatusForPathV2Blocking(presentStatus: status.presentStatus, enoughCopies: status.enoughCopies, numberOfCopies: status.numberOfCopies, isGitAnnexTracked: status.isGitAnnexTracked, for: r.path, key: status.key, in: watchedFolder, isDir: status.isDir, needsUpdate: status.needsUpdate)
                 
                 // If status changed, invalidate immediate parent
+                // and re-check parent folder for completion
                 if oldStatus != status, let parent = status.parentPath {
                     self.queries.invalidateDirectory(path: parent, in: watchedFolder)
+                    canRecheckFoldersForUpdates.recheckFolderUpdates()
                 }
             }
         }

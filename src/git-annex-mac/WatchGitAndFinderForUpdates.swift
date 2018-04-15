@@ -11,8 +11,11 @@ import Foundation
 protocol HasWatchedFolders {
     func getWatchedFolders() -> Set<WatchedFolder>
 }
+protocol CanRecheckFoldersForUpdates {
+    func recheckFolderUpdates()
+}
 
-class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
+class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanRecheckFoldersForUpdates {
     let config: Config
     let gitAnnexTurtle: GitAnnexTurtle
     let data: DataEntrypoint
@@ -21,6 +24,8 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
     let visibleFolders: VisibleFolders
     let fullScan: FullScan
     let dialogs: Dialogs
+    var setupFileSystemWatches: RunNowOrAgain?
+    var processFolderUpdates: RunNowOrAgain?
     
     var watchedFolders = Set<WatchedFolder>()
     var fileSystemMonitors: [WatchedFolderMonitor] = []
@@ -34,40 +39,38 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
         self.gitAnnexQueries = gitAnnexQueries
         self.dialogs = dialogs
         self.visibleFolders = visibleFolders
-        
         queries = Queries(data: data)
-
         super.init()
 
-        updateListOfWatchedFolders()
-        setupFileSystemMonitorOnConfigFile()
-
-        // Handle command, badge requests and visible folder updates from Finder Sync
-        // check if incomplete folders have finished scanning their children
-        DispatchQueue.global(qos: .background).async {
-            while super.running.isRunning() {
-                self.updateWatchedAndVisibleFolders()
-                usleep(500000)
-            }
+        self.setupFileSystemWatches = RunNowOrAgain {
+            self.setupFileSystemWatchesIfNeeded()
         }
-        updateWatchedAndVisibleFolders() // check Db for updates, once now
+        self.processFolderUpdates = RunNowOrAgain {
+            self.checkAllFoldersForCompletion()
+        }
+
+        updateListOfWatchedFolders()
+        setupFileSystemWatchesIfNeeded()
+        setupFileSystemMonitorOnConfigFile()
+        processFolderUpdates?.runTaskAgain()
     }
     
-    private func updateWatchedAndVisibleFolders() {
-        // PERFORMANCE, this could be triggered instead with a RunNowOrAgain
-        // after every file update
-        // Handle folder updates, for any folder that is not doing a full scan
+    public func recheckFolderUpdates() {
+        processFolderUpdates?.runTaskAgain()
+    }
+    
+    // Handle folder updates, for any folder that is not doing a full scan
+    private func checkAllFoldersForCompletion() {
         for watchedFolder in self.watchedFolders {
             if !self.fullScan.isScanning(watchedFolder: watchedFolder) {
                 _ = FolderTracking.handleFolderUpdates(watchedFolder: watchedFolder, queries: self.queries, gitAnnexQueries: self.gitAnnexQueries)
             }
         }
-        
-        // Setup file system watches for any folder that has completed its full scan
-        // that we aren't already watching
-        //
-        // TODO / PERFORMANCE, just set these up on App launch
-        // and after full scans have completed they can do this add
+    }
+    
+    // Setup file system watches for any folder that has completed its full scan
+    // that we aren't already watching
+    private func setupFileSystemWatchesIfNeeded() {
         for watchedFolder in self.watchedFolders {
             // A folder we need to start a file system watch for, is one
             // that has a commit hash in the database (meaning it is done with a full scan)
@@ -112,7 +115,7 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
                     // OK, we don't already have this watched folder
                     // create a new object with a new handleStatusRequests
                     let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder)
-                    let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries)
+                    let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, canRecheckFoldersForUpdates: self)
                     newWatchedFolder.handleStatusRequests = handleStatusRequests
                     newWatchedFolders.insert(newWatchedFolder)
                 }
@@ -171,7 +174,7 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders {
             let handledCommits = queries.getLatestCommits(for: watchedFolder)
             
             if handledCommits.gitAnnexCommitHash == nil {
-                fullScan.startFullScan(watchedFolder: watchedFolder)
+                fullScan.startFullScan(watchedFolder: watchedFolder, success: setupFileSystemWatches!.runTaskAgain)
             }
         }
     }

@@ -80,7 +80,7 @@ class fullScanTests: XCTestCase {
         wait(for: 5) // wait for visible folders to be added (in background thread)
         
         // do a full scan, to add our folders and files to the database
-        fullScan!.startFullScan(watchedFolder: repo1!)
+        fullScan!.startFullScan(watchedFolder: repo1!, success: {})
         
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)
@@ -190,8 +190,8 @@ class fullScanTests: XCTestCase {
         TestingUtil.createDir(dir: "anEmptyDirWithEmptyDirs/b", in: repo2!)
         
         // Start a full scan on both repos
-        fullScan!.startFullScan(watchedFolder: repo1!)
-        fullScan!.startFullScan(watchedFolder: repo2!)
+        fullScan!.startFullScan(watchedFolder: repo1!, success: {})
+        fullScan!.startFullScan(watchedFolder: repo2!, success: {})
         
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)
@@ -346,7 +346,7 @@ class fullScanTests: XCTestCase {
         let files = TestingUtil.createAndAddFiles(numFiles: 100, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
         let startTime = Date()
-        fullScan!.startFullScan(watchedFolder: repo1!)
+        fullScan!.startFullScan(watchedFolder: repo1!, success: {})
         
         let done = NSPredicate(format: "doneScanning == true")
         expectation(for: done, evaluatedWith: self, handler: nil)

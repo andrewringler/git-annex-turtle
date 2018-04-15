@@ -21,14 +21,16 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         super.init()
     }
     
-    func startFullScan(watchedFolder: WatchedFolder) {
+    func startFullScan(watchedFolder: WatchedFolder, success: @escaping (() -> Void)) {
         guard running.isRunning() else { return }
         
         sharedResource.lock()
         if !scanning.contains(watchedFolder) {
             scanning.insert(watchedFolder)
             DispatchQueue.global(qos: .background).async {
-                self.scan(watchedFolder)
+                if self.scan(watchedFolder) {
+                    success()
+                }
             }
         }
         sharedResource.unlock()
@@ -73,7 +75,9 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         return shouldStop
     }
     
-    private func scan(_ watchedFolder: WatchedFolder) {
+    private func scan(_ watchedFolder: WatchedFolder) -> Bool {
+        var success: Bool = false
+        
         while running.isRunning() {
             let scanStartDate = Date()
             
@@ -108,6 +112,7 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
                 
                 let scanDuration = Date().timeIntervalSince(scanStartDate) as Double
                 TurtleLog.info("Completed full scan for \(watchedFolder) in \(Int(scanDuration)) seconds")
+                success = true
             } else {
                 TurtleLog.error("Could not find any commits on the git-annex branch, this should not happen, stopping full scan for \(watchedFolder)")
                 break
@@ -120,6 +125,7 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         sharedResource.lock()
         scanning.remove(watchedFolder)
         sharedResource.unlock()
+        return success
     }
     
     private func updateStatusBlocking(in watchedFolder: WatchedFolder) -> Bool {
@@ -157,6 +163,7 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         // calculate git-annex status information for all files
         //
         let modificationDate = Date().timeIntervalSince1970 as Double
+        // PERFORMANCE, do these queries concurrently
         if let filesWithCopiesLacking = self.gitAnnexQueries.gitAnnexAllFilesLackingCopies(in: watchedFolder), let resultsFileName = self.gitAnnexQueries.gitAnnexWhereisAllFiles(in: watchedFolder) {
             var s = StreamReader(url: PathUtils.urlFor(absolutePath: resultsFileName))
             while let line = s?.nextLine() {
