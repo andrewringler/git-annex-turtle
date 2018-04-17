@@ -1,5 +1,7 @@
-language: objective-c
 os: osx
 osx_image: xcode9.2
-xcode_project: src/git-annex-turtle.xcodeproj
-xcode_scheme: git-annex-turtleTests
+
+language: swift
+
+script:
+    - xcodebuild clean test -project src/git-annex-turtle.xcodeproj -scheme git-annex-turtle CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO -quiet
