@@ -33,7 +33,6 @@
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * Menubar window should show list of remote transfers 
- * get tests running on https://travis-ci.org/, https://www.swiftbysundell.com/posts/adding-continuous-integration-to-a-swift-project
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches
  * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right? don't display git-annex lock context menu in v5 repos, it always fails without force?
