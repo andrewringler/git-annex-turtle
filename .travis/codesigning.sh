@@ -1,6 +1,7 @@
 #!/bin/sh
 # https://docs.travis-ci.com/user/common-build-problems/#Mac%3A-macOS-Sierra-(10.12)-Code-Signing-Errors
 # https://github.com/travis-ci/travis-ci/issues/3047
+# https://www.objc.io/issues/6-build-tools/travis-ci/#certificates-and-profiles
 
 # Create the keychain with a password
 security create-keychain -p travis ios-build.keychain
