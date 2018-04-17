@@ -9,14 +9,17 @@
 import XCTest
 
 class git_annex_turtleTests: XCTestCase {
+    var testDir: String?
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        
+        TurtleLog.setLoggingLevel(.debug)
+        testDir = TestingUtil.createTmpDir()
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        TestingUtil.removeDir(testDir)
         super.tearDown()
     }
 
@@ -158,10 +161,10 @@ class git_annex_turtleTests: XCTestCase {
     }
 
     func testGitAnnexBinAbsolutePath() {
-        XCTAssertNotNil(GitAnnexQueries.gitAnnexBinAbsolutePath())
+        XCTAssertNotNil(GitAnnexQueries.gitAnnexBinAbsolutePath(workingDirectory: testDir!))
     }
     func testGitBinAbsolutePath() {
-        XCTAssertNotNil(GitAnnexQueries.gitBinAbsolutePath(gitAnnexPath: nil))
+        XCTAssertNotNil(GitAnnexQueries.gitBinAbsolutePath(workingDirectory: testDir!, gitAnnexPath: nil))
     }
     
     func testParseConfigisTurtleSection() {

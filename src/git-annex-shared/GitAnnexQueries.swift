@@ -567,20 +567,18 @@ class GitAnnexQueries {
         return []
     }
     
-    static func gitAnnexBinAbsolutePath() -> String? {
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID),  let workingDirectory = PathUtils.path(for: containerURL) {
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git-annex")
-            
-            if status == 0, output.count == 1 { // success
-                return output.first!
-            } else {
-                // Could not find git-annex in profile
-                // perhaps it is in a standard location?
-                let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git-annex"
-                let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-                if status == 0, output.count > 0, let first = output.first, first.starts(with: "git-annex version") { // success
-                    return applicationsPath
-                }
+    static func gitAnnexBinAbsolutePath(workingDirectory: String) -> String? {
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git-annex")
+        
+        if status == 0, output.count == 1 { // success
+            return output.first!
+        } else {
+            // Could not find git-annex in profile
+            // perhaps it is in a standard location?
+            let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git-annex"
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
+            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git-annex version") { // success
+                return applicationsPath
             }
         }
         
@@ -588,29 +586,27 @@ class GitAnnexQueries {
         return nil
     }
     
-    static func gitBinAbsolutePath(gitAnnexPath: String?) -> String? {
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID),  let workingDirectory = PathUtils.path(for: containerURL) {
-            // If there is a bundled git at the gitAnnex path then use that
-            if let gitAnnexPathExists = gitAnnexPath, let parent = PathUtils.parent(absolutePath: gitAnnexPathExists) {
-                let applicationsPath = "\(parent)/git"
-                let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-                if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
-                    return applicationsPath
-                }
+    static func gitBinAbsolutePath(workingDirectory: String, gitAnnexPath: String?) -> String? {
+        // If there is a bundled git at the gitAnnex path then use that
+        if let gitAnnexPathExists = gitAnnexPath, let parent = PathUtils.parent(absolutePath: gitAnnexPathExists) {
+            let applicationsPath = "\(parent)/git"
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
+            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
+                return applicationsPath
             }
-            
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git")
-            
-            if status == 0, output.count == 1 { // success
-                return output.first!
-            } else {
-                // Could not find git in profile
-                // perhaps it is in a standard location?
-                let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git"
-                let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-                if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
-                    return applicationsPath
-                }
+        }
+        
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git")
+        
+        if status == 0, output.count == 1 { // success
+            return output.first!
+        } else {
+            // Could not find git in profile
+            // perhaps it is in a standard location?
+            let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git"
+            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
+            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
+                return applicationsPath
             }
         }
         
