@@ -131,13 +131,38 @@ class git_annex_turtleTests: XCTestCase {
         let a = WatchedFolder(uuid: UUID(), pathString: "/Users/a")
         XCTAssertEqual(PathUtils.parent(for: "b/c/d.png", in: a), "b/c")
     }
+    
+    func testParentForAbsolutePathFile() {
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/afile"), "/tmp")
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/afile with spaces"), "/tmp")
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/afile with spaces and accènts"), "/tmp")
+    }
+    func testParentForAbsolutePathAFolder() {
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/"), "/")
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp a folder with spaces/"), "/")
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp a folder with spaces and accénts/"), "/")
+    }
+    func testParentForAbsolutePathANestedFolder() {
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/who/what/where"), "/tmp/who/what")
+        XCTAssertEqual(PathUtils.parent(absolutePath: "/tmp/who/what and some spaces/where"), "/tmp/who/what and some spaces")
+    }
+    func testParentForAbsolutePathRoot() {
+        XCTAssertNil(PathUtils.parent(absolutePath: "/"))
+    }
+    func testParentForAbsolutePathInvalidAbsolutePath() {
+        XCTAssertNil(PathUtils.parent(absolutePath: "aRelativePath"))
+        XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/"))
+        XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder/"))
+        XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder"))
+        XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder/afile"))
+    }
 
     func testGitAnnexBinAbsolutePath() {
-        XCTAssertEqual(GitAnnexQueries.gitAnnexBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git-annex")
+        XCTAssertNotNil(GitAnnexQueries.gitAnnexBinAbsolutePath())
     }
-//    func testGitBinAbsolutePath() {
-//        XCTAssertEqual(GitAnnexQueries.gitBinAbsolutePath(), "/Applications/git-annex.app/Contents/MacOS/git")
-//    }
+    func testGitBinAbsolutePath() {
+        XCTAssertNotNil(GitAnnexQueries.gitBinAbsolutePath(gitAnnexPath: nil))
+    }
     
     func testParseConfigisTurtleSection() {
         XCTAssertTrue(TurtleConfigV1.isTurtleSection("[turtle]"))

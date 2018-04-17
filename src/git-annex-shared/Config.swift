@@ -30,17 +30,17 @@ class Config {
     }
     
     fileprivate func setupPaths() {
-        let gitBin = self.gitBin()
-        let gitAnnexBin = self.gitAnnexBin()
+        var gitAnnexBin = self.gitAnnexBin()
 
-        if gitBin == nil {
-            if let newGitBin = GitAnnexQueries.gitBinAbsolutePath() {
-                _ = setGitBin(gitBin: newGitBin)
-            }
-        }
         if gitAnnexBin == nil {
             if let newGitAnnexBin = GitAnnexQueries.gitAnnexBinAbsolutePath() {
                 _ = setGitAnnexBin(gitAnnexBin: newGitAnnexBin)
+                gitAnnexBin = newGitAnnexBin
+            }
+        }
+        if self.gitBin() == nil {
+            if let newGitBin = GitAnnexQueries.gitBinAbsolutePath(gitAnnexPath: gitAnnexBin) {
+                _ = setGitBin(gitBin: newGitBin)
             }
         }
     }

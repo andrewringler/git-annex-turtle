@@ -222,6 +222,18 @@ class PathUtils {
         return PathUtils.relativePath(for: url, in: watchedFolder)
     }
     
+    class func parent(absolutePath: String) -> String? {
+        if absolutePath == "/" {
+            return nil // root has no parent
+        }
+        if absolutePath.starts(with: "/") {
+            var url = PathUtils.urlFor(absolutePath: absolutePath)
+            url.deleteLastPathComponent()
+            return path(for: url)
+        }
+        return nil // not an absolute path
+    }
+    
     class func children(in watchedFolder: WatchedFolder) -> (files: [String], dirs: [String]) {
         return children(path: CURRENT_DIR, in: watchedFolder)
     }

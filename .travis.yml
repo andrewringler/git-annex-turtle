@@ -3,5 +3,11 @@ osx_image: xcode9.2
 
 language: swift
 
+before_install:
+  - brew install git-annex
+
+before_script:
+  - .travis/codesigning.sh
+
 script:
-    - xcodebuild clean test -project src/git-annex-turtle.xcodeproj -scheme git-annex-turtle CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO -quiet
+  - xcodebuild clean test -project src/git-annex-turtle.xcodeproj -scheme git-annex-turtle ONLY_ACTIVE_ARCH=NO -quiet

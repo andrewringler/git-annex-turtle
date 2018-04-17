@@ -588,8 +588,17 @@ class GitAnnexQueries {
         return nil
     }
     
-    static func gitBinAbsolutePath() -> String? {
+    static func gitBinAbsolutePath(gitAnnexPath: String?) -> String? {
         if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID),  let workingDirectory = PathUtils.path(for: containerURL) {
+            // If there is a bundled git at the gitAnnex path then use that
+            if let gitAnnexPathExists = gitAnnexPath, let parent = PathUtils.parent(absolutePath: gitAnnexPathExists) {
+                let applicationsPath = "\(parent)/git"
+                let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
+                if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
+                    return applicationsPath
+                }
+            }
+            
             let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git")
             
             if status == 0, output.count == 1 { // success
