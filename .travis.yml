@@ -1,5 +1,5 @@
 language: swift
+os: osx
+osx_image: xcode9.2
 xcode_project: src/git-annex-turtle.xcodeproj
 xcode_scheme: git-annex-turtleTests
-osx_image: xcode9.2
-os: osx
