@@ -10,6 +10,7 @@ This release contains primarily bug fixes and performance improvements.
 **Minor**
  * added icon for preferences menu
  * added about dialog accessible from the menubar drop-down
+ * all tests running on travis-ci now
 
 **Bug Fixes**
  * fixed: PathStatus equals method was ignoring number of copies field causing us to miss many updates, creating database inconsistencies.

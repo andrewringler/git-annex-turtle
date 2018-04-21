@@ -1,11 +1,11 @@
 ## Bugs, definitely fix
+ * quiting from menubar icon should quit running git processes too, verify fixed?
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
  * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
  * Test with v6 repos
  * Test with git annex watch
  * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
- * quiting from menubar icon should quit running git processes too, verify fixed?
  * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle, verify fixed?
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
