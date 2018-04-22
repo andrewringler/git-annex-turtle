@@ -10,4 +10,11 @@ before_script:
   - .travis/codesigning.sh
 
 script:
-  - xcodebuild clean test -project src/git-annex-turtle.xcodeproj -scheme git-annex-turtle ONLY_ACTIVE_ARCH=NO
+  - xcodebuild clean test -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/
+  - .travis/package-release.sh
+
+deploy:
+  provider: script
+  script: bash .travis/upload-master-release.sh
+  on:
+    branch: master

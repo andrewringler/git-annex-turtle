@@ -28,6 +28,7 @@
  * enable verbose logging in UI, link to open logs folder from UI
  * log to our own logs folder in ~/Library/Logs/git-annex-turtle/git-annex-turtle.log, ~/Library/Logs/git-annex-turtle/git-annex-finder-{process-id}.log, etc… instead of directly to Console, see logging frameworks, https://stackoverflow.com/a/5938021/8671834, https://github.com/DaveWoodCom/XCGLogger, https://github.com/CocoaLumberjack/CocoaLumberjack#readme
  * actually use and expose in UI all per repo settings currently in turtle-monitor namely the flags: finder-integration, context-menus, track-folder-status, track-file-status
+ * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that.
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
