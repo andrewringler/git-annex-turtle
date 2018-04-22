@@ -22,7 +22,7 @@ curl -T $DMG_PATH sftp://${TURTLE_DEPLOY_DOWNLOADS_USER}:${TURTLE_DEPLOY_DOWNLOA
 
 if [ $? -eq 0 ]
 then
-	echo "Successfully upload $DMG_NAME to downloads.andrewringler.com"
+	echo "Successfully uploaded $DMG_NAME to downloads.andrewringler.com"
 else 
 	echo "error uploading $DMG_NAME to downloads.andrewringler.com"
 	exit -1
