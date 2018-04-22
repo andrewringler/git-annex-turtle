@@ -14,4 +14,19 @@ VERSION_STRING="$MAJOR_VERSION-$GIT_COMMIT_HASH"
 DMG_NAME="git-annex-turtle-$VERSION_STRING.dmg"
 DMG_PATH="$DIR/../src/dist/$DMG_NAME"
 
+if [ ! -d $APP_LOCATION ]; then
+    echo "Could not find .app at $APP_LOCATION"
+		exit -1
+fi
+
+echo "Bundling $APP_LOCATION into $DMG_PATH"
+
 $CREATE_DMG_BIN --hide-extension git-annex-turtle.app --icon git-annex-turtle.app 180 170 --window-size 660 400 --app-drop-link 480 170 --icon-size 160 --background $BACKGROUND_IMG --volicon $VOL_ICON --no-internet-enable $DMG_PATH $APP_LOCATION
+
+if [ $? -eq 0 ]
+then
+	echo "Successfully bundled $APP_LOCATION into $DMG_PATH"
+else 
+	echo "error bundling $APP_LOCATION into $DMG_PATH"
+	exit -1
+fi
