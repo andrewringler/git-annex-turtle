@@ -26,7 +26,8 @@ echo "Uploading $DMG_NAME to downloads.andrewringler.com…"
 # Reads passwords from environment variables, set these up at
 # https://travis-ci.org/andrewringler/git-annex-turtle/settings
 
-> /dev/null 2>&1 /usr/bin/expect <<EOD
+{
+/usr/bin/expect <<EOD
 set timeout 45
 spawn scp $DMG_PATH ${TURTLE_DEPLOY_DOWNLOADS_USER}@downloads.andrewringler.com:~/downloads.andrewringler.com/git-annex-turtle/$DMG_NAME
 
@@ -34,13 +35,13 @@ expect {
 	"password:" { send "${TURTLE_DEPLOY_DOWNLOADS_PASS}\r"; exp_continue }
 	"Permission denied" { exit 1 }
 	timeout { puts "timeout uploading DMG"; exit 1 }
-	expect eof	
 }
 
 lassign [wait] pid spawnid os_error_flag status
 exit $status
 
 EOD
+} &> /dev/null
 
 if [ $? -eq 0 ]
 then

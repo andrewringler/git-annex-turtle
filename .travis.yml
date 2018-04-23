@@ -17,6 +17,6 @@ script:
 deploy:
   provider: script
   skip_cleanup: true
-  script: .travis/upload-master-release.sh
+  script: bash .travis/upload-master-release.sh
   on:
     branch: master
