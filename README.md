@@ -16,7 +16,7 @@
 
 [Download git-annex](http://git-annex.branchable.com/install/OSX/) for macOS and install to your `/Applications` folder. Follow the git-annex [walkthrough](http://git-annex.branchable.com/walkthrough/) if you have never used git-annex before.
 
-[Download git-annex-turtle](https://github.com/andrewringler/git-annex-turtle/releases). Unzip and drag the application to your `/Applications` folder. **Requires:** macOS 10.12 or later
+[Download git-annex-turtle stable beta release](https://github.com/andrewringler/git-annex-turtle/releases). Unzip and drag the application to your `/Applications` folder. **Requires:** macOS 10.12 or later. Or if you need some bleeding edge feature try an [unstable release](https://downloads.andrewringler.com/git-annex-turtle/).
 
 ### Usage
 Click the git-annex-turtle Menubar icon, then click `Preferences…`, then click `+` to add a new git-annex repository to watch.
