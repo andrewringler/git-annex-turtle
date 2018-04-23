@@ -3,7 +3,7 @@ osx_image: xcode9.2
 language: swift
 before_install:
   - .travis/ssh_keys.sh
-  - brew install git-annex
+  - .travis/dependencies.sh
 before_script:
   - .travis/codesigning.sh
 script:
