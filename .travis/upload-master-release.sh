@@ -21,27 +21,8 @@ echo "Uploading $DMG_NAME to downloads.andrewringler.com…"
 # pipes to /dev/null to minimize chance of pass exposure
 # see https://docs.travis-ci.com/user/best-practices-security/
 # travi-ci.org does not support SSH keys, use passwords instead
-# https://unix.stackexchange.com/a/187368
-# https://stackoverflow.com/a/23632210/8671834
-# Reads passwords from environment variables, set these up at
-# https://travis-ci.org/andrewringler/git-annex-turtle/settings
 
-{
-/usr/bin/expect <<EOD
-set timeout 45
-spawn scp $DMG_PATH ${TURTLE_DEPLOY_DOWNLOADS_USER}@downloads.andrewringler.com:~/downloads.andrewringler.com/git-annex-turtle/$DMG_NAME
-
-expect {
-	"password:" { send "${TURTLE_DEPLOY_DOWNLOADS_PASS}\r"; exp_continue }
-	"Permission denied" { exit 1 }
-	timeout { puts "timeout uploading DMG"; exit 1 }
-}
-
-lassign [wait] pid spawnid os_error_flag status
-exit $status
-
-EOD
-} &> /dev/null
+scp -i ~\/.ssh/id_rsa_andrewringlerdownloads $DMG_PATH ${TURTLE_DEPLOY_DOWNLOADS_USER}@downloads.andrewringler.com:~/downloads.andrewringler.com/git-annex-turtle/$DMG_NAME
 
 if [ $? -eq 0 ]
 then
