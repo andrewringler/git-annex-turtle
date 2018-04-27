@@ -161,10 +161,14 @@ class git_annex_turtleTests: XCTestCase {
     }
 
     func testGitAnnexBinAbsolutePath() {
-        XCTAssertNotNil(GitAnnexQueries.gitAnnexBinAbsolutePath(workingDirectory: testDir!))
+        let gitAnnexBin = FindBinaries.gitAnnexBinAbsolutePath(workingDirectory: testDir!)
+        TurtleLog.debug("unit tests found gitAnnexBin at \(String(describing: gitAnnexBin))")
+        XCTAssertNotNil(gitAnnexBin)
     }
     func testGitBinAbsolutePath() {
-        XCTAssertNotNil(GitAnnexQueries.gitBinAbsolutePath(workingDirectory: testDir!, gitAnnexPath: nil))
+        let gitBin = FindBinaries.gitBinAbsolutePath(workingDirectory: testDir!, gitAnnexPath: nil)
+        TurtleLog.debug("unit test found gitBin at \(String(describing: gitBin))")
+        XCTAssertNotNil(gitBin)
     }
     
     func testParseConfigisTurtleSection() {

@@ -33,13 +33,13 @@ class Config {
         var gitAnnexBin = self.gitAnnexBin()
 
         if gitAnnexBin == nil {
-            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), let newGitAnnexBin = GitAnnexQueries.gitAnnexBinAbsolutePath(workingDirectory: workingDirectory) {
+            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), let newGitAnnexBin = FindBinaries.gitAnnexBinAbsolutePath(workingDirectory: workingDirectory) {
                 _ = setGitAnnexBin(gitAnnexBin: newGitAnnexBin)
                 gitAnnexBin = newGitAnnexBin
             }
         }
         if self.gitBin() == nil {
-            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), let newGitBin = GitAnnexQueries.gitBinAbsolutePath(workingDirectory: workingDirectory, gitAnnexPath: gitAnnexBin) {
+            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), let newGitBin = FindBinaries.gitBinAbsolutePath(workingDirectory: workingDirectory, gitAnnexPath: gitAnnexBin) {
                 _ = setGitBin(gitBin: newGitBin)
             }
         }

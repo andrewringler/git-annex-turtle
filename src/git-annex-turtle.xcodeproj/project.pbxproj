@@ -65,6 +65,10 @@
 		4936D9642066FE3600FB76C7 /* Running.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9622066FCC400FB76C7 /* Running.swift */; };
 		4936D9652066FE3800FB76C7 /* Running.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9622066FCC400FB76C7 /* Running.swift */; };
 		4936D9662067020800FB76C7 /* Running.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9622066FCC400FB76C7 /* Running.swift */; };
+		493AA95F2093563900EA09A0 /* FindBinaries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493AA95E2093563900EA09A0 /* FindBinaries.swift */; };
+		493AA9602093565100EA09A0 /* FindBinaries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493AA95E2093563900EA09A0 /* FindBinaries.swift */; };
+		493AA9612093565100EA09A0 /* FindBinaries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493AA95E2093563900EA09A0 /* FindBinaries.swift */; };
+		493AA962209358D600EA09A0 /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
 		4956B9F5207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */; };
 		4956B9F6207BF7D900D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */; };
@@ -263,6 +267,7 @@
 		4936D9582064761900FB76C7 /* RunNowOrAgain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunNowOrAgain.swift; sourceTree = "<group>"; };
 		4936D95C2064889C00FB76C7 /* runOnceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = runOnceTests.swift; sourceTree = "<group>"; };
 		4936D9622066FCC400FB76C7 /* Running.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Running.swift; sourceTree = "<group>"; };
+		493AA95E2093563900EA09A0 /* FindBinaries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindBinaries.swift; sourceTree = "<group>"; };
 		49447F251FFB063C007AAE5F /* git-annex-mac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "git-annex-mac.entitlements"; sourceTree = "<group>"; };
 		4956B9F4207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurtleServerVisibleFolderUpdates.swift; sourceTree = "<group>"; };
 		4956B9F8207C03B300D366D4 /* HandleVisibleFolderUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleVisibleFolderUpdates.swift; sourceTree = "<group>"; };
@@ -390,6 +395,7 @@
 				4981FE0A1DE61774002E6CB3 /* Config.swift */,
 				49635EF32019208500AB95E5 /* PathStatus.swift */,
 				49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */,
+				493AA95E2093563900EA09A0 /* FindBinaries.swift */,
 				497D1FCA20114BF200106566 /* debounce-throttle.swift */,
 				497D1FC420113F3300106566 /* EventStream.swift */,
 				497D1FC520113F3300106566 /* FileEvent.swift */,
@@ -855,6 +861,7 @@
 			files = (
 				49BC72F1207A97D300D840AC /* TurtleServiceObjects.swift in Sources */,
 				49AF864D206A77D800945F57 /* StopProcessingWatchedFolder.swift in Sources */,
+				493AA95F2093563900EA09A0 /* FindBinaries.swift in Sources */,
 				4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49AF86492069A0C400945F57 /* SetThreadsafe.swift in Sources */,
 				490982ED204E241900096C92 /* StreamReader.swift in Sources */,
@@ -866,6 +873,7 @@
 				49AF863D2069801A00945F57 /* QueueThreadSafe.swift in Sources */,
 				49DDE1872059EFF4008C55AC /* Dialogs.swift in Sources */,
 				490982E4204E1D3C00096C92 /* VisibleFolder.swift in Sources */,
+				493AA962209358D600EA09A0 /* GitAnnexQueries.swift in Sources */,
 				490982EB204E21AB00096C92 /* Constants.swift in Sources */,
 				49AF863F2069844200945F57 /* LinkedList.swift in Sources */,
 				49DDE1792059CC22008C55AC /* TurtleDialogs.swift in Sources */,
@@ -917,6 +925,7 @@
 				4922DC791FFD38D000448C22 /* Config.swift in Sources */,
 				49EFD2002007BFB1005742DB /* Constants.swift in Sources */,
 				49AF86422069845F00945F57 /* QueueThreadSafe.swift in Sources */,
+				493AA9602093565100EA09A0 /* FindBinaries.swift in Sources */,
 				4956B9F5207BF7D100D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */,
 				49EF626F200E75D5002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 				49AF86342069372A00945F57 /* HandleStatusRequests.swift in Sources */,
@@ -944,6 +953,7 @@
 				49ED1FFB206A88FA0092AC6D /* pathUtilsTests.swift in Sources */,
 				492492072040A1A900F8D8A0 /* FullScan.swift in Sources */,
 				49DDE17E2059D87E008C55AC /* GitAnnexTurtle.swift in Sources */,
+				493AA9612093565100EA09A0 /* FindBinaries.swift in Sources */,
 				49810340205EB0D8006084B2 /* FinderSyncCore.swift in Sources */,
 				492492082040A1F500F8D8A0 /* PathStatus.swift in Sources */,
 				492492012040A15100F8D8A0 /* GitAnnexQueries.swift in Sources */,

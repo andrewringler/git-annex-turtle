@@ -36,7 +36,7 @@ class GitAnnexQueries {
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
      */
-    private static func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
+    static func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
         var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
@@ -565,53 +565,6 @@ class GitAnnexQueries {
         }
         
         return []
-    }
-    
-    static func gitAnnexBinAbsolutePath(workingDirectory: String) -> String? {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git-annex")
-        
-        if status == 0, output.count == 1 { // success
-            return output.first!
-        } else {
-            // Could not find git-annex in profile
-            // perhaps it is in a standard location?
-            let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git-annex"
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git-annex version") { // success
-                return applicationsPath
-            }
-        }
-        
-        TurtleLog.error("could not find git-annex binary, perhaps it is not installed?")
-        return nil
-    }
-    
-    static func gitBinAbsolutePath(workingDirectory: String, gitAnnexPath: String?) -> String? {
-        // If there is a bundled git at the gitAnnex path then use that
-        if let gitAnnexPathExists = gitAnnexPath, let parent = PathUtils.parent(absolutePath: gitAnnexPathExists) {
-            let applicationsPath = "\(parent)/git"
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
-                return applicationsPath
-            }
-        }
-        
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: "/bin/bash", args: "-c", ". ~/.bash_profile > /dev/null 2>&1; which git")
-        
-        if status == 0, output.count == 1 { // success
-            return output.first!
-        } else {
-            // Could not find git in profile
-            // perhaps it is in a standard location?
-            let applicationsPath = "/Applications/git-annex.app/Contents/MacOS/git"
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: applicationsPath, args: "version")
-            if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
-                return applicationsPath
-            }
-        }
-        
-        TurtleLog.error("could not find git binary, perhaps it is not installed?")
-        return nil
     }
 }
 
