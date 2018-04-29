@@ -34,7 +34,7 @@ class TestingUtil {
         XCTFail("Invalid path, Unable to cleanup remove folder after tests", file: file, line: line)
     }
     
-    class func createTmpDir() -> String? {
+    class func createTmpDir(file: StaticString = #file, line: UInt = #line) -> String? {
         do {
             let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
             try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
@@ -42,63 +42,73 @@ class TestingUtil {
                 return path
             }
         } catch {
-            XCTFail("unable to create a new temp folder \(error)")
+            XCTFail("unable to create a new temp folder \(error)", file: file, line: line)
             return nil
         }
-        XCTFail("unable to create a new temp folder")
+        XCTFail("unable to create a new temp folder", file: file, line: line)
         return nil
     }
     
-    class func createInitGitAnnexRepo(at path: String, gitAnnexQueries: GitAnnexQueries) -> WatchedFolder? {
+    class func createInitGitAnnexRepo(at path: String, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) -> WatchedFolder? {
         do {
             let url = PathUtils.urlFor(absolutePath: path)
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
-            XCTAssertTrue(gitAnnexQueries.createRepo(at: path), "could not initialize repository at \(path)")
+            XCTAssertTrue(gitAnnexQueries.createRepo(at: path), "could not initialize repository at \(path)", file: file, line: line)
             if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: path) {
                 return WatchedFolder(uuid: uuid, pathString: path)
             } else {
-                XCTFail("could not retrieve UUID for folder \(path)")
+                XCTFail("could not retrieve UUID for folder \(path)", file: file, line: line)
             }
         } catch {
-            XCTFail("unable to create a new git annex repo in temp folder \(error)")
+            XCTFail("unable to create a new git annex repo in temp folder \(error)", file: file, line: line)
         }
         return nil
     }
     
-    class func writeToFile(content: String, to fileName: String, in watchedFolder: WatchedFolder) {
+    class func writeToFile(content: String, to fileName: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) {
         let url = PathUtils.url(for: fileName, in: watchedFolder)
         do {
             try content.write(to: url, atomically: false, encoding: .utf8)
         }
         catch {
-            XCTFail("unable to create file='\(fileName)' in repo \(watchedFolder)")
+            XCTFail("unable to create file='\(fileName)' in repo \(watchedFolder)", file: file, line: line)
         }
     }
     
-    class func createSymlink(from fromRelativePath: String, to toRelativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+    class func createSymlink(from fromRelativePath: String, to toRelativePath: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) -> Bool {
         do {
             let fromAbsolutePath = PathUtils.absolutePath(for: fromRelativePath, in: watchedFolder)
             let toAbsolutePath = PathUtils.absolutePath(for: toRelativePath, in: watchedFolder)
             try FileManager.default.createSymbolicLink(atPath: fromAbsolutePath, withDestinationPath: toAbsolutePath)
             return true
         } catch {
-            TurtleLog.error("Unable to create symlink from=\(fromRelativePath) to=\(toRelativePath) in \(watchedFolder)")
+            XCTFail("Unable to create symlink from=\(fromRelativePath) to=\(toRelativePath) in \(watchedFolder)", file: file, line: line)
             return false
         }
     }
     
-    class func gitAnnexAdd(file: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) {
+    class func createSymlink(from fromAbsolutePath: String, to toAbsolutePath: String, file: StaticString = #file, line: UInt = #line) -> Bool {
+        do {
+            try FileManager.default.createSymbolicLink(atPath: fromAbsolutePath, withDestinationPath: toAbsolutePath)
+            return true
+        } catch {
+            XCTFail("Unable to create symlink from=\(fromAbsolutePath) to=\(toAbsolutePath)", file: file, line: line)
+            return false
+        }
+    }
+    
+    class func gitAnnexAdd(file: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, sourcefile: StaticString = #file, sourceline: UInt = #line) {
         let gitAddResult = gitAnnexQueries.gitAnnexCommand(for: file, in: watchedFolder.pathString, cmd: CommandString.add)
-        if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)")}
+        if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)", file: sourcefile, line: sourceline)}
     }
 
-    class func gitCommit(_ commitMessage: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) {
+    class func gitCommit(_ commitMessage: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) {
         let result = gitAnnexQueries.gitCommit(in: watchedFolder.pathString, commitMessage: commitMessage)
-        if !result.success { XCTFail("unable to git commit \(result.error)")}
+        if !result.success { XCTFail("unable to git commit \(result.error)", file: file, line: line)}
     }
 
     static let maxThreads = 20
-    class func createAndAddFiles(numFiles: Int, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries) -> [String] {
+    class func createAndAddFiles(numFiles: Int, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) -> [String] {
         // create subfolders
         createDir(dir: "a", in: watchedFolder)
         createDir(dir: "b", in: watchedFolder)
@@ -145,21 +155,21 @@ class TestingUtil {
         gitAnnexAdd(file: fileName, in: watchedFolder, gitAnnexQueries: gitAnnexQueries)
     }
     
-    class func createDir(dir: String, in watchedFolder: WatchedFolder) {
+    class func createDir(dir: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) {
         do {
             let url = PathUtils.url(for: dir, in: watchedFolder)
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         } catch {
-            TurtleLog.error("Unable to create new directory '\(dir)' in \(watchedFolder)")
+            XCTFail("Unable to create new directory '\(dir)' in \(watchedFolder)", file: file, line: line)
         }
     }
     
-    class func createDir(absolutePath: String) {
+    class func createDir(absolutePath: String, file: StaticString = #file, line: UInt = #line) {
         do {
             let url = PathUtils.urlFor(absolutePath: absolutePath)
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
         } catch {
-            TurtleLog.error("Unable to create new directory '\(absolutePath)'")
+            XCTFail("Unable to create new directory '\(absolutePath)'", file: file, line: line)
         }
     }
     
@@ -228,10 +238,16 @@ extension XCTestCase {
 }
 
 class DialogTestingStubCheckMessages: Dialogs {
+    
     var title: String?
     var message: String?
     
-    func dialogOK(title: String, message: String) {
+    func dialogGitAnnexWarn(title: String, message: String) {
+        self.title = title
+        self.message = message
+        TurtleLog.info("title=\(title) message=\(message)")
+    }
+    func dialogOSWarn(title: String, message: String) {
         self.title = title
         self.message = message
         TurtleLog.info("title=\(title) message=\(message)")
@@ -240,7 +256,10 @@ class DialogTestingStubCheckMessages: Dialogs {
 }
 
 class DialogTestingStubFailOnMessage: Dialogs {
-    func dialogOK(title: String, message: String) {
+    func dialogGitAnnexWarn(title: String, message: String) {
+        XCTFail("title=\(title) message=\(message)")
+    }
+    func dialogOSWarn(title: String, message: String) {
         XCTFail("title=\(title) message=\(message)")
     }
     func about() {}

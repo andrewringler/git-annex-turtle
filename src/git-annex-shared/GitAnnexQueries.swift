@@ -10,12 +10,10 @@ import Foundation
 
 class GitAnnexQueries {
     public static let NO_GIT_COMMITS = "NO GIT COMMIT YET"
-    let gitCmd: String
-    let gitAnnexCmd: String
+    private let preferences: Preferences
     
-    init(gitAnnexCmd: String, gitCmd: String) {
-        self.gitAnnexCmd = gitAnnexCmd
-        self.gitCmd = gitCmd
+    init(preferences: Preferences) {
+        self.preferences = preferences
     }
     
     // TODO one queue per repository?
@@ -140,8 +138,12 @@ class GitAnnexQueries {
     }
     
     func gitAnnexCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue)
         let commandRun = "git-annex " + cmd.rawValue
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -150,8 +152,13 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue, "\"\(path)\"")
         let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (false, [], [], commandRun)
+        }
+
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -160,8 +167,13 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue, "\"\(path)\"")
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -169,8 +181,13 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue)
         let commandRun = "git " + cmd.rawValue
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return (false, [], [], commandRun)
+        }
+
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -178,15 +195,26 @@ class GitAnnexQueries {
         return (status == 0, error, output, commandRun)
     }
     func gitCommit(in workingDirectory: String, commitMessage: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
         let commandRun = "git commit \"" + commitMessage + "\""
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
+    
     func gitGitAnnexUUID(in workingDirectory: String) -> UUID? {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return nil
+        }
+
         // is this folder even a directory?
         if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
             TurtleLog.error("Not a valid git-annex folder, nor even a directory '%@'", workingDirectory)
@@ -215,6 +243,11 @@ class GitAnnexQueries {
     }
     
     func gitAnnexAllFilesLackingCopies(in watchedFolder: WatchedFolder) -> Set<String>? {
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return nil
+        }
+
         if let dir = PathUtils.createTmpDir() {
             let file = "allfileslackingcopies.txt"
             let resultsFileAbsolutePath = "\(dir)/\(file)"
@@ -239,6 +272,11 @@ class GitAnnexQueries {
     }
 
     func gitAnnexWhereisAllFiles(in watchedFolder: WatchedFolder) -> String? {
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return nil
+        }
+
         if let dir = PathUtils.createTmpDir() {
             let file = "whereisallfiles.json"
             let resultsFileAbsolutePath = "\(dir)/\(file)"
@@ -287,6 +325,11 @@ class GitAnnexQueries {
     
     func gitAnnexPathInfo(for path: String, in workingDirectory: String, in watchedFolder: WatchedFolder, includeFiles: Bool, includeDirs: Bool) -> (error: Bool, pathStatus: PathStatus?) {
         TurtleLog.debug("git-annex info \(path) in \(watchedFolder)")
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (error: true, pathStatus: nil)
+        }
+
         let isDir = GitAnnexQueries.directoryExistsAt(relativePath: path, in: watchedFolder)
         if isDir {
             // Directory
@@ -397,6 +440,11 @@ class GitAnnexQueries {
      * contained within the directory
      */
     func gitAnnexNumberOfCopies(for path: String, in workingDirectory: String) -> UInt8? {
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return nil
+        }
+        
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", "\"\(path)\"")
         
         // if command didnt return an error, parse the JSON
@@ -450,6 +498,11 @@ class GitAnnexQueries {
      * this can be slow, guard when you call this on directories
      */
     func gitAnnexLackingCopies(for path: String, in workingDirectory: String) -> Bool? {
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return nil
+        }
+
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "--lackingcopies=1", "find", "\"\(path)\"")
         
         // if command didnt return an error, count the lines returned
@@ -468,6 +521,11 @@ class GitAnnexQueries {
      * since the give commitHash
      * where commitHash is a commit in the git-annex branch */
     func allKeysWithLocationsChangesGitAnnexSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return []
+        }
+
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedAnnexFilesAfterCommit", ofType: "sh") {
             let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash, gitCmd)
@@ -488,6 +546,11 @@ class GitAnnexQueries {
      * since the given commitHash
      * where commitHash is a commit in the master branch */
     func allFileChangesGitSinceBlocking(commitHash: String, in watchedFolder: WatchedFolder) -> [String] {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return []
+        }
+
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedGitFilesAfterCommit", ofType: "sh") {
             let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash, gitCmd)
@@ -507,6 +570,11 @@ class GitAnnexQueries {
     /* returns list of files in git repo that have been modified
      * mentioned in any git commit ever */
     func allFileChangesInGitLog(in watchedFolder: WatchedFolder) -> [String] {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return []
+        }
+
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "allChangedGitFiles", ofType: "sh") {
             let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: gitCmd)
@@ -524,6 +592,11 @@ class GitAnnexQueries {
     }
     
     func latestGitAnnexCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return nil
+        }
+
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, args: "log", "--pretty=format:\"%H\"", "-r", "git-annex", "-n", "1")
         
         if(status == 0){ // success
@@ -537,6 +610,11 @@ class GitAnnexQueries {
     }
     
     func latestGitCommitHashBlocking(in watchedFolder: WatchedFolder) -> String? {
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return nil
+        }
+
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, args: "log", "--pretty=format:\"%H\"", "-n", "1")
         
         if(status == 0){ // success
@@ -550,6 +628,15 @@ class GitAnnexQueries {
     }
     
     func immediateChildrenNotIgnored(relativePath: String, in watchedFolder: WatchedFolder) -> [String] {
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return []
+        }
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return []
+        }
+
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "childrenNotIgnored", ofType: "sh") {
             let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: relativePath, gitCmd, gitAnnexCmd)

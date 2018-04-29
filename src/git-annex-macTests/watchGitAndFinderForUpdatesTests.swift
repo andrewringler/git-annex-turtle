@@ -17,6 +17,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     var gitAnnexQueries: GitAnnexQueries?
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
     var config: Config?
+    var preferences: Preferences?
     
     override func setUp() {
         super.setUp()
@@ -28,6 +29,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         TurtleLog.info("Using testing dir: \(testDir!)")
         config = Config(dataPath: "\(testDir!)/turtle-monitor")
+        preferences = Preferences(gitBin: config!.gitBin(), gitAnnexBin: config!.gitAnnexBin())
 
         let databaseParentFolder  = "\(testDir!)/database"
         TestingUtil.createDir(absolutePath: databaseParentFolder)
@@ -36,10 +38,10 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
         let visibleFolders = VisibleFolders(queries: queries!)
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences!)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
 
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage(), visibleFolders: visibleFolders)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage(), visibleFolders: visibleFolders, preferences: preferences!)
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)
@@ -58,6 +60,35 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         TestingUtil.removeDir(testDir)
         
         super.tearDown()
+    }
+    
+    func testUpdateConfigUpdatesPreferences() {
+        // create some valid git and git-annex binaries
+        let newGoodGitPath = "\(testDir!)/somegit"
+        let newGoodGitAnnexPath = "\(testDir!)/somegitannex"
+        XCTAssertTrue(TestingUtil.createSymlink(from: newGoodGitPath, to: config!.gitBin()!))
+        XCTAssertTrue(TestingUtil.createSymlink(from: newGoodGitAnnexPath, to: config!.gitAnnexBin()!))
+
+        // changing config updates preferences
+        XCTAssertTrue(config!.setGitBin(gitBin: newGoodGitPath))
+        XCTAssertTrue(config!.setGitAnnexBin(gitAnnexBin: newGoodGitAnnexPath))
+
+        wait(for: 1)
+        XCTAssertEqual(preferences!.gitBin(), newGoodGitPath)
+        XCTAssertEqual(preferences!.gitAnnexBin(), newGoodGitAnnexPath)
+        
+        // create some invalid git and git-annex paths
+        let newBadGitPath = "/tmp/notareadfolder23094sdfsdklj3dsfljk/git"
+        let newBadGitAnnexPath = "/tmp/notareadfolderasdfsdf53fd23094sfljk/git-annex"
+        
+        // changing config doesn't update preferences, since invalid paths
+        XCTAssertFalse(config!.setGitBin(gitBin: newBadGitPath))
+        XCTAssertFalse(config!.setGitAnnexBin(gitAnnexBin: newBadGitAnnexPath))
+        
+        // paths will remain unchanged
+        wait(for: 1)
+        XCTAssertEqual(preferences!.gitBin(), newGoodGitPath)
+        XCTAssertEqual(preferences!.gitAnnexBin(), newGoodGitAnnexPath)
     }
     
     func testWatchGitAndFinderForUpdates() {

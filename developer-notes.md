@@ -22,7 +22,6 @@
  * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
 
 ## New Features, yes
- * let user view/set git and git-annex binary paths from GUI
  * let user view/set per repo git-annex-turtle settings from GUI
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
  * enable verbose logging in UI, link to open logs folder from UI

@@ -23,6 +23,7 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     var menubarAnimating: Bool = false
     
     let config = Config(dataPath: Config.DEFAULT_DATA_PATH)
+    let preferences: Preferences
     let data: DataEntrypoint
     let queries: Queries
     let gitAnnexQueries: GitAnnexQueries
@@ -44,14 +45,8 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         for i in 0...16 {
             menubarIcons.append(NSImage(named:NSImage.Name(rawValue: "menubaricon-\(String(i))"))!)
         }
-        if let gitAnnexBin = config.gitAnnexBin(), let gitBin = config.gitBin() {
-            gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: gitAnnexBin, gitCmd: gitBin)
-        } else {
-            // TODO put notice in menubar icon
-            // allow user to set paths or install
-            TurtleLog.error("Could not find binary paths for git and git-annex, quitting")
-            exit(-1)
-        }
+        preferences = Preferences(gitBin: config.gitBin(), gitAnnexBin: config.gitAnnexBin())
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences)
         
         data = DataEntrypoint()
         queries = Queries(data: data)
@@ -68,13 +63,15 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         constructMenu(watchedFolders: []) // generate an empty menu stub
         
         // Start the main database and git-annex loop
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs, visibleFolders: visibleFolders)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs, visibleFolders: visibleFolders, preferences: preferences)
         handleCommandRequests = HandleCommandRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
         handleBadgeRequests = HandleBadgeRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, fullScan: fullScan, queries: queries)
         handleVisibleFolderUpdates = HandleVisibleFolderUpdates(hasWatchedFolders: watchGitAndFinderForUpdates!, visibleFolders: visibleFolders)
 
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)
+        preferences.preferencesViewController = preferencesViewController
+        preferences.canRecheckGitCommitsAndFullScans = watchGitAndFinderForUpdates
         
         // Run MessagePort Services for Finder Sync communications
         runMessagePortServices = RunMessagePortServices(gitAnnexTurtle: self)

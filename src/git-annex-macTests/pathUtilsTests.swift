@@ -21,8 +21,9 @@ class pathUtilsTests: XCTestCase {
         
         TurtleLog.info("Using testing dir: \(testDir!)")
         let config = Config(dataPath: "\(testDir!)/turtle-monitor")
-        
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
+        let preferences = Preferences(gitBin: config.gitBin(), gitAnnexBin: config.gitAnnexBin())
+
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences)
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
     }
     

@@ -345,8 +345,13 @@ class git_annex_turtleTests: XCTestCase {
     func testConfigGitBin() {
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
-            XCTAssertTrue(config.setGitBin(gitBin: "/usr/bin/git"))
-            XCTAssertEqual(config.gitBin(), "/usr/bin/git")
+            let oldGitBin = config.gitBin()
+            XCTAssertNotNil(oldGitBin)
+            let newGoodGitPath = "\(testDir!)/somegit"
+            XCTAssertTrue(TestingUtil.createSymlink(from: newGoodGitPath, to: oldGitBin!))
+            
+            XCTAssertTrue(config.setGitBin(gitBin: newGoodGitPath))
+            XCTAssertEqual(config.gitBin(), newGoodGitPath)
             return
         }
         XCTFail()
@@ -354,8 +359,37 @@ class git_annex_turtleTests: XCTestCase {
     func testConfigGitAnnexBin() {
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
-            XCTAssertTrue(config.setGitAnnexBin(gitAnnexBin: "/usr/bin/git-annex"))
-            XCTAssertEqual(config.gitAnnexBin(), "/usr/bin/git-annex")
+            let oldGitAnnexBin = config.gitAnnexBin()
+            XCTAssertNotNil(oldGitAnnexBin)
+            let newGoodGitAnnexPath = "\(testDir!)/somegitannex"
+            XCTAssertTrue(TestingUtil.createSymlink(from: newGoodGitAnnexPath, to: oldGitAnnexBin!))
+
+            XCTAssertTrue(config.setGitAnnexBin(gitAnnexBin: newGoodGitAnnexPath))
+            XCTAssertEqual(config.gitAnnexBin(), newGoodGitAnnexPath)
+            return
+        }
+        XCTFail()
+    }
+    func testConfigGitBin_InvalidPathOldPathPreserved() {
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            let oldGitBin = config.gitBin()
+            XCTAssertNotNil(oldGitBin)
+            
+            XCTAssertFalse(config.setGitBin(gitBin: "/tmp/somenewpaththatdoesntexistsdlkfjs098234/git"))
+            XCTAssertEqual(config.gitBin(), oldGitBin)
+            return
+        }
+        XCTFail()
+    }
+    func testConfigGitAnnexBin_InvalidPathOldPathPreserved() {
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            let oldGitAnnexBin = config.gitAnnexBin()
+            XCTAssertNotNil(oldGitAnnexBin)
+            
+            XCTAssertFalse(config.setGitAnnexBin(gitAnnexBin: "/tmp/somenewinvalidpathdl098234/git-annex"))
+            XCTAssertEqual(config.gitAnnexBin(), oldGitAnnexBin)
             return
         }
         XCTFail()
@@ -373,5 +407,51 @@ class git_annex_turtleTests: XCTestCase {
     
     func equalsT(_ tuple1:(Bool,String?),_ tuple2:(Bool,String?)) -> Bool {
         return (tuple1.0 == tuple2.0) && (tuple1.1 == tuple2.1)
+    }
+    
+    func testPreferences() {
+        let preferences = Preferences(gitBin: "/tmp/somedir/git", gitAnnexBin: "/tmp/someotherdir/git-annex")
+        let preferencesViewController = ViewControllerStub()
+        let canRecheckGitCommitsAndFullScans = CanRecheckGitCommitsAndFullScansStub()
+        preferences.preferencesViewController = preferencesViewController
+        preferences.canRecheckGitCommitsAndFullScans = canRecheckGitCommitsAndFullScans
+        
+        XCTAssertEqual(preferences.gitBin(), "/tmp/somedir/git")
+        XCTAssertEqual(preferences.gitAnnexBin(), "/tmp/someotherdir/git-annex")
+        
+        // set new path for git
+        preferences.setGitBin(gitBin: "/tmp/newPath/git")
+        XCTAssertEqual(preferences.gitBin(), "/tmp/newPath/git")
+        XCTAssertEqual(preferencesViewController.updateGitBinCalled, "/tmp/newPath/git")
+        XCTAssertEqual(canRecheckGitCommitsAndFullScans.recheckForGitCommitsAndFullScansCalled, 1)
+        
+        // set new path for git-annex
+        preferences.setGitAnnexBin(gitAnnexBin: "/tmp/anotherNewPath/git-annex")
+        XCTAssertEqual(preferences.gitAnnexBin(), "/tmp/anotherNewPath/git-annex")
+        XCTAssertEqual(preferencesViewController.updateGitAnnexBinCalled, "/tmp/anotherNewPath/git-annex")
+        XCTAssertEqual(canRecheckGitCommitsAndFullScans.recheckForGitCommitsAndFullScansCalled, 2)
+
+        // empty path ignored
+        preferences.setGitBin(gitBin: "")
+        XCTAssertEqual(preferences.gitBin(), "/tmp/newPath/git")
+        preferences.setGitAnnexBin(gitAnnexBin: "")
+        XCTAssertEqual(preferences.gitAnnexBin(), "/tmp/anotherNewPath/git-annex")
+
+        // empties
+        let p2 = Preferences(gitBin: "", gitAnnexBin: "/tmp/someotherdir/git-annex")
+        XCTAssertNil(p2.gitBin())
+        XCTAssertEqual(p2.gitAnnexBin(), "/tmp/someotherdir/git-annex")
+
+        let p3 = Preferences(gitBin: "/tmp/somedir/git", gitAnnexBin: "")
+        XCTAssertEqual(p3.gitBin(), "/tmp/somedir/git")
+        XCTAssertNil(p3.gitAnnexBin())
+        
+        let p4 = Preferences(gitBin: nil, gitAnnexBin: "/tmp/someotherdir/git-annex")
+        XCTAssertNil(p4.gitBin())
+        XCTAssertEqual(p4.gitAnnexBin(), "/tmp/someotherdir/git-annex")
+        
+        let p5 = Preferences(gitBin: "/tmp/somedir/git", gitAnnexBin: nil)
+        XCTAssertEqual(p5.gitBin(), "/tmp/somedir/git")
+        XCTAssertNil(p5.gitAnnexBin())
     }
 }

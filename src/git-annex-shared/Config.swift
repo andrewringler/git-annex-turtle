@@ -47,14 +47,19 @@ class Config {
     
     func setGitBin(gitBin: String) -> Bool {
         if let config = readConfig() {
-            return writeConfig(config.setGitBin(gitBin))
+            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), FindBinaries.validGit(workingDirectory: workingDirectory, gitAbsolutePath: gitBin) {
+                return writeConfig(config.setGitBin(gitBin))
+            }
+            TurtleLog.debug("not setting git bin, invalid binary at \(gitBin)")
         }
         TurtleLog.error("setGitBin: unable to read config")
         return false
     }
     func setGitAnnexBin(gitAnnexBin: String) -> Bool {
         if let config = readConfig() {
-            return writeConfig(config.setGitAnnexBin(gitAnnexBin))
+            if let workingDirectory = PathUtils.parent(absolutePath: dataPath), FindBinaries.validGitAnnex(workingDirectory: workingDirectory, gitAnnexAbsolutePath: gitAnnexBin) {
+                return writeConfig(config.setGitAnnexBin(gitAnnexBin))
+            }
         }
         TurtleLog.error("setGitAnnexBin: unable to read config")
         return false

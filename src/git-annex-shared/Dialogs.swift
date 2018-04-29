@@ -9,6 +9,7 @@
 import Foundation
 
 protocol Dialogs {
-    func dialogOK(title: String, message: String)
+    func dialogGitAnnexWarn(title: String, message: String)
+    func dialogOSWarn(title: String, message: String)
     func about()
 }

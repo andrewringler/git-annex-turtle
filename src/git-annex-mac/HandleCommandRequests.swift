@@ -46,7 +46,7 @@ class HandleCommandRequests: StoppableService {
                         let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
                             // git-annex has very nice error message, use them as-is
-                            dialogs.dialogOK(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                            dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
                         } else {
                             // success, update this file status right away
                             //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
@@ -57,7 +57,7 @@ class HandleCommandRequests: StoppableService {
                     if commandRequest.commandType.isGit {
                         let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
                         if !status.success {
-                            dialogs.dialogOK(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                            dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                         } else {
                             // success, update this file status right away
                             //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)

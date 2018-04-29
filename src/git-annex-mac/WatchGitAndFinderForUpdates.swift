@@ -15,8 +15,9 @@ protocol CanRecheckFoldersForUpdates {
     func recheckFolderUpdates()
 }
 
-class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanRecheckFoldersForUpdates {
+class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanRecheckFoldersForUpdates, CanRecheckGitCommitsAndFullScans {
     let config: Config
+    let preferences: Preferences
     let gitAnnexTurtle: GitAnnexTurtle
     let data: DataEntrypoint
     let queries: Queries
@@ -24,16 +25,19 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
     let visibleFolders: VisibleFolders
     let fullScan: FullScan
     let dialogs: Dialogs
-    var setupFileSystemWatches: RunNowOrAgain?
+    var watchedFolderWatches: WatchedFolderWatches?
     var processFolderUpdates: RunNowOrAgain?
+    let updateBinaryPathsLock = NSLock()
+    let updateListOfWatchedFoldersLock = NSLock()
+    let startFullScanForWatchedFoldersWithNoHistoryInDbLock = NSLock()
     
     var watchedFolders = Set<WatchedFolder>()
-    var fileSystemMonitors: [WatchedFolderMonitor] = []
-    var listenForWatchedFolderChanges: Witness? = nil
+    var listenForConfigChanges: Witness? = nil
     
-    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs, visibleFolders: VisibleFolders) {
+    init(gitAnnexTurtle: GitAnnexTurtle, config: Config, data: DataEntrypoint, fullScan: FullScan, gitAnnexQueries: GitAnnexQueries, dialogs: Dialogs, visibleFolders: VisibleFolders, preferences: Preferences) {
         self.gitAnnexTurtle = gitAnnexTurtle
         self.config = config
+        self.preferences = preferences
         self.data = data
         self.fullScan = fullScan
         self.gitAnnexQueries = gitAnnexQueries
@@ -42,21 +46,27 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
         queries = Queries(data: data)
         super.init()
 
-        self.setupFileSystemWatches = RunNowOrAgain {
-            self.setupFileSystemWatchesIfNeeded()
-        }
+        self.watchedFolderWatches = WatchedFolderWatches(app: self)
         self.processFolderUpdates = RunNowOrAgain {
             self.checkAllFoldersForCompletion()
         }
 
         updateListOfWatchedFolders()
-        setupFileSystemWatchesIfNeeded()
         setupFileSystemMonitorOnConfigFile()
         processFolderUpdates?.runTaskAgain()
     }
     
     public func recheckFolderUpdates() {
         processFolderUpdates?.runTaskAgain()
+    }
+    
+    // Recheck if folders are waiting to run full scans on
+    // Recheck if folders have git updates that need processing
+    // this can happen if the user has invalid git/git-annex paths for some duration
+    public func recheckForGitCommitsAndFullScans() {
+        updateListOfWatchedFolders()
+        startFullScanForWatchedFoldersWithNoHistoryInDb()
+        watchedFolderWatches!.checkAll()
     }
     
     // Handle folder updates, for any folder that is not doing a full scan
@@ -68,39 +78,28 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
         }
     }
     
-    // Setup file system watches for any folder that has completed its full scan
-    // that we aren't already watching
-    private func setupFileSystemWatchesIfNeeded() {
-        for watchedFolder in self.watchedFolders {
-            // A folder we need to start a file system watch for, is one
-            // that has a commit hash in the database (meaning it is done with a full scan)
-            // and one that isn't already being watched
-            let handledCommits = self.queries.getLatestCommits(for: watchedFolder)
-            if handledCommits.gitAnnexCommitHash != nil, (self.fileSystemMonitors.filter{ $0.watchedFolder == watchedFolder }).count == 0 {
-                // Setup filesystem watch
-                // must happen on main thread for Apple File System Events API to work
-                if (Thread.isMainThread) {
-                    let monitor = WatchedFolderMonitor(watchedFolder: watchedFolder, app: self)
-                    self.fileSystemMonitors.append(monitor)
-                    
-                    // run once now, in case we missed some while setting up watch
-                    monitor.doUpdates()
-                } else {
-                    DispatchQueue.main.sync {
-                        let monitor = WatchedFolderMonitor(watchedFolder: watchedFolder, app: self)
-                        self.fileSystemMonitors.append(monitor)
-                        
-                        // run once now, in case we missed some while setting up watch
-                        monitor.doUpdates()
-                    }
-                }
-            }
+    // Handle changes in the config file, preferences, list of watched folders, etc…
+    private func handleConfigUpdates() {
+        updateBinaryPaths()
+        updateListOfWatchedFolders()
+    }
+    
+    private func updateBinaryPaths() {
+        updateBinaryPathsLock.lock()
+        if let newGitBin = config.gitBin(), !newGitBin.isEmpty, let workingDirectory = PathUtils.parent(absolutePath: config.dataPath), FindBinaries.validGit(workingDirectory: workingDirectory, gitAbsolutePath: newGitBin) {
+            preferences.setGitBin(gitBin: newGitBin)
         }
+        
+        if let newGitAnnexBin = config.gitAnnexBin(), !newGitAnnexBin.isEmpty, let workingDirectory = PathUtils.parent(absolutePath: config.dataPath), FindBinaries.validGitAnnex(workingDirectory: workingDirectory, gitAnnexAbsolutePath: newGitAnnexBin) {
+            preferences.setGitAnnexBin(gitAnnexBin: newGitAnnexBin)
+        }
+        updateBinaryPathsLock.unlock()
     }
     
     // Read in list of watched folders from Config (or create)
     // also populates menu with correct folders (if any)
     private func updateListOfWatchedFolders() {
+        updateListOfWatchedFoldersLock.lock()
         // For all watched folders, if it has a valid git-annex UUID then
         // assume it is a valid git-annex folder and start monitoring it
         var newWatchedFolders = Set<WatchedFolder>()
@@ -136,9 +135,7 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
                     TurtleLog.info("Stopped monitoring \(watchedFolder)")
                     
                     fullScan.stopFullScan(watchedFolder: watchedFolder)
-                    if let index = fileSystemMonitors.index(where: { $0.watchedFolder == watchedFolder} ) {
-                        fileSystemMonitors.remove(at: index)
-                    }
+                    watchedFolderWatches!.remove(watchedFolder)
                 }
             }
             
@@ -151,7 +148,9 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
             queries.updateWatchedFoldersBlocking(to: watchedFolders.sorted())
             
             startFullScanForWatchedFoldersWithNoHistoryInDb()
+            watchedFolderWatches!.setupMissingWatches()
         }
+        updateListOfWatchedFoldersLock.unlock()
     }
     
     //
@@ -161,22 +160,24 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
     // edit the config file directly. We will attach a file system monitor to detect this
     //
     private func setupFileSystemMonitorOnConfigFile() {
-        let updateListOfWatchedFoldersDebounce = debounce(delay: .milliseconds(200), queue: DispatchQueue.global(qos: .background), action: updateListOfWatchedFolders)
-        listenForWatchedFolderChanges = Witness(paths: [config.dataPath], flags: .FileEvents, latency: 0.3) { events in
-            updateListOfWatchedFoldersDebounce()
+        let handleConfigUpdatesDebounce = debounce(delay: .milliseconds(200), queue: DispatchQueue.global(qos: .background), action: handleConfigUpdates)
+        listenForConfigChanges = Witness(paths: [config.dataPath], flags: .FileEvents, latency: 0.3) { events in
+            handleConfigUpdatesDebounce()
         }
     }
     
     // Start a full scan for any folder with no git annex commit information
     private func startFullScanForWatchedFoldersWithNoHistoryInDb() {
+        startFullScanForWatchedFoldersWithNoHistoryInDbLock.lock()
         for watchedFolder in watchedFolders {
             // Last commit hash that we have handled (from the database)
             let handledCommits = queries.getLatestCommits(for: watchedFolder)
             
             if handledCommits.gitAnnexCommitHash == nil {
-                fullScan.startFullScan(watchedFolder: watchedFolder, success: setupFileSystemWatches!.runTaskAgain)
+                fullScan.startFullScan(watchedFolder: watchedFolder, success: watchedFolderWatches!.setupMissingWatches)
             }
         }
+        startFullScanForWatchedFoldersWithNoHistoryInDbLock.unlock()
     }
     
     // updates from Watched Folder monitor
@@ -277,9 +278,8 @@ class WatchGitAndFinderForUpdates: StoppableService, HasWatchedFolders, CanReche
     }
     
     override public func stop() {
-        fileSystemMonitors.forEach { $0.stop() }
-        fileSystemMonitors = []
-        listenForWatchedFolderChanges = nil
+        watchedFolderWatches?.stop()
+        listenForConfigChanges = nil
         super.stop()
     }
 }

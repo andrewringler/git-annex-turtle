@@ -42,7 +42,7 @@ class TurtleDialogs: Dialogs {
         }
     }
     
-    func dialogOK(title: String, message: String) {
+    func dialogGitAnnexWarn(title: String, message: String) {
         // UI elements must always be on the main queue
         DispatchQueue.main.async {
             // https://stackoverflow.com/questions/29433487/create-an-nsalert-with-swift
@@ -51,6 +51,19 @@ class TurtleDialogs: Dialogs {
             alert.informativeText = message
             alert.alertStyle = .warning
             alert.icon = self.gitAnnexLogoSquareColor
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+        }
+    }
+    
+    func dialogOSWarn(title: String, message: String) {
+        // UI elements must always be on the main queue
+        DispatchQueue.main.async {
+            // https://stackoverflow.com/questions/29433487/create-an-nsalert-with-swift
+            let alert = NSAlert()
+            alert.messageText = title
+            alert.informativeText = message
+            alert.alertStyle = .warning
             alert.addButton(withTitle: "OK")
             alert.runModal()
         }

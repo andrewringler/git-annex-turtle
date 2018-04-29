@@ -66,7 +66,7 @@ class FindBinaries {
         return nil
     }
     
-    private static func validGit(workingDirectory: String, gitAbsolutePath: String) -> Bool {
+    public static func validGit(workingDirectory: String, gitAbsolutePath: String) -> Bool {
         let (output, _, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAbsolutePath, args: "version")
         if status == 0, output.count > 0, let first = output.first, first.starts(with: "git version") { // success
             return true
@@ -74,7 +74,7 @@ class FindBinaries {
         return false
     }
     
-    private static func validGitAnnex(workingDirectory: String, gitAnnexAbsolutePath: String) -> Bool {
+    public static func validGitAnnex(workingDirectory: String, gitAnnexAbsolutePath: String) -> Bool {
         let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexAbsolutePath, args: "version")
         if status == 0, output.count > 0, let first = output.first, first.starts(with: "git-annex version") { // success
             return true

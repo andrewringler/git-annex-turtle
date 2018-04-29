@@ -24,7 +24,8 @@ class fullScanTests: XCTestCase {
         testDir = TestingUtil.createTmpDir()
         TurtleLog.info("Using testing dir: \(testDir!)")
         let config = Config(dataPath: "\(testDir!)/turtle-monitor")
-
+        let preferences = Preferences(gitBin: config.gitBin(), gitAnnexBin: config.gitAnnexBin())
+        
         let databaseParentFolder  = "\(testDir!)/database"
         TestingUtil.createDir(absolutePath: databaseParentFolder)
         let storeURL = PathUtils.urlFor(absolutePath: "\(databaseParentFolder)/db")
@@ -32,7 +33,7 @@ class fullScanTests: XCTestCase {
         let persistentContainer = TestingUtil.persistentContainer(mom: managedObjectModel, storeURL: storeURL)
         let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)

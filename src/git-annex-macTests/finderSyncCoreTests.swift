@@ -28,6 +28,7 @@ class finderSyncCoreTests: XCTestCase {
         testDir = TestingUtil.createTmpDir()
         TurtleLog.info("Using testing dir: \(testDir!)")
         config = Config(dataPath: "\(testDir!)/turtle-monitor")
+        let preferences = Preferences(gitBin: config!.gitBin()!, gitAnnexBin: config!.gitAnnexBin()!)
         
         let databaseParentFolder  = "\(testDir!)/database"
         TestingUtil.createDir(absolutePath: databaseParentFolder)
@@ -37,12 +38,12 @@ class finderSyncCoreTests: XCTestCase {
         let data = DataEntrypoint(persistentContainer: persistentContainer, absolutePath: databaseParentFolder)
         queries = Queries(data: data)
         let visibleFolders = VisibleFolders(queries: queries!)
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config!.gitAnnexBin()!, gitCmd: config!.gitBin()!)
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences)
         fullScan = FullScan(gitAnnexQueries: gitAnnexQueries!, queries: queries!)
         
         finderSyncCore = FinderSyncCore(finderSync: finderSyncTesting, data: data)
         
-        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage(), visibleFolders: visibleFolders)
+        watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: GitAnnexTurtleStub(), config: config!, data: data, fullScan: fullScan!, gitAnnexQueries: gitAnnexQueries!, dialogs: DialogTestingStubFailOnMessage(), visibleFolders: visibleFolders, preferences: preferences)
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)

@@ -20,7 +20,8 @@ class gitAnnexQueriesTests: XCTestCase {
         
         configDir = TestingUtil.createTmpDir()
         let config = Config(dataPath: "\(configDir!)/turtle-monitor")
-        gitAnnexQueries = GitAnnexQueries(gitAnnexCmd: config.gitAnnexBin()!, gitCmd: config.gitBin()!)
+        let preferences = Preferences(gitBin: config.gitBin(), gitAnnexBin: config.gitAnnexBin())
+        gitAnnexQueries = GitAnnexQueries(preferences: preferences)
         
         // Create git annex repo in TMP dir
         let directoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(ProcessInfo.processInfo.globallyUniqueString, isDirectory: true)!
