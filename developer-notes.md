@@ -1,5 +1,7 @@
 ## Bugs, definitely fix
- * quiting from menubar icon should quit running git processes too, verify fixed?
+ * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
+ * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
+ * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
  * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
@@ -7,8 +9,6 @@
  * Test with git annex watch
  * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
  * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle, verify fixed?
- * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
- * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
 
@@ -22,12 +22,11 @@
  * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
 
 ## New Features, yes
- * let user view/set per repo git-annex-turtle settings from GUI
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
- * enable verbose logging in UI, link to open logs folder from UI
  * log to our own logs folder in ~/Library/Logs/git-annex-turtle/git-annex-turtle.log, ~/Library/Logs/git-annex-turtle/git-annex-finder-{process-id}.log, etc… instead of directly to Console, see logging frameworks, https://stackoverflow.com/a/5938021/8671834, https://github.com/DaveWoodCom/XCGLogger, https://github.com/CocoaLumberjack/CocoaLumberjack#readme
+ * enable verbose logging in UI, link to open logs folder from UI
  * actually use and expose in UI all per repo settings currently in turtle-monitor namely the flags: finder-integration, context-menus, track-folder-status, track-file-status
- * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that.
+ * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that… or just write a file and copy it to the correct place.
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
@@ -39,21 +38,20 @@
  * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
+ * Share button, IE copy to public repo and place publicly accessible download link in copy/paste buffer. Google Drive or Dropbox might be popular options.
 
 ## Chores
- * get tests running on https://travis-ci.org/
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
- * rename git-annex-mac-cmd to 'git-annex-turtle-cli'
  * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
 
 ## Performance, probably
- * nice, renice git during full scan (or always?)
  * add back in ignoring of duplicate path requests in HandleStatusRequestsProduction, this is especially noticeable during something like drop all files
+ * nice, renice git during full scan (or always?)
  * childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
- * we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via IPC, see http://nshipster.com/inter-process-communication/, https://github.com/itssofluffy/NanoMessage, https://stackoverflow.com/questions/41016558/how-should-finder-sync-extension-and-main-app-communicate?utm_medium=organic&utm_source=google_rich_qa&utm_campaign=google_rich_qa. it seems XPC communication is not possible with Finder Sync extensions. We probably need to have FinderSync processes directly communicate with the App if we want to implement progress bars.
+ * we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via our CFMessagePorts
  * requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
  * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
- * re-use Process and Shells for the same repo? 
+ * re-use Process and Shells for the same repo? --batch would be useful for this, would need to detect and stop broken shells.
  * during incremental updates combine multiple queries for the same repo into a single request, saves the overhead of spinning up a Process and Shell for each request and git-annex is probably faster at serving a single request for multiple files, than multiple requests
  * .app size (uncompressed) is now down to 14.2mb. 11.1mb of this is from embedded frameworks, apparently this is required because of ever-changing Swift (see https://www.reddit.com/r/swift/comments/3fq7dy/what_affects_libswiftcoredylibs_size/ and https://owensd.io/2016/08/22/swift-app-bundle-sizes/). currently the only way around this is to place your App in the app store (in which case “thinning” will occur before download, or to include less stuff in your build like no 32-bit version
 
