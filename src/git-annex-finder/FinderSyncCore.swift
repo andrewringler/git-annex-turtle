@@ -215,11 +215,18 @@ class FinderSyncCore: StoppableService {
         return nil
     }
     
-    private func watchedFolderParent(for path: String) -> WatchedFolder? {
+    func watchedFolderParent(for path: String) -> WatchedFolder? {
         for watchedFolder in self.watchedFolders {
             if path.starts(with: watchedFolder.pathString) {
                 return watchedFolder
             }
+        }
+        return nil
+    }
+    
+    func watchedFolderParent(for pathURL: URL?) -> WatchedFolder? {
+        if let path = PathUtils.path(for: pathURL) {
+            return watchedFolderParent(for: path)
         }
         return nil
     }

@@ -64,6 +64,7 @@ class TurtleDialogs: Dialogs {
             alert.messageText = title
             alert.informativeText = message
             alert.alertStyle = .warning
+            alert.icon = NSImage(named: NSImage.Name.caution)!
             alert.addButton(withTitle: "OK")
             alert.runModal()
         }

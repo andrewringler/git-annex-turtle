@@ -141,8 +141,11 @@ class PathUtils {
         return path == CURRENT_DIR
     }
     
-    class func path(for url: URL) -> String? {
-        return (url as NSURL).path
+    class func path(for url: URL?) -> String? {
+        if let actualURL = url {
+            return (actualURL as NSURL).path
+        }
+        return nil
     }
     
     class func urlFor(absolutePath: String) -> URL {
@@ -280,6 +283,10 @@ class PathUtils {
             // if we can't get attributesOfItem it means there is no file pointer of any kind there
             return false
         }
+    }
+    
+    class func lastPathComponent(_ path: String) -> String {
+        return (path as NSString).lastPathComponent
     }
 }
 

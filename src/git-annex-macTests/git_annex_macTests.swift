@@ -160,6 +160,22 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder/afile"))
     }
 
+    func testPathUtilsLastPath() {
+        XCTAssertEqual(PathUtils.lastPathComponent("/"), "/")
+        XCTAssertEqual(PathUtils.lastPathComponent("hello"), "hello")
+        XCTAssertEqual(PathUtils.lastPathComponent("hello/hi/there"), "there")
+        XCTAssertEqual(PathUtils.lastPathComponent("mmmm sdfha/yes/w aht/ok.txt"), "ok.txt")
+        XCTAssertEqual(PathUtils.lastPathComponent("well/"), "well")
+        XCTAssertEqual(PathUtils.lastPathComponent("/ok/this/is/ok"), "ok")
+        XCTAssertEqual(PathUtils.lastPathComponent("/ok/this/is/ok.tt"), "ok.tt")
+    }
+    
+    func testPathUtilsPathForURL() {
+        XCTAssertEqual(PathUtils.path(for: URL(fileURLWithPath: "/somepath/a.txt")), "/somepath/a.txt")
+        XCTAssertEqual(PathUtils.path(for: URL(fileURLWithPath: "/a.txt")), "/a.txt")
+        XCTAssertNil(PathUtils.path(for: nil))
+    }
+    
     func testGitAnnexBinAbsolutePath() {
         let gitAnnexBin = FindBinaries.gitAnnexBinAbsolutePath(workingDirectory: testDir!)
         TurtleLog.debug("unit tests found gitAnnexBin at \(String(describing: gitAnnexBin))")

@@ -7,6 +7,7 @@ This release contains primarily bug fixes and performance improvements.
 **Features**
  * clicking on watched repo from menubar drop-down now opens folder in Finder
  * edit git/git-annex paths from menubar preferences
+ * added Finder Toolbar menu with repo-level and current folder level commands
 
 **Minor**
  * added icon for preferences menu

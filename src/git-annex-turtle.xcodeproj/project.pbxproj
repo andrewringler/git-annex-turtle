@@ -54,6 +54,9 @@
 		4924920C2040A24500F8D8A0 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
 		4924920D2040A24800F8D8A0 /* childrenNotIgnored.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49977D512029155000FA9527 /* childrenNotIgnored.sh */; };
 		4924920E2040B07200F8D8A0 /* GitAnnexQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C215521FF9A11D000E39F9 /* GitAnnexQueries.swift */; };
+		4929E6E4209896950091A1E5 /* FinderSyncMenus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4929E6E3209896950091A1E5 /* FinderSyncMenus.swift */; };
+		4929E6E6209898810091A1E5 /* MenuCommandTypeTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4929E6E5209898810091A1E5 /* MenuCommandTypeTag.swift */; };
+		4929E6E72098989B0091A1E5 /* MenuCommandTypeTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4929E6E5209898810091A1E5 /* MenuCommandTypeTag.swift */; };
 		4936D9572064127300FB76C7 /* debounce-throttle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497D1FCA20114BF200106566 /* debounce-throttle.swift */; };
 		4936D9592064761900FB76C7 /* RunNowOrAgain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D9582064761900FB76C7 /* RunNowOrAgain.swift */; };
 		4936D95D2064889C00FB76C7 /* runOnceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4936D95C2064889C00FB76C7 /* runOnceTests.swift */; };
@@ -279,6 +282,8 @@
 		492491F42040665A00F8D8A0 /* FullScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScan.swift; sourceTree = "<group>"; };
 		492491F82040695D00F8D8A0 /* fullScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fullScanTests.swift; sourceTree = "<group>"; };
 		492491FA20406A8800F8D8A0 /* TestingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingUtil.swift; sourceTree = "<group>"; };
+		4929E6E3209896950091A1E5 /* FinderSyncMenus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSyncMenus.swift; sourceTree = "<group>"; };
+		4929E6E5209898810091A1E5 /* MenuCommandTypeTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuCommandTypeTag.swift; sourceTree = "<group>"; };
 		4936D9582064761900FB76C7 /* RunNowOrAgain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunNowOrAgain.swift; sourceTree = "<group>"; };
 		4936D95C2064889C00FB76C7 /* runOnceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = runOnceTests.swift; sourceTree = "<group>"; };
 		4936D9622066FCC400FB76C7 /* Running.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Running.swift; sourceTree = "<group>"; };
@@ -546,6 +551,8 @@
 			children = (
 				49D52448208102D700CB94B2 /* Assets.xcassets */,
 				499B44641DE544F00091E0E3 /* FinderSync.swift */,
+				4929E6E3209896950091A1E5 /* FinderSyncMenus.swift */,
+				4929E6E5209898810091A1E5 /* MenuCommandTypeTag.swift */,
 				49082F31201125D60030DE80 /* StatusCache.swift */,
 				49B65D4B201787A400485852 /* BadgeIcons.swift */,
 				499B44661DE544F00091E0E3 /* Info.plist */,
@@ -1017,6 +1024,7 @@
 				492492092040A21400F8D8A0 /* TurtleConfigV1.swift in Sources */,
 				498810EB2093C20C0048BED9 /* ViewControllerProtocol.swift in Sources */,
 				49ED1FFD206BE6890092AC6D /* pathStatusTests.swift in Sources */,
+				4929E6E72098989B0091A1E5 /* MenuCommandTypeTag.swift in Sources */,
 				49810341205EB0E3006084B2 /* StatusCache.swift in Sources */,
 				4924920C2040A24500F8D8A0 /* ShellScripts.swift in Sources */,
 				49D000672040B252008DC76A /* FolderTracking.swift in Sources */,
@@ -1046,6 +1054,7 @@
 				497D1FCE20116EB200106566 /* debounce-throttle.swift in Sources */,
 				49DD9BA720192B0300B90DC7 /* PathStatus.swift in Sources */,
 				49FDAAE0207AF03F00FE6043 /* AppTurtleMessagePort.swift in Sources */,
+				4929E6E4209896950091A1E5 /* FinderSyncMenus.swift in Sources */,
 				499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */,
 				49BC72F4207A97E900D840AC /* TurtleServiceObjects.swift in Sources */,
 				49D3AA4520016A2300A43A78 /* WatchedFolder.swift in Sources */,
@@ -1055,6 +1064,7 @@
 				49EFD2012007BFC9005742DB /* Constants.swift in Sources */,
 				4936D9612065AC7100FB76C7 /* RunNowOrAgain.swift in Sources */,
 				499AFFEB205C0855008BD34A /* FinderSyncCore.swift in Sources */,
+				4929E6E6209898810091A1E5 /* MenuCommandTypeTag.swift in Sources */,
 				49B65D4C201787A400485852 /* BadgeIcons.swift in Sources */,
 				49EF6270200E75D6002D1585 /* git_annex_turtle_data.xcdatamodeld in Sources */,
 			);

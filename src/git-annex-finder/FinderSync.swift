@@ -15,18 +15,19 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
     let processID: String = ProcessInfo().globallyUniqueString
 
     var finderSyncCore: FinderSyncCore?
+    var finderSyncMenus: FinderSyncMenus?
     var keepAlive: AppTurtleMessagePortPingKeepAlive?
     
     let badgeIcons: BadgeIcons
-    let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
-    let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
-    
+    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-turtle-logo"))
+
     override init() {
         badgeIcons = BadgeIcons(finderSyncController: FIFinderSyncController.default())
 
         super.init()
         finderSyncCore = FinderSyncCore(finderSync: self, data: DataEntrypoint())
         keepAlive = AppTurtleMessagePortPingKeepAlive(id: id(), stoppable: finderSyncCore!)
+        finderSyncMenus = FinderSyncMenus(finderSync: self)
     }
     
     func setWatchedFolders(to newWatchedFolders: Set<URL>) {
@@ -69,67 +70,26 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
             }
         }
     }
-    
+        
     override var toolbarItemName: String {
-        return "git-annex-finder"
+        /* returning "" here would hide the toolbar menu,
+         * but we can't do that dynamically since Finder doesn't re-read this value
+         * we could show/hide the toolbar via a UI preference, then restart Finder if
+         * the user wanted…
+         */
+        return "git-annex-turtle"
     }
     
     override var toolbarItemToolTip: String {
-        return "git-annex-finder: Click the toolbar item for a menu."
+        return "git-annex-turtle"
     }
     
     override var toolbarItemImage: NSImage {
-        return NSImage(named: NSImage.Name.caution)!
+        return gitAnnexTurtleLogo!
     }
     
     override func menu(for menuKind: FIMenuKind) -> NSMenu {
-        // If the user control clicked on a single file
-        // grab its status, if we have it cached
-        var statusOptional: PathStatus? = nil
-        if menuKind == FIMenuKind.contextualMenuForItems, let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1, let item = items.first {
-            statusOptional = finderSyncCore!.status(for: item)
-        }
-        
-        // Produce a menu for the extension.
-        let menu = NSMenu(title: "")
-        var menuItem = NSMenuItem()
-        
-        // If the user ctrl-clicked a single item that we have status information about
-        // then summarize the status as the first menu item
-        if let status: PathStatus = statusOptional, status.isGitAnnexTracked, let present = status.presentStatus {
-            var menuTitle = "\(present.menuDisplay())"
-            if let numberOfCopies = status.numberOfCopies {
-                menuTitle = menuTitle + ", \(numberOfCopies) copies"
-            }
-            if let enough = status.enoughCopies {
-                menuTitle = menuTitle + " (\(enough.menuDisplay()))"
-            }
-            menuItem = menu.addItem(withTitle: menuTitle, action: nil, keyEquivalent: "")
-        }
-        
-        menuItem = menu.addItem(withTitle: "git annex get", action: #selector(gitAnnexGet(_:)), keyEquivalent: "g")
-        menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex add", action: #selector(gitAnnexAdd(_:)), keyEquivalent: "a")
-        menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex lock", action: #selector(gitAnnexLock(_:)), keyEquivalent: "l")
-        menuItem.image = gitAnnexLogoNoArrowsColor
-        menuItem = menu.addItem(withTitle: "git annex unlock", action: #selector(gitAnnexUnlock(_:)), keyEquivalent: "u")
-        menuItem.image = gitAnnexLogoNoArrowsColor
-        
-        menuItem = menu.addItem(withTitle: "git annex drop", action: #selector(gitAnnexDrop(_:)), keyEquivalent: "d")
-        menuItem.image = gitAnnexLogoNoArrowsColor
-        
-        // TODO add copy and copy --to menu items
-        //        menuItem = menu.addItem(withTitle: "git annex copy --to=", action: nil, keyEquivalent: "")
-        //        menuItem.image = gitAnnexLogoColor
-        //        let gitAnnexCopyToMenu = NSMenu(title: "")
-        //        gitAnnexCopyToMenu.addItem(withTitle: "cloud", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
-        //        gitAnnexCopyToMenu.addItem(withTitle: "usb 2tb", action: #selector(gitAnnexCopy(_:)), keyEquivalent: "")
-        //        menuItem.submenu = gitAnnexCopyToMenu
-        
-        menuItem = menu.addItem(withTitle: "git add", action: #selector(gitAdd(_:)), keyEquivalent: "")
-        menuItem.image = gitLogoOrange
-        return menu
+        return finderSyncMenus?.createMenu(for: menuKind) ?? NSMenu(title: "")
     }
     
     @IBAction func gitAnnexGet(_ sender: AnyObject?) {
@@ -150,14 +110,39 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
     @IBAction func gitAdd(_ sender: AnyObject?) {
         commandRequest(with: .git(.add), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
-    
+
     private func commandRequest(with command: GitOrGitAnnexCommand, target: URL?, item: NSMenuItem?, items: [URL]?) {
-        if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
-            for obj: URL in items {
-                finderSyncCore!.commandRequest(with: command, item: obj)
+        if let commandTypeInt = item?.tag, let commandType = MenuCommandTypeTag(rawValue: commandTypeInt) {
+            switch commandType {
+            // Command applies to container target (IE current Finder window path)
+            case .target:
+                if let currentFolder = target {
+                    finderSyncCore!.commandRequest(with: command, item: currentFolder)
+                } else {
+                    TurtleLog.error("invalid menu item for folder-level command \(command) and target \(String(describing: target))")
+                }
+
+            // Command applies to root (entire repo) of current Finder window path
+            case .repoOfTarget:
+                if let watchedFolder = finderSyncCore?.watchedFolderParent(for: target) {
+                    let watchedFolderURL = PathUtils.urlFor(absolutePath: watchedFolder.pathString)
+                    finderSyncCore!.commandRequest(with: command, item: watchedFolderURL)
+                } else {
+                    TurtleLog.error("invalid menu item for repo-level command \(command) and target \(String(describing: target))")
+                }
+                
+            // Command applies to selected items in Finder window
+            case .selectedItems:
+                if let items :[URL] = FIFinderSyncController.default().selectedItemURLs() {
+                    for obj: URL in items {
+                        finderSyncCore!.commandRequest(with: command, item: obj)
+                    }
+                } else {
+                    TurtleLog.error("invalid item for selected items command \(command) and target \(String(describing: target))")
+                }
             }
         } else {
-            TurtleLog.error("invalid context menu item for command \(command) and target \(String(describing: target))")
+            TurtleLog.error("invalid command type in menu for command \(command) and target \(String(describing: target))")
         }
     }
     

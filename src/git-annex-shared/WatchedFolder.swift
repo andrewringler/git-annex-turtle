@@ -9,6 +9,9 @@ import Foundation
 
 class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
     public var handleStatusRequests: HandleStatusRequests? = nil
+    public lazy var shortName: String = {
+       return PathUtils.lastPathComponent(pathString)
+    }()
     let uuid: UUID
     let pathString: String
     
