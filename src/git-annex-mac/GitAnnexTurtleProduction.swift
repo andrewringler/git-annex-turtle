@@ -42,6 +42,12 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     var handleVisibleFolderUpdates: HandleVisibleFolderUpdates?
 
     init() {
+        // Prevent multiple instances
+        if GitAnnexTurtleProduction.alreadyRunning() {
+            TurtleLog.info("git-annex-turtle is already running, this instance will quit.")
+            exit(-1)
+        }
+
         for i in 0...16 {
             menubarIcons.append(NSImage(named:NSImage.Name(rawValue: "menubaricon-\(String(i))"))!)
         }
@@ -264,5 +270,17 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
     
     func visibleFolderUpdatesArePending() {
         handleVisibleFolderUpdates?.handleNewRequests()
+    }
+    
+    // https://stackoverflow.com/a/22757392/8671834
+    private static func alreadyRunning() -> Bool {
+        let ws :NSWorkspace = NSWorkspace.shared
+        for runningApp: NSRunningApplication in ws.runningApplications {
+            // if there is an app with the same bundle ID that isn't me, than we are already running
+            if NSRunningApplication.current != runningApp, let someProcessBundleID = runningApp.bundleIdentifier, someProcessBundleID == gitAnnexTurtleBundleID {
+                return true
+            }
+        }
+        return false
     }
 }

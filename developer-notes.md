@@ -1,5 +1,4 @@
 ## Bugs, definitely fix
- * prevent multiple instances of git-annex-turtle main app from running simultaneously
  * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * quiting from menubar icon should quit running git processes too
