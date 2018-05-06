@@ -34,7 +34,7 @@ class GitAnnexQueries {
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
      */
-    static func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
+    public static func runCommand(workingDirectory: String, cmd : String, args : String...) -> (output: [String], error: [String], status: Int32) {
         // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
         var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
         
@@ -50,12 +50,12 @@ class GitAnnexQueries {
                 return
             }
             
-    //        let task = Process()
-    //        task.launchPath = cmd
-    //        task.currentDirectoryPath = workingDirectory
-    //        task.arguments = args
+            //        let task = Process()
+            //        task.launchPath = cmd
+            //        task.currentDirectoryPath = workingDirectory
+            //        task.arguments = args
             
-            // TODO wrap commands in a shell (that is likely to exist) to avoid uncatchable errors
+            // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
             // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
@@ -66,8 +66,97 @@ class GitAnnexQueries {
             for arg: String in args {
                 bashCmd.append(arg)
             }
-    //        let bashCmdString: String = "cd '" + workingDirectory + "';" +
             let bashArgs :[String] = ["-c", bashCmd.joined(separator: " ")]
+            task.arguments = bashArgs
+            
+            let outpipe = Pipe()
+            task.standardOutput = outpipe
+            let errpipe = Pipe()
+            task.standardError = errpipe
+            
+            // TODO kill long running tasks
+            let startTime = Date()
+            task.launch()
+            task.waitUntilExit()
+            let endTime = Date()
+            
+            let outputFileHandle = outpipe.fileHandleForReading
+            let outdata = outputFileHandle.readDataToEndOfFile()
+            if var string = String(data: outdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                output = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            outputFileHandle.closeFile()
+            
+            let errFileHandle = errpipe.fileHandleForReading
+            let errdata = errFileHandle.readDataToEndOfFile()
+            if var string = String(data: errdata, encoding: .utf8) {
+                string = string.trimmingCharacters(in: .newlines)
+                error = string.components(separatedBy: "\n")
+            }
+            // NOTE see http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
+            // i was running out of file descriptors without this
+            // even though the documentation clearly says it is not needed
+            errFileHandle.closeFile()
+            
+            //        task.waitUntilExit()
+            
+            let status = task.terminationStatus
+            
+            ret = (output, error, status)
+            
+            TurtleLog.debug("Task ran in \(endTime.timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args) result=\(ret)")
+        }
+        
+        return ret
+    }
+    
+    func runCommand(workingDirectory: String, cmd : String, limitToMasterBranch: Bool, args : String...) -> (output: [String], error: [String], status: Int32) {
+        // ref on threading https://medium.com/@irinaernst/swift-3-0-concurrent-programming-with-gcd-5ee51e89091f
+        var ret: (output: [String], error: [String], status: Int32) = ([""], ["ERROR: task did not run"], -1)
+        
+        // Place call to Process in thread, in-case it crashes it won't bring down our main thread
+        DispatchQueue.global(qos: .background).sync {
+            var output : [String] = []
+            var error : [String] = []
+            
+            /* check for a valid working directory now, because Process will not let us catch
+             * the exception thrown if the directory is invalid */
+            if !GitAnnexQueries.directoryExistsAt(absolutePath: workingDirectory) {
+                TurtleLog.error("Invalid working directory '%@'", workingDirectory)
+                return
+            }
+            
+            // prevent queries on anything other than the master git branch
+            var branchGuard: String = ""
+            if limitToMasterBranch {
+                guard let gitCmd = preferences.gitBin() else {
+                    TurtleLog.debug("Requested limitToMasterBranch, but git command is missing")
+                    return
+                }
+                branchGuard = "if [ $(\(gitCmd) symbolic-ref --short HEAD 2>/dev/null) != \"master\" ]; then exit 1; fi && "
+            }
+            
+    //        let task = Process()
+    //        task.launchPath = cmd
+    //        task.currentDirectoryPath = workingDirectory
+    //        task.arguments = args
+            
+            // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
+            // IE if workingDirectory does not exist we cannot catch that error
+            // uncatchable runtime exceptions
+            // see https://stackoverflow.com/questions/34420706/how-to-catch-error-when-setting-launchpath-in-nstask
+            let task = Process()
+            task.launchPath = "/bin/bash"
+            task.currentDirectoryPath = workingDirectory
+            var bashCmd :[String] = [cmd]
+            for arg: String in args {
+                bashCmd.append(arg)
+            }
+            let bashArgs :[String] = ["-c", branchGuard + bashCmd.joined(separator: " ")]
             task.arguments = bashArgs
             
             let outpipe = Pipe()
@@ -143,7 +232,7 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -158,7 +247,7 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
 
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: cmd.rawValue, "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -173,7 +262,7 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue, "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -187,7 +276,7 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
 
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: cmd.rawValue)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -201,7 +290,7 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -221,7 +310,7 @@ class GitAnnexQueries {
             return nil
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitCmd, args: "config", GitConfigs.AnnexUUID.name)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: false, args: "config", GitConfigs.AnnexUUID.name)
         
         if status == 0, output.count == 1 {
             for uuidString in output {
@@ -252,7 +341,7 @@ class GitAnnexQueries {
             let file = "allfileslackingcopies.txt"
             let resultsFileAbsolutePath = "\(dir)/\(file)"
             
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, args: "find", "--fast", "--lackingcopies=1", ">\"\(resultsFileAbsolutePath)\"")
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "find", "--fast", "--lackingcopies=1", ">\"\(resultsFileAbsolutePath)\"")
             
             if status == 0 {
                 // TODO use a trie
@@ -281,7 +370,7 @@ class GitAnnexQueries {
             let file = "whereisallfiles.json"
             let resultsFileAbsolutePath = "\(dir)/\(file)"
             
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", ".", ">\"\(resultsFileAbsolutePath)\"")
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "whereis", ".", ">\"\(resultsFileAbsolutePath)\"")
 
             if status == 0 {
                 return resultsFileAbsolutePath
@@ -343,7 +432,7 @@ class GitAnnexQueries {
             }
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "info", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "info", "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("path='\(path)' in='\(workingDirectory) status= \(status) output=\(output) error=\(error)")
@@ -445,7 +534,7 @@ class GitAnnexQueries {
             return nil
         }
         
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "whereis", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "whereis", "\"\(path)\"")
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
@@ -503,7 +592,7 @@ class GitAnnexQueries {
             return nil
         }
 
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, args: "--json", "--fast", "--lackingcopies=1", "find", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "--lackingcopies=1", "find", "\"\(path)\"")
         
         // if command didnt return an error, count the lines returned
         if(status == 0){
@@ -528,7 +617,7 @@ class GitAnnexQueries {
 
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedAnnexFilesAfterCommit", ofType: "sh") {
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash, gitCmd)
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: commitHash, gitCmd)
             
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
@@ -553,7 +642,7 @@ class GitAnnexQueries {
 
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "changedGitFilesAfterCommit", ofType: "sh") {
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: commitHash, gitCmd)
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: commitHash, gitCmd)
             
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
@@ -577,7 +666,7 @@ class GitAnnexQueries {
 
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "allChangedGitFiles", ofType: "sh") {
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: gitCmd)
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: gitCmd)
             
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
@@ -597,7 +686,7 @@ class GitAnnexQueries {
             return nil
         }
 
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, args: "log", "--pretty=format:\"%H\"", "-r", "git-annex", "-n", "1")
+        let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, limitToMasterBranch: false, args: "log", "--pretty=format:\"%H\"", "-r", "git-annex", "-n", "1")
         
         if(status == 0){ // success
             if output.count == 1 {
@@ -615,7 +704,7 @@ class GitAnnexQueries {
             return nil
         }
 
-        let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, args: "log", "--pretty=format:\"%H\"", "-n", "1")
+        let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitCmd, limitToMasterBranch: false, args: "log", "--pretty=format:\"%H\"", "-n", "1", "master")
         
         if(status == 0){ // success
             if output.count == 1 {
@@ -639,7 +728,7 @@ class GitAnnexQueries {
 
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "childrenNotIgnored", ofType: "sh") {
-            let (output, error, status) = GitAnnexQueries.runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, args: relativePath, gitCmd, gitAnnexCmd)
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: relativePath, gitCmd, gitAnnexCmd)
             
             if(status == 0){ // success
                 return output.filter { $0.count > 0 } // remove empty strings

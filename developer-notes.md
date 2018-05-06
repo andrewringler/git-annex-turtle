@@ -1,5 +1,4 @@
 ## Bugs, definitely fix
- * what should we do when switching branches? should probably hide badge icons when switching to the git-annex branch, when switching to other branches, like views, it is probably OK to re-calculate all badges?
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
@@ -27,6 +26,7 @@
  * enable verbose logging in UI, link to open logs folder from UI
  * actually use and expose in UI all per repo settings currently in turtle-monitor namely the flags: finder-integration, context-menus, track-folder-status, track-file-status
  * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that… or just write a file and copy it to the correct place.
+ * Handle branch switching, track branches separately in database
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle

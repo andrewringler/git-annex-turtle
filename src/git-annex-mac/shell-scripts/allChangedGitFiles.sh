@@ -14,5 +14,5 @@ GIT_CMD=${1:-git}
 GIT_CMD="${GIT_CMD%\"}"
 GIT_CMD="${GIT_CMD#\"}"
 
-$GIT_CMD log --pretty=format:"%H" | xargs -I {} $GIT_CMD diff-tree --no-commit-id --name-only --root -r {} | uniq
+$GIT_CMD log --pretty=format:"%H" master | xargs -I {} $GIT_CMD diff-tree --no-commit-id --name-only --root -r {} | uniq
 
