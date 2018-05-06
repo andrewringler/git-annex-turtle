@@ -1,4 +1,5 @@
 ## Bugs, definitely fix
+ * commit 98b60513a2 just broke git-annex-turtle for direct-mode repositories
  * don't allow nested repositories watching, git-annex probably doesn't allow this anyway, but who knows what this would do to our database!
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?

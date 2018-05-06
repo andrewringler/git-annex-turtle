@@ -182,5 +182,5 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         }
         
         return true // completed successfully
-    }    
+    }
 }

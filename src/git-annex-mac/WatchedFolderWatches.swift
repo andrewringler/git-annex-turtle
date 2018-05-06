@@ -38,7 +38,7 @@ class WatchedFolderWatches: StoppableService {
     // Setup file system watches for any folder that has completed its full scan
     // that we aren't already watching
     private func setupAnyMissingFilesystemWatchesOnWatchedFolders() {
-        for watchedFolder in app.getWatchedFolders() {
+        for watchedFolder in app.watchedFolders.getWatchedFolders() {
             // A folder we need to start a file system watch for, is one
             // that has a commit hash in the database (meaning it is done with a full scan)
             // and one that isn't already being watched

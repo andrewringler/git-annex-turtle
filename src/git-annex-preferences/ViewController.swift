@@ -31,7 +31,7 @@ class ViewController: NSViewController, ViewControllerProtocol {
 
     public func reloadFileList() {
         DispatchQueue.main.async {
-            self.observedFoldersList = self.appDelegate?.getWatchedFolders().sorted()
+            self.observedFoldersList = self.appDelegate?.watchedFolders.getWatchedFolders().sorted()
             self.observedFoldersView?.reloadData()
         }
     }

@@ -70,9 +70,9 @@ class GitAnnexTurtleProduction: GitAnnexTurtle {
         
         // Start the main database and git-annex loop
         watchGitAndFinderForUpdates = WatchGitAndFinderForUpdates(gitAnnexTurtle: self, config: config, data: data, fullScan: fullScan, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs, visibleFolders: visibleFolders, preferences: preferences)
-        handleCommandRequests = HandleCommandRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
-        handleBadgeRequests = HandleBadgeRequests(hasWatchedFolders: watchGitAndFinderForUpdates!, fullScan: fullScan, queries: queries)
-        handleVisibleFolderUpdates = HandleVisibleFolderUpdates(hasWatchedFolders: watchGitAndFinderForUpdates!, visibleFolders: visibleFolders)
+        handleCommandRequests = HandleCommandRequests(hasWatchedFolders: watchGitAndFinderForUpdates!.watchedFolders, queries: queries, gitAnnexQueries: gitAnnexQueries, dialogs: dialogs)
+        handleBadgeRequests = HandleBadgeRequests(hasWatchedFolders: watchGitAndFinderForUpdates!.watchedFolders, fullScan: fullScan, queries: queries)
+        handleVisibleFolderUpdates = HandleVisibleFolderUpdates(hasWatchedFolders: watchGitAndFinderForUpdates!.watchedFolders, visibleFolders: visibleFolders)
 
         // Menubar Icon > Preferences menu
         preferencesViewController = ViewController.freshController(appDelegate: watchGitAndFinderForUpdates!)

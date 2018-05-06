@@ -62,6 +62,60 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         super.tearDown()
     }
     
+    func testWatchedFoldersList() {
+        let watchedFolders = watchGitAndFinderForUpdates!.watchedFolders
+
+        XCTAssertTrue(config!.watchRepo(repo: repo1!.pathString), "unable to add repo1 to config file")
+        XCTAssertTrue(config!.watchRepo(repo: repo2!.pathString), "unable to add repo2 to config file")
+
+        // wait a few seconds for watchGitAndFinderForUpdates
+        // to find the repos we just added and start a full scan on them
+        wait(for: 2)
+        
+        XCTAssertEqual(watchedFolders.getWatchedFolders().map {
+            $0.pathString
+        }.sorted(), [repo1!.pathString, repo2!.pathString].sorted())
+        
+        // Create a new repo nested inside an existing one
+        let repo3 = TestingUtil.createInitGitAnnexRepo(at: "\(repo1!.pathString)/repo3", gitAnnexQueries: gitAnnexQueries!)
+        
+        // Add to config file
+        XCTAssertTrue(config!.watchRepo(repo: repo3!.pathString), "unable to add repo3 to config file")
+        XCTAssertEqual(repo3!.pathString, "\(repo1!.pathString)/repo3")
+        
+        // The Config file now contains our new repo
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [repo1!.pathString, repo2!.pathString, repo3!.pathString].sorted())
+        
+        // Add another valid one
+        let repo4 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo4", gitAnnexQueries: gitAnnexQueries!)
+        XCTAssertEqual(repo4!.pathString, "\(testDir!)/repo4")
+        
+        // Add to config file
+        XCTAssertTrue(config!.watchRepo(repo: repo4!.pathString), "unable to add repo4 to config file")
+
+        // The Config file now contains all 4 repos
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [repo1!.pathString, repo2!.pathString, repo3!.pathString, repo4!.pathString].sorted())
+
+        // wait a few seconds for watchGitAndFinderForUpdates
+        // to find the repos we just added and start a full scan on them
+        wait(for: 2)
+
+        // And, the 4th repo was added to our App, but the 3rd repo was ignored
+        // since it is nested inside the 1st
+        XCTAssertEqual(watchedFolders.getWatchedFolders().map {
+            $0.pathString
+            }.sorted(), [repo1!.pathString, repo2!.pathString, repo4!.pathString].sorted())
+        
+        // Remove repo 1
+        XCTAssertTrue(config!.stopWatchingRepo(repo: repo1!.pathString))
+        wait(for: 2)
+        
+        // Now repo 3 will be added, since it is no longer nested
+        XCTAssertEqual(watchedFolders.getWatchedFolders().map {
+            $0.pathString
+        }.sorted(), [repo2!.pathString, repo3!.pathString, repo4!.pathString].sorted())
+    }
+    
     func testUpdateConfigUpdatesPreferences() {
         // create some valid git and git-annex binaries
         let newGoodGitPath = "\(testDir!)/somegit"
