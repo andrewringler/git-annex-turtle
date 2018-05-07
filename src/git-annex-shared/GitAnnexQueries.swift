@@ -143,7 +143,6 @@ class GitAnnexQueries {
                 
                 // https://stackoverflow.com/a/1593487/8671834
                 branchGuard = "if [[ $(git symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
-                TurtleLog.debug(branchGuard)
             }
             
     //        let task = Process()
