@@ -3,13 +3,14 @@
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
- * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
  * Test with v6 repos
  * Test with git annex watch
  * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
  * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle, verify fixed?
- * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? possible to do that? or is there just a delay?
- * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
+
+## Bugs, can't fix?
+ * after a git annex get if we already have an item highlighted the Finder thumb preview doesn't update? Finder bug?
+ * occasionally all my sidebar favorites and settings disappear, then re-appear on reboot. Perhaps from too frequent restarting of Finder?
 
 ## Not greats, should fix & UX issues
  * don't process command requests if older than 2-seconds, IE they should only ever be immediate responses to user actions, LOG if older than 2-seconds since this should never happen
@@ -33,25 +34,26 @@
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * Menubar window should show list of remote transfers 
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
+ * Share button, IE copy to public repo and place publicly accessible download link in copy/paste buffer. Google Drive or Dropbox might be popular options.
+ * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches. Doing a git annex drop from the context menus does nothing and has no feedback, git annex drop from command-line has similar behavior.
  * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right? don't display git-annex lock context menu in v5 repos, it always fails without force?
  * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
- * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
- * Share button, IE copy to public repo and place publicly accessible download link in copy/paste buffer. Google Drive or Dropbox might be popular options.
 
 ## Chores
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
+ * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
 
 ## Performance, probably
+ * re-use Process and Shells for the same repo? --batch would be useful for this, would need to detect and stop broken shells. Will probably need to implement a Swift Worker Queue for thread re-using and expiration based on GCD, namely git-annex info --json --batch would be very useful, we can quickly detect broken shells with '.git/config' which should always return success false and some other info.
  * add back in ignoring of duplicate path requests in HandleStatusRequestsProduction, this is especially noticeable during something like drop all files
  * nice, renice git during full scan (or always?)
  * childrenNotIgnored.sh is super slow (4seconds for a small directory) and is probably not necessary, this is delaying getting full folder information
  * we are sharing a single sqlite instance among many processes, I imagine there must be some contention here, I think it would be simpler and faster to just have main turtle app deal with the database and have all Finder Sync extensions communicate with it via our CFMessagePorts
  * requestBadgeIdentifier already has information on whether a path is a file vs directory, I believe the call url.hasDirectoryPath is cached, might as well hold onto this during Finder Sync requests so we don't have to re-calculate
  * Delete old entries in database. unused repos are never deleted, deleted, renamed files still have database entries. (deleted files are now deleted if their parent folder is scanned) 
- * re-use Process and Shells for the same repo? --batch would be useful for this, would need to detect and stop broken shells.
  * during incremental updates combine multiple queries for the same repo into a single request, saves the overhead of spinning up a Process and Shell for each request and git-annex is probably faster at serving a single request for multiple files, than multiple requests
  * .app size (uncompressed) is now down to 14.2mb. 11.1mb of this is from embedded frameworks, apparently this is required because of ever-changing Swift (see https://www.reddit.com/r/swift/comments/3fq7dy/what_affects_libswiftcoredylibs_size/ and https://owensd.io/2016/08/22/swift-app-bundle-sizes/). currently the only way around this is to place your App in the app store (in which case “thinning” will occur before download, or to include less stuff in your build like no 32-bit version
 
