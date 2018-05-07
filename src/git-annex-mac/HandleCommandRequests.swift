@@ -43,7 +43,7 @@ class HandleCommandRequests: StoppableService {
                 if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
                     // Is this a Git Annex Command?
                     if commandRequest.commandType.isGitAnnex {
-                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
                         if !status.success {
                             // git-annex has very nice error message, use them as-is
                             dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
@@ -55,7 +55,7 @@ class HandleCommandRequests: StoppableService {
                     
                     // Is this a Git Command?
                     if commandRequest.commandType.isGit {
-                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString)
+                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
                         if !status.success {
                             dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
                         } else {

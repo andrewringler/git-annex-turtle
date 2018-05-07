@@ -131,13 +131,19 @@ class GitAnnexQueries {
             }
             
             // prevent queries on anything other than the master git branch
+            // TODO this guard is not entirely safe, since the branch could change after
+            // we have called this guard, see https://git-annex.branchable.com/todo/add_a_--branch_to_applicable_git-annex_commands/ for a brief discussion on ensuring
+            // git-annex commands apply to a certain branch
             var branchGuard: String = ""
             if limitToMasterBranch {
                 guard let gitCmd = preferences.gitBin() else {
                     TurtleLog.debug("Requested limitToMasterBranch, but git command is missing")
                     return
                 }
-                branchGuard = "if [ $(\(gitCmd) symbolic-ref --short HEAD 2>/dev/null) != \"master\" ]; then exit 1; fi && "
+                
+                // https://stackoverflow.com/a/1593487/8671834
+                branchGuard = "if [[ $(git symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
+                TurtleLog.debug(branchGuard)
             }
             
     //        let task = Process()
@@ -211,13 +217,13 @@ class GitAnnexQueries {
             return false
         }
         
-        let createGitRepoResult = gitCommand(in: path, cmd: CommandString.initCmd)
+        let createGitRepoResult = gitCommand(in: path, cmd: CommandString.initCmd, limitToMasterBranch: false)
         if !createGitRepoResult.success {
             TurtleLog.error("Could not create git repo in \(path)")
             return false
         }
         
-        let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.initCmd)
+        let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.initCmd, limitToMasterBranch: false)
         if !initGitAnnexRepo.success {
             TurtleLog.error("Could not init git annex repo in \(path)")
             return false
@@ -226,13 +232,13 @@ class GitAnnexQueries {
         return true
     }
     
-    func gitAnnexCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    func gitAnnexCommand(in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git-annex " + cmd.rawValue
         guard let gitAnnexCmd = preferences.gitAnnexBin() else {
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd.rawValue)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -240,14 +246,14 @@ class GitAnnexQueries {
         
         return (status == 0, error, output, commandRun)
     }
-    func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    func gitAnnexCommand(for path: String, in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git-annex " + cmd.rawValue + " \"" + path + "\""
         guard let gitAnnexCmd = preferences.gitAnnexBin() else {
             TurtleLog.debug("could not find a valid git-annex application")
             return (false, [], [], commandRun)
         }
 
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd.rawValue, "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -255,42 +261,42 @@ class GitAnnexQueries {
         
         return (status == 0, error, output, commandRun)
     }
-    func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         guard let gitCmd = preferences.gitBin() else {
             TurtleLog.debug("could not find a valid git application")
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: cmd.rawValue, "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
-    func gitCommand(in workingDirectory: String, cmd: CommandString) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    func gitCommand(in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git " + cmd.rawValue
         guard let gitCmd = preferences.gitBin() else {
             TurtleLog.debug("could not find a valid git application")
             return (false, [], [], commandRun)
         }
 
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: cmd.rawValue)
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue)
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
-    func gitCommit(in workingDirectory: String, commitMessage: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    func gitCommit(in workingDirectory: String, commitMessage: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git commit \"" + commitMessage + "\""
         guard let gitCmd = preferences.gitBin() else {
             TurtleLog.debug("could not find a valid git application")
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: true, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
@@ -328,7 +334,7 @@ class GitAnnexQueries {
     }
     
     func gitAnnexSetNumCopies(numCopies: Int, in watchedFolder: WatchedFolder) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        return gitAnnexCommand(for: String(numCopies), in: watchedFolder.pathString, cmd: .numCopies)
+        return gitAnnexCommand(for: String(numCopies), in: watchedFolder.pathString, cmd: .numCopies, limitToMasterBranch: false)
     }
     
     func gitAnnexAllFilesLackingCopies(in watchedFolder: WatchedFolder) -> Set<String>? {

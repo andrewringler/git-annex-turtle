@@ -1,5 +1,5 @@
 ## Bugs, definitely fix
- * commit 98b60513a2 just broke git-annex-turtle for direct-mode repositories
+ * if a repo is added with a branch other than master as current, a full scan should be run when it branch becomes master again, currently folders never get added properly
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift

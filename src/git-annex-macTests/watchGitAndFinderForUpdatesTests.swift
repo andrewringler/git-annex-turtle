@@ -45,6 +45,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         repo1 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo1", gitAnnexQueries: gitAnnexQueries!)
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)
+        TestingUtil.setDirectMode(for: repo2!, gitAnnexQueries: gitAnnexQueries!)
     }
     
     override func tearDown() {

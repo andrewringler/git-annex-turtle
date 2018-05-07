@@ -65,6 +65,11 @@ class TestingUtil {
         return nil
     }
     
+    class func setDirectMode(for watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) {
+        let gitDirectMode = gitAnnexQueries.gitAnnexCommand(in: watchedFolder.pathString, cmd: CommandString.direct, limitToMasterBranch: false)
+        if !gitDirectMode.success { XCTFail("unable to switch to direct mode \(gitDirectMode.error)", file: file, line: line)}
+    }
+    
     class func writeToFile(content: String, to fileName: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) {
         let url = PathUtils.url(for: fileName, in: watchedFolder)
         do {
@@ -98,12 +103,12 @@ class TestingUtil {
     }
     
     class func gitAnnexAdd(file: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, sourcefile: StaticString = #file, sourceline: UInt = #line) {
-        let gitAddResult = gitAnnexQueries.gitAnnexCommand(for: file, in: watchedFolder.pathString, cmd: CommandString.add)
+        let gitAddResult = gitAnnexQueries.gitAnnexCommand(for: file, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: false)
         if !gitAddResult.success { XCTFail("unable to add file \(gitAddResult.error)", file: sourcefile, line: sourceline)}
     }
 
     class func gitCommit(_ commitMessage: String, in watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) {
-        let result = gitAnnexQueries.gitCommit(in: watchedFolder.pathString, commitMessage: commitMessage)
+        let result = gitAnnexQueries.gitCommit(in: watchedFolder.pathString, commitMessage: commitMessage, limitToMasterBranch: false)
         if !result.success { XCTFail("unable to git commit \(result.error)", file: file, line: line)}
     }
 
