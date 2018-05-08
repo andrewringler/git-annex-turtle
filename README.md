@@ -83,7 +83,9 @@ Stores config settings for *git-annex-turtle*, that are editable through the men
  * Run the `git-annex-turtle` scheme
 
 ## Build a Release
- * Open git-annex-turtle.xcodeproj in XCode 9.2
- * Click on the git-annex-turtle scheme (to the right of the triangle play button top of screen), click Edit Scheme, Make sure Run > Build Configuration is set to Release
- * Select the Scheme 'git-annex-turtle' then build: Product > Build 
- * You will find the .app in Open the ~/Library/Developer/Xcode/DerivedData/ directory and Look for git-annex-turtle-…/Build/Products/Release/git-annex-turtle.app
+Clone git-annex-turtle repo, then run build-release script
+
+    cd git-annex-turtle
+	./.build-local-release.sh 
+    
+Release will now be at 

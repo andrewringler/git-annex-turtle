@@ -205,6 +205,7 @@ class WatchGitAndFinderForUpdates: StoppableService, CanRecheckFoldersForUpdates
     
     override public func stop() {
         watchedFolderWatches.stop()
+        listenForConfigChanges = nil
         super.stop()
     }
 }

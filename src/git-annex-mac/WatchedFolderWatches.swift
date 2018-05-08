@@ -66,6 +66,7 @@ class WatchedFolderWatches: StoppableService {
     }
     
     override public func stop() {
+        runner.stop()
         fileSystemMonitors.forEach { $0.stop() }
         fileSystemMonitors = []
     }
