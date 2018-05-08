@@ -28,6 +28,7 @@
  * actually use and expose in UI all per repo settings currently in turtle-monitor namely the flags: finder-integration, context-menus, track-folder-status, track-file-status
  * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that… or just write a file and copy it to the correct place.
  * Handle branch switching, track branches separately in database
+ * Button to launch webapp (from menubar icon and toolbar icon)
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
@@ -40,6 +41,8 @@
  * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right? don't display git-annex lock context menu in v5 repos, it always fails without force?
  * replace all absolute paths to repository roots with Apple File System Bookmark URLS so we can track files correctly even if the user moves the git repository to another location on their hard-drive
  * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
+ * Intro dialog the first time git-annex-turtle is ever launched, containing found repos, git/git-annex install locations, preferences. Possibly a wizard for creating a new repo if the user doesn't have any.
+ * On, first launch, auto find repos in https://myrepos.branchable.com/ (~/.mrconfig), and ~/.config/git-annex/autostart and ask user if they want to add them.
 
 ## Chores
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
