@@ -115,7 +115,14 @@ class WatchGitAndFinderForUpdates: StoppableService, CanRecheckFoldersForUpdates
         checkForGitAnnexUpdates(in: watchedFolder, secondsOld: secondsOld, includeFiles: true, includeDirs: false)
     }
 
-    func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
+    private func checkForGitAnnexUpdates(in watchedFolder: WatchedFolder, secondsOld: Double, includeFiles: Bool, includeDirs: Bool) {
+        
+        // TODO, this is a to fix a deinit timming issue
+        // we probably should not have this function be publicly callable
+        guard running.isRunning() else {
+            return
+        }
+        
         TurtleLog.debug("Checking for updates in \(watchedFolder)")
         
         var paths: [String] = []

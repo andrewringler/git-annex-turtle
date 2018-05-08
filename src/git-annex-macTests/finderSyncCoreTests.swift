@@ -60,7 +60,7 @@ class finderSyncCoreTests: XCTestCase {
         finderSyncCore?.stop()
         finderSyncCore = nil
         
-        wait(for: 15)
+        wait(for: 3)
 
         TestingUtil.removeDir(testDir)
         

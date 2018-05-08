@@ -355,7 +355,11 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        wait(for: 45) // wait for incremental scan to complete
+        // wait for the incremental scans to complete
+        wait(for: 3)
+        let doneWithIncremental = NSPredicate(format: "doneWithIncrementalScan == true")
+        expectation(for: doneWithIncremental, evaluatedWith: self, handler: nil)
+        waitForExpectations(timeout: 60, handler: nil)
 
         if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -614,8 +618,12 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        wait(for: 35) // wait for incremental scan to complete
-        
+        // wait for the incremental scans to complete
+        wait(for: 3)
+        let doneWithIncremental = NSPredicate(format: "doneWithIncrementalScan == true")
+        expectation(for: doneWithIncremental, evaluatedWith: self, handler: nil)
+        waitForExpectations(timeout: 60, handler: nil)
+
         if let status = queries!.statusForPathV2Blocking(path: changeFile3, in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
             XCTAssertEqual(status.enoughCopies, EnoughCopies.lacking)
@@ -641,5 +649,27 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     func doneScanning() -> Bool {
         return fullScan!.isScanning(watchedFolder: repo1!) == false
             && fullScan!.isScanning(watchedFolder: repo2!) == false
+    }
+    
+    var timeAtDoneOptional: Date? = nil
+    func doneWithIncrementalScan() -> Bool {
+        let handlingRequests = watchGitAndFinderForUpdates!.handlingStatusRequests()
+
+        // if we are still handling requests, we are not done
+        if handlingRequests {
+            timeAtDoneOptional = nil // reset timer
+            return false
+        }
+        
+        if let timeAtDone = timeAtDoneOptional {
+            // if we have been done for more than 1 seconds, we are done
+            if Date().timeIntervalSince(timeAtDone) > 1 {
+                return true
+            }
+        } else {
+            timeAtDoneOptional = Date()
+        }
+        
+        return false
     }
 }
