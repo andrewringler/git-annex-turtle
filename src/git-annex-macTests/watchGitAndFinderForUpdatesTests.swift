@@ -18,7 +18,8 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     var watchGitAndFinderForUpdates: WatchGitAndFinderForUpdates?
     var config: Config?
     var preferences: Preferences?
-    
+    var timeAtDoneOptional: Date? = nil
+
     override func setUp() {
         super.setUp()
         
@@ -69,9 +70,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         XCTAssertTrue(config!.watchRepo(repo: repo1!.pathString), "unable to add repo1 to config file")
         XCTAssertTrue(config!.watchRepo(repo: repo2!.pathString), "unable to add repo2 to config file")
 
-        // wait a few seconds for watchGitAndFinderForUpdates
-        // to find the repos we just added and start a full scan on them
-        wait(for: 2)
+        waitForIncrementalScanToStartAndFinish()
         
         XCTAssertEqual(watchedFolders.getWatchedFolders().map {
             $0.pathString
@@ -97,9 +96,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // The Config file now contains all 4 repos
         XCTAssertEqual(config!.listWatchedRepos().sorted(),  [repo1!.pathString, repo2!.pathString, repo3!.pathString, repo4!.pathString].sorted())
 
-        // wait a few seconds for watchGitAndFinderForUpdates
-        // to find the repos we just added and start a full scan on them
-        wait(for: 2)
+        waitForIncrementalScanToStartAndFinish()
 
         // And, the 4th repo was added to our App, but the 3rd repo was ignored
         // since it is nested inside the 1st
@@ -109,8 +106,9 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         // Remove repo 1
         XCTAssertTrue(config!.stopWatchingRepo(repo: repo1!.pathString))
-        wait(for: 2)
-        
+
+        waitForIncrementalScanToStartAndFinish()
+
         // Now repo 3 will be added, since it is no longer nested
         XCTAssertEqual(watchedFolders.getWatchedFolders().map {
             $0.pathString
@@ -355,11 +353,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        // wait for the incremental scans to complete
-        wait(for: 3)
-        let doneWithIncremental = NSPredicate(format: "doneWithIncrementalScan == true")
-        expectation(for: doneWithIncremental, evaluatedWith: self, handler: nil)
-        waitForExpectations(timeout: 60, handler: nil)
+        waitForIncrementalScanToStartAndFinish()
 
         if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -618,11 +612,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
-        // wait for the incremental scans to complete
-        wait(for: 3)
-        let doneWithIncremental = NSPredicate(format: "doneWithIncrementalScan == true")
-        expectation(for: doneWithIncremental, evaluatedWith: self, handler: nil)
-        waitForExpectations(timeout: 60, handler: nil)
+        waitForIncrementalScanToStartAndFinish()
 
         if let status = queries!.statusForPathV2Blocking(path: changeFile3, in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -651,7 +641,17 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
             && fullScan!.isScanning(watchedFolder: repo2!) == false
     }
     
-    var timeAtDoneOptional: Date? = nil
+    func waitForIncrementalScanToStartAndFinish() {
+        // wait for the incremental scans to start
+        wait(for: 3)
+
+        // wait for the incremental scans to complete
+        timeAtDoneOptional = nil
+        let doneWithIncremental = NSPredicate(format: "doneWithIncrementalScan == true")
+        expectation(for: doneWithIncremental, evaluatedWith: self, handler: nil)
+        waitForExpectations(timeout: 60, handler: nil)
+    }
+    
     func doneWithIncrementalScan() -> Bool {
         let handlingRequests = watchGitAndFinderForUpdates!.handlingStatusRequests()
 
