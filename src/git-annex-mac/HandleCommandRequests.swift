@@ -39,33 +39,31 @@ class HandleCommandRequests: StoppableService {
         let commandRequests = queries.fetchAndDeleteCommandRequestsBlocking()
         
         for commandRequest in commandRequests {
-            for watchedFolder in hasWatchedFolders.getWatchedFolders() {
-                if watchedFolder.uuid.uuidString == commandRequest.watchedFolderUUIDString {
-                    // Is this a Git Annex Command?
-                    if commandRequest.commandType.isGitAnnex {
-                        let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
-                        if !status.success {
-                            // git-annex has very nice error message, use them as-is
-                            dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
+            if let watchedFolder = hasWatchedFolders.getWatchedFolders().first(where: { $0.uuid.uuidString == commandRequest.watchedFolderUUIDString }) {
+                switch commandRequest.commandType {
+                case .gitAnnex:
+                    let status = gitAnnexQueries.gitAnnexCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
+                    if !status.success {
+                        // git-annex has very nice error message, use them as-is
+                        dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
+                    } else {
+                        // nothing to do on success, our .git/config watch should find this
                     }
                     
-                    // Is this a Git Command?
-                    if commandRequest.commandType.isGit {
-                        let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
-                        if !status.success {
-                            dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
-                        } else {
-                            // success, update this file status right away
-                            //                            self.updateStatusNowAsync(for: commandRequest.pathString, in: watchedFolder)
-                        }
+                case .git:
+                    let status = gitAnnexQueries.gitCommand(for: commandRequest.pathString, in: watchedFolder.pathString, cmd: commandRequest.commandString, limitToMasterBranch: true)
+                    if !status.success {
+                        dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                    } else {
+                        // nothing to do on success, our .git/config watch should find this
                     }
                     
-                    break
+                case .turtle:
+                    TurtleLog.todo("handle Turtle command \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")
                 }
+                
+            } else {
+                TurtleLog.error("Could not find watched folder for \(commandRequest)")
             }
         }
         

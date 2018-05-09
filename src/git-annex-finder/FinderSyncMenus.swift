@@ -15,7 +15,8 @@ class FinderSyncMenus {
     
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
-    
+    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-turtle-logo"))
+
     init(finderSync: FinderSync) {
         self.finderSync = finderSync
         self.finderSyncCore = finderSync.finderSyncCore!
@@ -38,7 +39,9 @@ class FinderSyncMenus {
         // If the user control clicked on a single file
         // grab its status, if we have it cached
         var statusOptional: PathStatus? = nil
+        var singleFile: Bool = false
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1, let item = items.first {
+            singleFile = true
             statusOptional = finderSyncCore.status(for: item)
         }
         
@@ -95,6 +98,16 @@ class FinderSyncMenus {
         menuItem = menu.addItem(withTitle: "git add", action: #selector(finderSync.gitAdd(_:)), keyEquivalent: "")
         menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
         menuItem.image = gitLogoOrange
+        
+        // TODO handle multiple selection with Share…
+        // if we bundle them in a single folder they will have a single shareable URL
+        // otherwise each selection would have its own URL?
+        // TODO add submenu to support multiple share locations
+        if singleFile {
+            menuItem = menu.addItem(withTitle: "Share…", action: #selector(finderSync.share(_:)), keyEquivalent: "")
+            menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
+            menuItem.image = gitAnnexTurtleLogo
+        }
         
         return menu
     }

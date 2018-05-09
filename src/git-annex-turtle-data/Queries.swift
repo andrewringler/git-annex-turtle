@@ -67,6 +67,9 @@ struct GitOrGitAnnexCommand {
     public static func gitAnnex(_ commandString: CommandString) -> GitOrGitAnnexCommand{
         return GitOrGitAnnexCommand(commandType: CommandType.gitAnnex, commandString: commandString)
     }
+    public static func turtle(_ commandString: CommandString) -> GitOrGitAnnexCommand{
+        return GitOrGitAnnexCommand(commandType: CommandType.turtle, commandString: commandString)
+    }
 }
 
 struct CommandRequest {

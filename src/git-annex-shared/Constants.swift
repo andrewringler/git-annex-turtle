@@ -293,9 +293,11 @@ class PathUtils {
 enum CommandType: String {
     case git
     case gitAnnex
+    case turtle
     
     public var isGitAnnex: Bool { return self == .gitAnnex }
     public var isGit: Bool { return self == .git }
+    public var isTurtle: Bool { return self == .turtle }
 }
 enum CommandString: String {
     case get = "get"
@@ -307,6 +309,7 @@ enum CommandString: String {
     case numCopies = "numcopies"
     case commit = "commit"
     case direct = "direct"
+    case share = "share"
 }
 
 
