@@ -1,3 +1,18 @@
+v0.3
+Notes
+
+**Upgrade Notes from v0.2**
+N/A. See previous notes for upgrades from v0.1
+
+**Features**
+ * 
+
+**Minor**
+ * 
+ 
+**Bug Fixes**
+ * 
+ 
 v0.2
 This release contains primarily bug fixes and performance improvements.
 
