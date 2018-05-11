@@ -43,6 +43,7 @@
  * Search? it would be nice to have a search interface integrated into the menubar icon, search working directory, search git history, etc…
  * Intro dialog the first time git-annex-turtle is ever launched, containing found repos, git/git-annex install locations, preferences. Possibly a wizard for creating a new repo if the user doesn't have any.
  * On, first launch, auto find repos in https://myrepos.branchable.com/ (~/.mrconfig), and ~/.config/git-annex/autostart and ask user if they want to add them.
+ * Save to git-annex button in Chrome. We could create a chrome extension to save current page to git-annex using addurl. See http://git-annex.branchable.com/tips/Using_Git-annex_as_a_web_browsing_assistant/, https://developer.chrome.com/extensions/messaging#native-messaging. We could use git-annex-turtle as a native messaging host?
 
 ## Chores
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
