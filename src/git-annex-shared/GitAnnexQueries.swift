@@ -50,11 +50,6 @@ class GitAnnexQueries {
                 return
             }
             
-            //        let task = Process()
-            //        task.launchPath = cmd
-            //        task.currentDirectoryPath = workingDirectory
-            //        task.arguments = args
-            
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
@@ -102,10 +97,7 @@ class GitAnnexQueries {
             // even though the documentation clearly says it is not needed
             errFileHandle.closeFile()
             
-            //        task.waitUntilExit()
-            
             let status = task.terminationStatus
-            
             ret = (output, error, status)
             
             TurtleLog.debug("Task ran in \(endTime.timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args) result=\(ret)")
@@ -145,11 +137,6 @@ class GitAnnexQueries {
                 branchGuard = "if [[ $(git symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
             }
             
-    //        let task = Process()
-    //        task.launchPath = cmd
-    //        task.currentDirectoryPath = workingDirectory
-    //        task.arguments = args
-            
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
@@ -161,7 +148,11 @@ class GitAnnexQueries {
             for arg: String in args {
                 bashCmd.append(arg)
             }
-            let bashArgs :[String] = ["-c", branchGuard + bashCmd.joined(separator: " ")]
+            // Contruct bash command
+            // 1. load users's bash_profile so we have any PATHs to git-annex special remote binaries
+            // 2. limit command to certain git branch (if requested)
+            // 3. run command
+            let bashArgs :[String] = ["-c", ". ~/.bash_profile > /dev/null 2>&1; " + branchGuard + bashCmd.joined(separator: " ")]
             task.arguments = bashArgs
             
             let outpipe = Pipe()
@@ -196,8 +187,6 @@ class GitAnnexQueries {
             // i was running out of file descriptors without this
             // even though the documentation clearly says it is not needed
             errFileHandle.closeFile()
-            
-            //        task.waitUntilExit()
             
             let status = task.terminationStatus
             

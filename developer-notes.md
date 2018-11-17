@@ -1,5 +1,4 @@
 ## Bugs, definitely fix
- * context menu git-annex get does not work when trying to retrieve a file that only exists on Google Drive remote. Presumably because we can't find the git-annex-remote-googledrive binary.
  * if a repo is added with a branch other than master as current, a full scan should be run when it branch becomes master again, currently folders never get added properly
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?

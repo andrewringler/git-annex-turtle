@@ -11,7 +11,7 @@ N/A. See previous notes for upgrades from v0.1
  * 
  
 **Bug Fixes**
- * 
+ * fixed: now sourcing `~/.bash_profile` before running commands so we now have locations for git-annex special remote binaries
  
 v0.2
 This release contains primarily bug fixes and performance improvements.
