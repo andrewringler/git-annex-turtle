@@ -30,6 +30,7 @@
  * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that… or just write a file and copy it to the correct place.
  * Handle branch switching, track branches separately in database
  * Button to launch webapp (from menubar icon and toolbar icon)
+ * expose PATHS in config. We use PATHS to determine location of git special remote binararies. user should be able to choose if they want ~/.bash_profile to be loaded before issuing shell commands (to calculate PATH) or just choose their own manual PATH string.
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
