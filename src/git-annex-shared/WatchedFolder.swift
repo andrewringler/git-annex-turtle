@@ -14,6 +14,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     }()
     let uuid: UUID
     let pathString: String
+    var shareRemote: String? = nil
     
     private enum CodingKeys: String, CodingKey {
         case uuid
@@ -24,8 +25,9 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
         self.uuid = uuid
         self.pathString = pathString
     }
+    
     static func pretty<T>(_ watchedFolders: T) -> String where T: Sequence, T.Iterator.Element : WatchedFolder {
-        return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString)>" }.joined(separator: ",")
+        return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString) \(String(describing: $0.shareRemote))>" }.joined(separator: ",")
     }
     static func ==(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
         return lhs.uuid == rhs.uuid && lhs.pathString == rhs.pathString
@@ -37,6 +39,6 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
         return uuid.hashValue
     }
     
-    public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString)" }
+    public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString) '\(String(describing: shareRemote))'" }
 }
 

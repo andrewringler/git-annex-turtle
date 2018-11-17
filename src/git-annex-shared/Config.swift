@@ -8,6 +8,29 @@
 
 import Foundation
 
+struct WatchedRepoConfig {
+    let path: String
+    let shareRemote: String?
+    
+    init(_ path: String, _ shareRemote: String?) {
+        self.path = path
+        self.shareRemote = shareRemote
+    }
+}
+extension WatchedRepoConfig: Equatable, Hashable, Comparable {
+    static func == (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
+        return lhs.path == rhs.path &&
+            lhs.shareRemote == rhs.shareRemote
+    }
+    static func < (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
+        return lhs.path < rhs.path
+    }
+    var hashValue: Int {
+        return path.hashValue
+    }
+}
+
+
 class Config {
     // Create configuration file
     // at ~/.config/git-annex/turtle-monitor
@@ -87,7 +110,7 @@ class Config {
         return false
     }
     
-    func listWatchedRepos() -> [String] {
+    func listWatchedRepos() -> [WatchedRepoConfig] {
         if let config = readConfig() {
             return config.repoPaths()
         }

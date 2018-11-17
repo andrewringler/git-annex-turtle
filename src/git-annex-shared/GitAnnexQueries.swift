@@ -249,6 +249,22 @@ class GitAnnexQueries {
         
         return (status == 0, error, output, commandRun)
     }
+    func gitAnnexExport(for path: String, in workingDirectory: String, to remote: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let cmd = "export " + "\"master:\(path)\"" + " --to \(remote)"
+        let commandRun = "git-annex " + cmd
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd)
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, commandRun)
+    }
     func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         guard let gitCmd = preferences.gitBin() else {

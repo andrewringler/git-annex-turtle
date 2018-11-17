@@ -1,4 +1,5 @@
 ## Bugs, definitely fix
+ * test Share… button on actual remote
  * if a repo is added with a branch other than master as current, a full scan should be run when it branch becomes master again, currently folders never get added properly
  * quiting from menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
@@ -20,6 +21,8 @@
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
  * partially empty icons are hard to read, possibly switching from horizontally filled to diagonally filled would fix this.
  * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
+ * don't show the Share… contextual menu if user has not set share-remote for the repo, will need to add this information to the database so that FinderSync can grab it
+ * allow user to Share… multiple times individual files without over-writing previous shares, see https://git-annex.branchable.com/forum/export_single_file/
 
 ## New Features, yes
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar

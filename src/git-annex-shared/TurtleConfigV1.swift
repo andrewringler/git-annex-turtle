@@ -19,6 +19,9 @@ let contextMenusNewEntryDefault = true
 let trackFolderStatusNewEntryDefault = true
 let trackFileStatusNewEntryDefault = true
 
+/* We have versioned the config classes but as long as we just add
+ * additionally fields and gracefully handle them when they are missing
+ * there is no reason to rev the version number */
 fileprivate class TurtleConfigMonitoredRepoMutableV1: CustomStringConvertible {
     var name: String? = nil
     
@@ -27,18 +30,19 @@ fileprivate class TurtleConfigMonitoredRepoMutableV1: CustomStringConvertible {
     var contextMenus: Bool? = nil
     var trackFolderStatus: Bool? = nil
     var trackFileStatus: Bool? = nil
-    
+    var shareRemote: String? = nil
+
     init() {}
     
     func build() -> TurtleConfigMonitoredRepoV1? {
         if path != nil {
-            return TurtleConfigMonitoredRepoV1(name: name, path: path!, finderIntegration: finderIntegration ?? finderIntegrationMissingDefault, contextMenus: contextMenus ?? contextMenusMissingDefault, trackFolderStatus: trackFolderStatus ?? trackFolderStatusMissingDefault, trackFileStatus: trackFileStatus ?? trackFileStatusMissingDefault)
+            return TurtleConfigMonitoredRepoV1(name: name, path: path!, finderIntegration: finderIntegration ?? finderIntegrationMissingDefault, contextMenus: contextMenus ?? contextMenusMissingDefault, trackFolderStatus: trackFolderStatus ?? trackFolderStatusMissingDefault, trackFileStatus: trackFileStatus ?? trackFileStatusMissingDefault, shareRemote: shareRemote)
         }
         
         return nil
     }
     
-    public var description: String { return "TurtleConfigMonitoredRepoMutableV1: '\(name)' '\(path)' finderIntegration='\(finderIntegration)' contextMenus='\(contextMenus)' trackFolderStatus='\(trackFolderStatus)' trackFileStatus='\(trackFileStatus)'" }
+    public var description: String { return "TurtleConfigMonitoredRepoMutableV1: '\(name)' '\(path)' finderIntegration='\(finderIntegration)' contextMenus='\(contextMenus)' trackFolderStatus='\(trackFolderStatus)' trackFileStatus='\(trackFileStatus)' shareRemote='\(shareRemote)'" }
 }
 fileprivate class TurtleConfigMutableV1: CustomStringConvertible {
     // General Turtle Config
@@ -74,6 +78,7 @@ struct TurtleConfigMonitoredRepoV1 {
     let contextMenus: Bool
     let trackFolderStatus: Bool
     let trackFileStatus: Bool
+    let shareRemote: String?
     
     public func toFileString() -> String {
         var s: String = ""
@@ -88,12 +93,15 @@ struct TurtleConfigMonitoredRepoV1 {
         s += "\(turtleSectionMonitorKeyValueName.contextMenus.rawValue) = \(String(contextMenus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFolderStatus.rawValue) = \(String(trackFolderStatus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFileStatus.rawValue) = \(String(trackFileStatus))\n"
+        if shareRemote != nil {
+            s += "\(turtleSectionMonitorKeyValueName.shareRemote.rawValue) = \(String(describing: shareRemote))\n"
+        }
 
         return s
     }
     
     static func fromPathWithDefaults(_ path: String) -> TurtleConfigMonitoredRepoV1 {
-        return TurtleConfigMonitoredRepoV1(name: nil, path: path, finderIntegration: finderIntegrationNewEntryDefault, contextMenus: contextMenusNewEntryDefault, trackFolderStatus: trackFolderStatusNewEntryDefault, trackFileStatus: trackFileStatusNewEntryDefault)
+        return TurtleConfigMonitoredRepoV1(name: nil, path: path, finderIntegration: finderIntegrationNewEntryDefault, contextMenus: contextMenusNewEntryDefault, trackFolderStatus: trackFolderStatusNewEntryDefault, trackFileStatus: trackFileStatusNewEntryDefault, shareRemote: nil)
     }
 }
 extension TurtleConfigMonitoredRepoV1: Equatable, Hashable {
@@ -120,6 +128,7 @@ enum turtleSectionMonitorKeyValueName: String {
     case contextMenus = "context-menus"
     case trackFolderStatus = "track-folder-status"
     case trackFileStatus = "track-file-status"
+    case shareRemote = "share-remote"
 }
 
 struct TurtleConfigV1 {
@@ -142,6 +151,7 @@ struct TurtleConfigV1 {
      * context-menus = true
      * track-folder-status = true
      * track-file-status = true
+     * share-remote = public-s3
      */
     // see https://developer.apple.com/documentation/foundation/nsregularexpression for syntax
     static let whitespace = "^[\\s]*$"
@@ -150,8 +160,8 @@ struct TurtleConfigV1 {
 //    static let keyValuePairRegex = "[\\s]*(.+)[\\s]*\\=\"?(.+)\"?[\\s]*"
     static let keyValuePairRegex = "^[\\s]*([a-z\\-]+)[\\s]*\\=[\\s]*\"?(.+?)\"?[\\s]*$"
 
-    public func repoPaths() -> [String] {
-        return monitoredRepo.map { $0.path }
+    public func repoPaths() -> [WatchedRepoConfig] {
+        return monitoredRepo.map { WatchedRepoConfig($0.path, $0.shareRemote) }
     }
     
     public func removeRepo(_ repo: String) -> TurtleConfigV1 {
@@ -168,7 +178,9 @@ struct TurtleConfigV1 {
     public func setGitAnnexBin(_ newGitAnnexBin: String) -> TurtleConfigV1 {
         return TurtleConfigV1(gitAnnexBin: newGitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo)
     }
-
+    public func setShareRemote(_ newShareRemote: String) -> TurtleConfigV1 {
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo)
+    }
     
     public func toFileString() -> String {
         var s: String = ""
@@ -265,6 +277,8 @@ struct TurtleConfigV1 {
                                 repo?.trackFolderStatus = try Bool(value)
                             case .trackFileStatus:
                                 repo?.trackFileStatus = try Bool(value)
+                            case .shareRemote:
+                                repo?.shareRemote = value
                             }
                         } catch {
                             TurtleLog.error("Invalid key = value pair at line: \(line) for config: \(config)")

@@ -59,7 +59,21 @@ class HandleCommandRequests: StoppableService {
                     }
                     
                 case .turtle:
-                    TurtleLog.todo("handle Turtle command \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")
+                    if commandRequest.commandString == CommandString.share {
+                        if(watchedFolder.shareRemote != nil) {
+                            let status = gitAnnexQueries.gitAnnexExport(for: commandRequest.pathString, in: watchedFolder.pathString, to: watchedFolder.shareRemote!)
+                            if !status.success {
+                                dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                            } else {
+                                // TODO place public URL in user's clipboard
+                                // or show dialog with the public URL
+                            }
+                        } else {
+                            TurtleLog.todo("don't show Share menu if no share remote configured \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")
+                        }
+                    } else {
+                        TurtleLog.todo("handle Turtle command \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")
+                    }
                 }
                 
             } else {

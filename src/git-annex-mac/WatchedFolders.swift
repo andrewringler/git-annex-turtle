@@ -45,28 +45,30 @@ class WatchedFolders: HasWatchedFolders {
         let newWatchedRepoPaths = config.listWatchedRepos()
         for watchedFolder in newWatchedRepoPaths {
             if let containedInThisParent = (newWatchedRepoPaths.filter {
-                return watchedFolder != $0 && watchedFolder.starts(with: $0) }).first {
-                TurtleLog.info("Cannot monitor '\(watchedFolder)' nested inside \(containedInThisParent), will ignore.")
+                return watchedFolder.path != $0.path && watchedFolder.path.starts(with: $0.path) }).first {
+                TurtleLog.info("Cannot monitor '\(watchedFolder.path)' nested inside \(containedInThisParent.path), will ignore.")
                 continue
             }
             
-            if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: watchedFolder) {
+            if let uuid = gitAnnexQueries.gitGitAnnexUUID(in: watchedFolder.path) {
                 if let existingWatchedFolder = (watchedFolders.filter {
-                    return $0.uuid == uuid && $0.pathString == watchedFolder }).first {
+                    return $0.uuid == uuid && $0.pathString == watchedFolder.path }).first {
                     // If we already have this WatchedFolder, re-use the object
                     // so current queries are not interrupted
+                    existingWatchedFolder.shareRemote = watchedFolder.shareRemote
                     newWatchedFolders.insert(existingWatchedFolder)
                 } else {
                     // OK, we don't already have this watched folder
                     // create a new object with a new handleStatusRequests
-                    let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder)
+                    let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder.path)
+                    newWatchedFolder.shareRemote = watchedFolder.shareRemote
                     let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, canRecheckFoldersForUpdates: canRecheckFoldersForUpdates)
                     newWatchedFolder.handleStatusRequests = handleStatusRequests
                     newWatchedFolders.insert(newWatchedFolder)
                 }
             } else {
                 // TODO let the user know this?
-                TurtleLog.error("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder)
+                TurtleLog.error("Could not find valid git-annex UUID for '%@', not monitoring", watchedFolder.path)
             }
         }
         
