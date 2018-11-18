@@ -58,7 +58,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         watchGitAndFinderForUpdates?.stop()
         watchGitAndFinderForUpdates = nil
         
-        wait(for: 5)        
+        wait(for: 10)        
         TestingUtil.removeDir(testDir)
         
         super.tearDown()
@@ -348,7 +348,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let changeFile3 = "subdirA/subdirNew2/changeFile3.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "changeFile3 content", to: changeFile3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
-        wait(for: 2)
+        wait(for: 10)
 
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)

@@ -152,7 +152,8 @@ class GitAnnexQueries {
             // 1. load users's bash_profile so we have any PATHs to git-annex special remote binaries
             // 2. limit command to certain git branch (if requested)
             // 3. run command
-            let bashArgs :[String] = ["-c", ". ~/.bash_profile > /dev/null 2>&1; " + branchGuard + bashCmd.joined(separator: " ")]
+            // ". ~/.bash_profile > /dev/null 2>&1; " +    test without bash_profile loading
+            let bashArgs :[String] = ["-c", branchGuard + bashCmd.joined(separator: " ")]
             task.arguments = bashArgs
             
             let outpipe = Pipe()
