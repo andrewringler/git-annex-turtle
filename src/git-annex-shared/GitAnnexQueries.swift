@@ -153,7 +153,9 @@ class GitAnnexQueries {
             // 2. limit command to certain git branch (if requested)
             // 3. run command
             // ". ~/.bash_profile > /dev/null 2>&1; " +    test without bash_profile loading
-            let bashArgs :[String] = ["-c", branchGuard + bashCmd.joined(separator: " ")]
+            let runningInTravis: Bool = (ProcessInfo.processInfo.environment["RUNNING_IN_TRAVIS"] ?? "") == "true"
+            let loadBashProfile = !runningInTravis ? ". ~/.bash_profile > /dev/null 2>&1; " : ""
+            let bashArgs :[String] = ["-c", loadBashProfile + branchGuard + bashCmd.joined(separator: " ")]
             task.arguments = bashArgs
             
             let outpipe = Pipe()
