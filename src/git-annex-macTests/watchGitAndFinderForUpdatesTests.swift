@@ -189,7 +189,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
 
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
-        wait(for: 2)
+        wait(for: 10)
 
         // wait for the full scans to complete
         // triggered by watchGitAndFinderForUpdates
@@ -348,7 +348,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let changeFile3 = "subdirA/subdirNew2/changeFile3.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "changeFile3 content", to: changeFile3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
-        wait(for: 2)
+        wait(for: 10)
 
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
@@ -465,7 +465,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         
         // wait a few seconds for watchGitAndFinderForUpdates
         // to find the repos we just added and start a full scan on them
-        wait(for: 5)
+        wait(for: 10)
         
         // wait for the full scans to complete
         // triggered by watchGitAndFinderForUpdates
