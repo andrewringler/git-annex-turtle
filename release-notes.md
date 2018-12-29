@@ -5,13 +5,14 @@ Notes
 N/A. See previous notes for upgrades from v0.1
 
 **Features**
- * 
+ * added Share context menu for sharing a single file to a public git exporttree
 
 **Minor**
- * 
+ * n/a
  
 **Bug Fixes**
  * fixed: now sourcing `~/.bash_profile` before running commands so we now have locations for git-annex special remote binaries
+ * fixed [issue #3](https://github.com/andrewringler/git-annex-turtle/issues/3): missing `~/.config/git-annex` folder is created automatically now. thanks to [johannesjh](https://github.com/johannesjh) for reporting
  
 v0.2
 This release contains primarily bug fixes and performance improvements.
