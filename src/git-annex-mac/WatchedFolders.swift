@@ -55,13 +55,17 @@ class WatchedFolders: HasWatchedFolders {
                     return $0.uuid == uuid && $0.pathString == watchedFolder.path }).first {
                     // If we already have this WatchedFolder, re-use the object
                     // so current queries are not interrupted
-                    existingWatchedFolder.shareRemote = watchedFolder.shareRemote
+                    if watchedFolder.shareRemote != nil && watchedFolder.shareLocalPath != nil {
+                        existingWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote!, shareLocalPath: watchedFolder.shareLocalPath!)
+                    }
                     newWatchedFolders.insert(existingWatchedFolder)
                 } else {
                     // OK, we don't already have this watched folder
                     // create a new object with a new handleStatusRequests
                     let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder.path)
-                    newWatchedFolder.shareRemote = watchedFolder.shareRemote
+                    if watchedFolder.shareRemote != nil && watchedFolder.shareLocalPath != nil {
+                        newWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote!, shareLocalPath: watchedFolder.shareLocalPath!)
+                    }
                     let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, canRecheckFoldersForUpdates: canRecheckFoldersForUpdates)
                     newWatchedFolder.handleStatusRequests = handleStatusRequests
                     newWatchedFolders.insert(newWatchedFolder)

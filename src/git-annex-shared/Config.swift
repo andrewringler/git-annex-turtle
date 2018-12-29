@@ -11,16 +11,19 @@ import Foundation
 struct WatchedRepoConfig {
     let path: String
     let shareRemote: String?
-    
-    init(_ path: String, _ shareRemote: String?) {
+    let shareLocalPath: String?
+
+    init(_ path: String, _ shareRemote: String?, _ shareLocalPath: String?) {
         self.path = path
         self.shareRemote = shareRemote
+        self.shareLocalPath = shareLocalPath
     }
 }
 extension WatchedRepoConfig: Equatable, Hashable, Comparable {
     static func == (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
         return lhs.path == rhs.path &&
             lhs.shareRemote == rhs.shareRemote
+            && lhs.shareLocalPath == rhs.shareLocalPath
     }
     static func < (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
         return lhs.path < rhs.path
@@ -99,6 +102,14 @@ class Config {
             return writeConfig(config.addRepo(repo))
         }
         TurtleLog.error("watchRepo: unable to read config")
+        return false
+    }
+    
+    func addShare(repo: String, shareRemote: String, shareLocalPath: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setShareRemote(repo, shareRemote, shareLocalPath))
+        }
+        TurtleLog.error("addShare: unable to read config")
         return false
     }
     

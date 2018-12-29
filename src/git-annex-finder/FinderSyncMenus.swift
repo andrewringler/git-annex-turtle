@@ -42,9 +42,9 @@ class FinderSyncMenus {
         var singleFile: Bool = false
         var isSingleDirectory: Bool = false
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1, let item = items.first {
-            singleFile = true
             statusOptional = finderSyncCore.status(for: item)
             isSingleDirectory = item.hasDirectoryPath
+            singleFile = true && !isSingleDirectory
         }
         
         // Produce a menu for the extension.
@@ -107,7 +107,7 @@ class FinderSyncMenus {
         // TODO add submenu to support multiple share locations
         // TODO suport single files… https://git-annex.branchable.com/forum/export_single_file/
         // TODO hide menuitem if user has not specified a share folder for this repo
-        if isSingleDirectory {
+        if singleFile {
             menuItem = menu.addItem(withTitle: "Share…", action: #selector(finderSync.share(_:)), keyEquivalent: "")
             menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
             menuItem.image = gitAnnexTurtleLogo

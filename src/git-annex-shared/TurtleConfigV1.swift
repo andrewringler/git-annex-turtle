@@ -24,25 +24,38 @@ let trackFileStatusNewEntryDefault = true
  * there is no reason to rev the version number */
 fileprivate class TurtleConfigMonitoredRepoMutableV1: CustomStringConvertible {
     var name: String? = nil
-    
     var path: String? = nil
     var finderIntegration: Bool? = nil
     var contextMenus: Bool? = nil
     var trackFolderStatus: Bool? = nil
     var trackFileStatus: Bool? = nil
     var shareRemote: String? = nil
+    var shareLocalPath: String? = nil
 
     init() {}
     
+    class func from(_ c: TurtleConfigMonitoredRepoV1) -> TurtleConfigMonitoredRepoMutableV1 {
+        let newC = TurtleConfigMonitoredRepoMutableV1()
+        newC.name = c.name
+        newC.path = c.path
+        newC.finderIntegration = c.finderIntegration
+        newC.contextMenus = c.contextMenus
+        newC.trackFolderStatus = c.trackFolderStatus
+        newC.trackFileStatus = c.trackFileStatus
+        newC.shareRemote = c.shareRemote
+        newC.shareLocalPath = c.shareLocalPath
+        return newC
+    }
+    
     func build() -> TurtleConfigMonitoredRepoV1? {
         if path != nil {
-            return TurtleConfigMonitoredRepoV1(name: name, path: path!, finderIntegration: finderIntegration ?? finderIntegrationMissingDefault, contextMenus: contextMenus ?? contextMenusMissingDefault, trackFolderStatus: trackFolderStatus ?? trackFolderStatusMissingDefault, trackFileStatus: trackFileStatus ?? trackFileStatusMissingDefault, shareRemote: shareRemote)
+            return TurtleConfigMonitoredRepoV1(name: name, path: path!, finderIntegration: finderIntegration ?? finderIntegrationMissingDefault, contextMenus: contextMenus ?? contextMenusMissingDefault, trackFolderStatus: trackFolderStatus ?? trackFolderStatusMissingDefault, trackFileStatus: trackFileStatus ?? trackFileStatusMissingDefault, shareRemote: shareRemote, shareLocalPath: shareLocalPath)
         }
         
         return nil
     }
     
-    public var description: String { return "TurtleConfigMonitoredRepoMutableV1: '\(name)' '\(path)' finderIntegration='\(finderIntegration)' contextMenus='\(contextMenus)' trackFolderStatus='\(trackFolderStatus)' trackFileStatus='\(trackFileStatus)' shareRemote='\(shareRemote)'" }
+    public var description: String { return "TurtleConfigMonitoredRepoMutableV1: '\(name)' '\(path)' finderIntegration='\(finderIntegration)' contextMenus='\(contextMenus)' trackFolderStatus='\(trackFolderStatus)' trackFileStatus='\(trackFileStatus)' shareRemote='\(shareRemote)' shareLocalPath='\(shareLocalPath)'" }
 }
 fileprivate class TurtleConfigMutableV1: CustomStringConvertible {
     // General Turtle Config
@@ -79,6 +92,7 @@ struct TurtleConfigMonitoredRepoV1 {
     let trackFolderStatus: Bool
     let trackFileStatus: Bool
     let shareRemote: String?
+    let shareLocalPath: String?
     
     public func toFileString() -> String {
         var s: String = ""
@@ -93,15 +107,16 @@ struct TurtleConfigMonitoredRepoV1 {
         s += "\(turtleSectionMonitorKeyValueName.contextMenus.rawValue) = \(String(contextMenus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFolderStatus.rawValue) = \(String(trackFolderStatus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFileStatus.rawValue) = \(String(trackFileStatus))\n"
-        if shareRemote != nil {
+        if shareRemote != nil && shareLocalPath != nil {
             s += "\(turtleSectionMonitorKeyValueName.shareRemote.rawValue) = \(String(describing: shareRemote))\n"
+            s += "\(turtleSectionMonitorKeyValueName.shareLocalPath.rawValue) = \(String(describing: shareLocalPath))\n"
         }
 
         return s
     }
     
     static func fromPathWithDefaults(_ path: String) -> TurtleConfigMonitoredRepoV1 {
-        return TurtleConfigMonitoredRepoV1(name: nil, path: path, finderIntegration: finderIntegrationNewEntryDefault, contextMenus: contextMenusNewEntryDefault, trackFolderStatus: trackFolderStatusNewEntryDefault, trackFileStatus: trackFileStatusNewEntryDefault, shareRemote: nil)
+        return TurtleConfigMonitoredRepoV1(name: nil, path: path, finderIntegration: finderIntegrationNewEntryDefault, contextMenus: contextMenusNewEntryDefault, trackFolderStatus: trackFolderStatusNewEntryDefault, trackFileStatus: trackFileStatusNewEntryDefault, shareRemote: nil, shareLocalPath: nil)
     }
 }
 extension TurtleConfigMonitoredRepoV1: Equatable, Hashable {
@@ -129,6 +144,7 @@ enum turtleSectionMonitorKeyValueName: String {
     case trackFolderStatus = "track-folder-status"
     case trackFileStatus = "track-file-status"
     case shareRemote = "share-remote"
+    case shareLocalPath = "share-local-path"
 }
 
 struct TurtleConfigV1 {
@@ -152,6 +168,7 @@ struct TurtleConfigV1 {
      * track-folder-status = true
      * track-file-status = true
      * share-remote = public-s3
+     * share-local-path = public-share
      */
     // see https://developer.apple.com/documentation/foundation/nsregularexpression for syntax
     static let whitespace = "^[\\s]*$"
@@ -161,7 +178,7 @@ struct TurtleConfigV1 {
     static let keyValuePairRegex = "^[\\s]*([a-z\\-]+)[\\s]*\\=[\\s]*\"?(.+?)\"?[\\s]*$"
 
     public func repoPaths() -> [WatchedRepoConfig] {
-        return monitoredRepo.map { WatchedRepoConfig($0.path, $0.shareRemote) }
+        return monitoredRepo.map { WatchedRepoConfig($0.path, $0.shareRemote, $0.shareLocalPath) }
     }
     
     public func removeRepo(_ repo: String) -> TurtleConfigV1 {
@@ -178,10 +195,23 @@ struct TurtleConfigV1 {
     public func setGitAnnexBin(_ newGitAnnexBin: String) -> TurtleConfigV1 {
         return TurtleConfigV1(gitAnnexBin: newGitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo)
     }
-    public func setShareRemote(_ newShareRemote: String) -> TurtleConfigV1 {
-        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: monitoredRepo)
+    public func setShareRemote(_ repo: String, _ newShareRemote: String, _ newShareLocalPath: String) -> TurtleConfigV1 {
+        var newRepo: TurtleConfigMonitoredRepoMutableV1?
+        monitoredRepo.forEach {
+            if $0.path == repo {
+                newRepo = TurtleConfigMonitoredRepoMutableV1.from($0)
+                newRepo!.shareRemote = newShareRemote
+                newRepo!.shareLocalPath = newShareLocalPath
+            }
+        }
+        _ = removeRepo(repo)
+        var newMonitoredRepo = monitoredRepo
+        if newRepo != nil {
+            newMonitoredRepo.insert(newRepo!.build()!)
+        }
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: newMonitoredRepo)
     }
-    
+
     public func toFileString() -> String {
         var s: String = ""
         if gitBin != nil || gitAnnexBin != nil {
@@ -279,6 +309,8 @@ struct TurtleConfigV1 {
                                 repo?.trackFileStatus = try Bool(value)
                             case .shareRemote:
                                 repo?.shareRemote = value
+                            case .shareLocalPath:
+                                repo?.shareLocalPath = value
                             }
                         } catch {
                             TurtleLog.error("Invalid key = value pair at line: \(line) for config: \(config)")

@@ -96,30 +96,7 @@ class queriesTests: XCTestCase {
         } else {
             XCTFail("could not retrieve folder status")
         }
-        
-
     }
-        
-        
-        
-        
-//        if let dir = queries!.statusForPathV2Blocking(path: "anEmptyDirWithEmptyDirs", in: repo2!) {
-//            XCTAssertEqual(dir.presentStatus, Present.present)
-//            XCTAssertEqual(dir.isDir, true)
-//            XCTAssertEqual(dir.enoughCopies, EnoughCopies.enough)
-//        } else {
-//            XCTFail("could not retrieve folder status for 'anEmptyDirWithEmptyDirs'")
-//        }
-//
-//        if let wholeRepo = queries!.statusForPathV2Blocking(path: PathUtils.CURRENT_DIR, in: repo2!) {
-//            XCTAssertEqual(wholeRepo.presentStatus, Present.present)
-//            XCTAssertEqual(wholeRepo.isDir, true)
-//            XCTAssertEqual(wholeRepo.enoughCopies, EnoughCopies.enough)
-//            XCTAssertEqual(wholeRepo.numberOfCopies, 1)
-//        } else {
-//            XCTFail("could not retrieve folder status for whole repo2")
-//        }
-    
     
     lazy var managedObjectModel: NSManagedObjectModel = {
         let managedObjectModel = NSManagedObjectModel.mergedModel(from: [Bundle(for: type(of: self))] )!

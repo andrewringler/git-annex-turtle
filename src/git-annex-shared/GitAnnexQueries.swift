@@ -252,8 +252,74 @@ class GitAnnexQueries {
         
         return (status == 0, error, output, commandRun)
     }
+    func gitAnnexCommand(in workingDirectory: String, cmd: CommandString, with args: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let commandRun = "git-annex " + cmd.rawValue + " " + args
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, args)
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, commandRun)
+    }
+    func bashCommand(in workingDirectory: String, cmd: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: cmd, limitToMasterBranch: false, args: "")
+        if status != 0 {
+            TurtleLog.error("\(cmd) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, cmd)
+    }
+    func gitAnnexShare(for path: String, in watchedFolder: WatchedFolder) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        if watchedFolder.shareRemote == nil {
+            return (false, ["Watched Folder \(watchedFolder) does not have share remote settings"], [""], "")
+        }
+        let remote = watchedFolder.shareRemote!
+
+        // First add file to git-annex in current location
+        let (success0, error0, output0, commandRun0) = gitAnnexCommand(for: path, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+        if !success0 {
+            return (success0, error0 + ["Unable to 'git-annex add \(path)' for sharing"], output0, commandRun0)
+        }
+    
+        // If File is not already in the public share folder copy it there
+        if !path.starts(with: remote.shareLocalPath) {
+            let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(remote.shareLocalPath)")
+            if !success1 {
+                return (success1, error1 + ["Unable to make directory at '\(remote.shareLocalPath)' for sharing"], output1, commandRun1)
+            }
+
+            let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(remote.shareLocalPath)/")
+            if !success2 {
+                return (success2, error2 + ["Unable to copy '\(path)' to '\(remote.shareLocalPath)' for sharing"], output2, commandRun2)
+            }
+        }
+        
+        // Add file to public share folder
+        let shareFilePath = PathUtils.joinPaths(prefixPath: remote.shareLocalPath, suffixPath: PathUtils.lastPathComponent(path))
+        let (success3, error3, output3, commandRun3) = gitAnnexCommand(for: shareFilePath, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+        if !success3 {
+            return (success3, error3 + ["Unable to 'git-annex add \(path)' for sharing"], output3, commandRun3)
+        }
+        
+        // Perform a commit so git creates a tree from the local share directory
+        // since git-annex export can only share a tree
+        let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToMasterBranch: true)
+        if !success4 {
+            return (success4, error4 + ["Unable to git commit in preparation for sharing"], output4, commandRun4)
+        }
+        
+        // re-export Share folder
+        let (success5, error5, output5, commandRun5) = gitAnnexExport(for: remote.shareLocalPath, in: watchedFolder.pathString, to: remote.shareRemote)
+        return (success5, error5, output5, commandRun5)
+    }
     func gitAnnexExport(for path: String, in workingDirectory: String, to remote: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let cmd = "export " + "\"master:\(path)\"" + " --to \(remote)"
+        let cmd = "export " + "master:\(path)" + " --to \(remote)"
         let commandRun = "git-annex " + cmd
         guard let gitAnnexCmd = preferences.gitAnnexBin() else {
             TurtleLog.debug("could not find a valid git-annex application")

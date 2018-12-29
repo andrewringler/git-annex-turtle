@@ -7,6 +7,13 @@
 //
 import Foundation
 
+struct ShareSettings {
+    let shareRemote: String
+    let shareLocalPath: String
+    
+    public var description: String { return "'\(shareRemote)' '\(shareLocalPath)'" }
+}
+
 class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
     public var handleStatusRequests: HandleStatusRequests? = nil
     public lazy var shortName: String = {
@@ -14,7 +21,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     }()
     let uuid: UUID
     let pathString: String
-    var shareRemote: String? = nil
+    var shareRemote: ShareSettings? = nil
     
     private enum CodingKeys: String, CodingKey {
         case uuid
@@ -40,5 +47,10 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     }
     
     public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString) '\(String(describing: shareRemote))'" }
+}
+
+struct ExportTreeRemote {
+    let name: String
+    let path: String
 }
 

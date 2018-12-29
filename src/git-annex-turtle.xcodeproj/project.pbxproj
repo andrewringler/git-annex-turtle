@@ -36,6 +36,7 @@
 		49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
 		49178BA1201EB2B000B98A46 /* changedGitFilesAfterCommit.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
+		49220D1221D2DC9500E1D499 /* shareButtonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49220D1121D2DC9500E1D499 /* shareButtonTests.swift */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F82040695D00F8D8A0 /* fullScanTests.swift */; };
 		492491FB20406A8800F8D8A0 /* waitForExpectations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491FA20406A8800F8D8A0 /* waitForExpectations.swift */; };
@@ -287,6 +288,7 @@
 		49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = changedAnnexFilesAfterCommit.sh; sourceTree = "<group>"; };
 		49178B9D201E92C400B98A46 /* ShellScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellScripts.swift; sourceTree = "<group>"; };
 		49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = changedGitFilesAfterCommit.sh; sourceTree = "<group>"; };
+		49220D1121D2DC9500E1D499 /* shareButtonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shareButtonTests.swift; sourceTree = "<group>"; };
 		492491F42040665A00F8D8A0 /* FullScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScan.swift; sourceTree = "<group>"; };
 		492491F82040695D00F8D8A0 /* fullScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fullScanTests.swift; sourceTree = "<group>"; };
 		492491FA20406A8800F8D8A0 /* waitForExpectations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = waitForExpectations.swift; sourceTree = "<group>"; };
@@ -530,6 +532,7 @@
 				49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */,
 				49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */,
 				49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */,
+				49220D1121D2DC9500E1D499 /* shareButtonTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -1003,6 +1006,7 @@
 				498810F02093CD5E0048BED9 /* CanRecheckGitCommitsAndFullScans.swift in Sources */,
 				492492042040A16A00F8D8A0 /* DataEntrypoint.swift in Sources */,
 				492492022040A15600F8D8A0 /* git_annex_turtle_data.xcdatamodeld in Sources */,
+				49220D1221D2DC9500E1D499 /* shareButtonTests.swift in Sources */,
 				493AA9692093B3D500EA09A0 /* ViewController.swift in Sources */,
 				49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */,
 				49FDAAEA207B01AC00FE6043 /* TurtleServers.swift in Sources */,

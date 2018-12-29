@@ -61,9 +61,9 @@ class HandleCommandRequests: StoppableService {
                 case .turtle:
                     if commandRequest.commandString == CommandString.share {
                         if(watchedFolder.shareRemote != nil) {
-                            let status = gitAnnexQueries.gitAnnexExport(for: commandRequest.pathString, in: watchedFolder.pathString, to: watchedFolder.shareRemote!)
+                            let status = gitAnnexQueries.gitAnnexShare(for: commandRequest.pathString, in: watchedFolder)
                             if !status.success {
-                                dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git: error", message: status.output.joined(separator: "\n"))
+                                dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
                             } else {
                                 // TODO place public URL in user's clipboard
                                 // or show dialog with the public URL

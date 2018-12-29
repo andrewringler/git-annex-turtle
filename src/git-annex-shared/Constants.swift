@@ -237,6 +237,44 @@ class PathUtils {
         return nil // not an absolute path
     }
     
+    class func joinPaths(prefixPath: String, suffixPath: String) -> String {
+        let p1 = prefixPath.startIndex
+        var p2 = prefixPath.endIndex
+        var s1 = suffixPath.startIndex
+        var s2 = suffixPath.endIndex
+        
+        // strip trailing slash on prefix
+        if prefixPath.count > 1 && prefixPath.last == "/" {
+            p2 = prefixPath.index(before: p2)
+        }
+        // strip leading and trailing slash on suffix
+        if suffixPath.first == "/" {
+            s1 = suffixPath.index(after: s1)
+        }
+        if suffixPath.last == "/" {
+            s2 = suffixPath.index(before: s2)
+        }
+        
+        var prefix = ""
+        var suffix = ""
+        if prefixPath.count > 0 && p1 < p2 {
+            prefix = String(prefixPath[(p1..<p2).clamped(to: prefixPath.startIndex..<prefixPath.endIndex)])
+        }
+        if suffixPath.count > 0 && s1 < s2 {
+            suffix = String(suffixPath[(s1..<s2).clamped(to: suffixPath.startIndex..<suffixPath.endIndex)])
+        }
+        if prefix.count > 0 && suffix.count > 0 {
+            if prefix != "/" {
+                return prefix + "/" + suffix
+            }
+            return prefix + suffix
+        }
+        if prefix.count > 0 {
+            return prefix
+        }
+        return suffix
+    }
+    
     class func children(in watchedFolder: WatchedFolder) -> (files: [String], dirs: [String]) {
         return children(path: CURRENT_DIR, in: watchedFolder)
     }
@@ -299,6 +337,10 @@ enum CommandType: String {
     public var isGit: Bool { return self == .git }
     public var isTurtle: Bool { return self == .turtle }
 }
+enum BashCommandString: String {
+    case copy = "cp"
+    case makeDirectory = "mkdir"
+}
 enum CommandString: String {
     case get = "get"
     case add = "add"
@@ -310,6 +352,8 @@ enum CommandString: String {
     case commit = "commit"
     case direct = "direct"
     case share = "share"
+    case initRemote = "initremote"
+    case sync = "sync"
 }
 
 

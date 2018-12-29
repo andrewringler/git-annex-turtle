@@ -84,7 +84,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         XCTAssertEqual(repo3!.pathString, "\(repo1!.pathString)/repo3")
         
         // The Config file now contains our new repo
-        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil), WatchedRepoConfig(repo2!.pathString, nil), WatchedRepoConfig(repo3!.pathString, nil)].sorted())
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil, nil), WatchedRepoConfig(repo2!.pathString, nil, nil), WatchedRepoConfig(repo3!.pathString, nil, nil)].sorted())
         
         // Add another valid one
         let repo4 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo4", gitAnnexQueries: gitAnnexQueries!)
@@ -94,7 +94,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         XCTAssertTrue(config!.watchRepo(repo: repo4!.pathString), "unable to add repo4 to config file")
 
         // The Config file now contains all 4 repos
-        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil), WatchedRepoConfig(repo2!.pathString, nil), WatchedRepoConfig(repo3!.pathString, nil), WatchedRepoConfig(repo4!.pathString, nil)].sorted())
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil, nil), WatchedRepoConfig(repo2!.pathString, nil, nil), WatchedRepoConfig(repo3!.pathString, nil, nil), WatchedRepoConfig(repo4!.pathString, nil, nil)].sorted())
 
         waitForIncrementalScanToStartAndFinish()
 

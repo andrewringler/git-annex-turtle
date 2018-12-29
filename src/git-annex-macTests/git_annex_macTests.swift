@@ -159,7 +159,26 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder"))
         XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder/afile"))
     }
-
+    
+    func testJoinPaths() {
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: ""), "")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: ""), "/")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "/"), "")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "/"), "/")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "a"), "/a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "/a"), "/a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "/a"), "a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "a"), "a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a", suffixPath: "b"), "a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a", suffixPath: "b"), "/a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a", suffixPath: "/b"), "/a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "c"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "/c"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "/c/"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b/", suffixPath: "/c/"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a/b", suffixPath: "/c"), "/a/b/c")
+    }
+    
     func testPathUtilsLastPath() {
         XCTAssertEqual(PathUtils.lastPathComponent("/"), "/")
         XCTAssertEqual(PathUtils.lastPathComponent("hello"), "hello")
@@ -253,7 +272,7 @@ class git_annex_turtleTests: XCTestCase {
         path = /therepo
         """.components(separatedBy: CharacterSet.newlines)
         
-        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: nil)])
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: nil, shareLocalPath: nil)])
         
         let actual = TurtleConfigV1.parse(from: config)
         
@@ -267,9 +286,10 @@ class git_annex_turtleTests: XCTestCase {
         [turtle-monitor]
         path = /therepo
         share-remote = public-s3
+        share-local-path = public-share
         """.components(separatedBy: CharacterSet.newlines)
         
-        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: "public-s3")])
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: "public-s3", shareLocalPath: "public-share")])
         
         let actual = TurtleConfigV1.parse(from: config)
         
@@ -303,6 +323,7 @@ class git_annex_turtleTests: XCTestCase {
         track-folder-status = true
         track-file-status = true
         share-remote = public-s3
+        share-local-path = public-share
         [turtle-monitor]
         path = /Users/Shared/another remote2
         finder-integration = false
@@ -311,7 +332,7 @@ class git_annex_turtleTests: XCTestCase {
         track-file-status = true
         """.components(separatedBy: CharacterSet.newlines)
         
-        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [TurtleConfigMonitoredRepoV1(name: "another remote yeah.hmm", path: "/Users/Shared/anotherremote", finderIntegration: true, contextMenus: true, trackFolderStatus: true, trackFileStatus: true, shareRemote: "public-s3"),TurtleConfigMonitoredRepoV1(name: nil, path: "/Users/Shared/another remote2", finderIntegration: false, contextMenus: false, trackFolderStatus: true, trackFileStatus: true, shareRemote: nil)])
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [TurtleConfigMonitoredRepoV1(name: "another remote yeah.hmm", path: "/Users/Shared/anotherremote", finderIntegration: true, contextMenus: true, trackFolderStatus: true, trackFileStatus: true, shareRemote: "public-s3", shareLocalPath: "public-share"),TurtleConfigMonitoredRepoV1(name: nil, path: "/Users/Shared/another remote2", finderIntegration: false, contextMenus: false, trackFolderStatus: true, trackFileStatus: true, shareRemote: nil, shareLocalPath: nil)])
         
         let actual = TurtleConfigV1.parse(from: config)
         
@@ -334,7 +355,7 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigWatchRepo() {
-        let repo = WatchedRepoConfig("/anewrepo", nil)
+        let repo = WatchedRepoConfig("/anewrepo", nil, nil)
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
             XCTAssertTrue(config.watchRepo(repo: repo.path))
@@ -344,8 +365,8 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigWatchTwoRepos() {
-        let repo1 = WatchedRepoConfig("/anewrepo", nil)
-        let repo2 = WatchedRepoConfig("/anewrepo2", nil)
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, nil)
+        let repo2 = WatchedRepoConfig("/anewrepo2", nil, nil)
         
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
@@ -358,8 +379,8 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigRemoveARepo() {
-        let repo1 = WatchedRepoConfig("/anewrepo", nil)
-        let repo2 = WatchedRepoConfig("/anewrepo2", nil)
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, nil)
+        let repo2 = WatchedRepoConfig("/anewrepo2", nil, nil)
         
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
