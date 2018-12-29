@@ -279,7 +279,7 @@ class GitAnnexQueries {
         if watchedFolder.shareRemote == nil {
             return (false, ["Watched Folder \(watchedFolder) does not have share remote settings"], [""], "")
         }
-        let remote = watchedFolder.shareRemote!
+        let remote:ShareSettings = watchedFolder.shareRemote!
 
         // First add file to git-annex in current location
         let (success0, error0, output0, commandRun0) = gitAnnexCommand(for: path, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
@@ -307,9 +307,11 @@ class GitAnnexQueries {
             return (success3, error3 + ["Unable to 'git-annex add \(path)' for sharing"], output3, commandRun3)
         }
         
-        // Perform a commit so git creates a tree from the local share directory
-        // since git-annex export can only share a tree
-        let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToMasterBranch: true)
+        // Perform a partial commit just on the newly added file (in the local share folder)
+        // so that we don't commit any unrelated files the user had already staged
+        // we need to do a commit, since git will create a new tree from the local share directory
+        // and git-annex export requires a tree as input to export
+        let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToPath: shareFilePath, limitToMasterBranch: true)
         if !success4 {
             return (success4, error4 + ["Unable to git commit in preparation for sharing"], output4, commandRun4)
         }
@@ -370,6 +372,20 @@ class GitAnnexQueries {
         }
         
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        return (status == 0, error, output, commandRun)
+    }
+    func gitCommit(in workingDirectory: String, commitMessage: String, limitToPath: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let commandRun = "git commit -m \"" + commitMessage + "\" \"\(limitToPath)\""
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\" \"\(limitToPath)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")

@@ -108,8 +108,8 @@ struct TurtleConfigMonitoredRepoV1 {
         s += "\(turtleSectionMonitorKeyValueName.trackFolderStatus.rawValue) = \(String(trackFolderStatus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFileStatus.rawValue) = \(String(trackFileStatus))\n"
         if shareRemote != nil && shareLocalPath != nil {
-            s += "\(turtleSectionMonitorKeyValueName.shareRemote.rawValue) = \(String(describing: shareRemote))\n"
-            s += "\(turtleSectionMonitorKeyValueName.shareLocalPath.rawValue) = \(String(describing: shareLocalPath))\n"
+            s += "\(turtleSectionMonitorKeyValueName.shareRemote.rawValue) = \(shareRemote!)\n"
+            s += "\(turtleSectionMonitorKeyValueName.shareLocalPath.rawValue) = \(shareLocalPath!)\n"
         }
 
         return s
