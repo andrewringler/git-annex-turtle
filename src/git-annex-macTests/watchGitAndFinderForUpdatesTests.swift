@@ -354,6 +354,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
         waitForIncrementalScanToStartAndFinish()
+        wait(for: 3)
 
         if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -643,7 +644,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     
     func waitForIncrementalScanToStartAndFinish() {
         // wait for the incremental scans to start
-        wait(for: 3)
+        wait(for: 10)
 
         // wait for the incremental scans to complete
         timeAtDoneOptional = nil

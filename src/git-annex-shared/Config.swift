@@ -45,6 +45,17 @@ class Config {
         self.dataPath = dataPath
         
         if (!FileManager.default.fileExists(atPath: dataPath)) {
+            do {
+                if let parentDir = PathUtils.parent(absolutePath: dataPath) {
+                    try FileManager.default.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+                } else {
+                    TurtleLog.error("Unable to create configuration file parent folder for \(dataPath)")
+                    exit(-1)
+                }
+            } catch {
+                TurtleLog.error("Unable to create configuration file parent folder for \(dataPath)")
+                exit(-1)
+            }
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
             if success == false {
                 TurtleLog.error("Unable to create configuration file at \(dataPath)")
