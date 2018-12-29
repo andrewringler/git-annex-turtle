@@ -50,6 +50,7 @@
  * On, first launch, auto find repos in https://myrepos.branchable.com/ (~/.mrconfig), and ~/.config/git-annex/autostart and ask user if they want to add them.
 
 ## Chores
+ * remove custom guards for limiting git-annex requests to the master branch and replace with the newly added `--branch=ref` param where applicable
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting
