@@ -18,6 +18,8 @@ struct WatchedRepoConfig {
         self.shareRemote = shareRemote
         self.shareLocalPath = shareLocalPath
     }
+    
+    lazy var description = "\(path) shareRemote: '\(String(describing: shareRemote))', shareLocalPath: '\(String(describing: shareLocalPath))'"
 }
 extension WatchedRepoConfig: Equatable, Hashable, Comparable {
     static func == (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
@@ -116,11 +118,18 @@ class Config {
         return false
     }
     
-    func addShare(repo: String, shareRemote: String, shareLocalPath: String) -> Bool {
+    func updateShareRemoteLocalPath(repo: String, shareLocalPath: String) -> Bool {
         if let config = readConfig() {
-            return writeConfig(config.setShareRemote(repo, shareRemote, shareLocalPath))
+            return writeConfig(config.setShareRemoteLocalPath(repo, shareLocalPath))
         }
-        TurtleLog.error("addShare: unable to read config")
+        TurtleLog.error("updateShareRemoteLocalPath: unable to read config")
+        return false
+    }
+    func updateShareRemote(repo: String, shareRemote: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setShareRemote(repo, shareRemote))
+        }
+        TurtleLog.error("updateShareRemote: unable to read config")
         return false
     }
     

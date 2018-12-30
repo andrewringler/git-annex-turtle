@@ -396,6 +396,91 @@ class git_annex_turtleTests: XCTestCase {
         }
         XCTFail()
     }
+    func testConfigUpdateShareRemoteLocalPath() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: "newlocalpath"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "newlocalpath")
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemoteLocalPathWithoutRemote() {
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+            
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertNil(readRepo.shareRemote)
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: "newlocalpath"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "newlocalpath")
+            XCTAssertNil(readRepo.shareRemote)
+
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemote() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: "adifferentremote"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            XCTAssertEqual(readRepo.shareRemote, "adifferentremote")
+            
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemoteNoLocalPath() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", nil)
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertNil(readRepo.shareLocalPath)
+            
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: "adifferentremote"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertNil(readRepo.shareLocalPath)
+            XCTAssertEqual(readRepo.shareRemote, "adifferentremote")
+            
+            return
+        }
+        XCTFail()
+    }
     func testConfigGitBin() {
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")

@@ -107,8 +107,10 @@ struct TurtleConfigMonitoredRepoV1 {
         s += "\(turtleSectionMonitorKeyValueName.contextMenus.rawValue) = \(String(contextMenus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFolderStatus.rawValue) = \(String(trackFolderStatus))\n"
         s += "\(turtleSectionMonitorKeyValueName.trackFileStatus.rawValue) = \(String(trackFileStatus))\n"
-        if shareRemote != nil && shareLocalPath != nil {
+        if shareRemote != nil && !(shareRemote ?? "").isEmpty {
             s += "\(turtleSectionMonitorKeyValueName.shareRemote.rawValue) = \(shareRemote!)\n"
+        }
+        if shareLocalPath != nil && !(shareLocalPath ?? "").isEmpty {
             s += "\(turtleSectionMonitorKeyValueName.shareLocalPath.rawValue) = \(shareLocalPath!)\n"
         }
 
@@ -204,8 +206,35 @@ struct TurtleConfigV1 {
                 newRepo!.shareLocalPath = newShareLocalPath
             }
         }
-        _ = removeRepo(repo)
-        var newMonitoredRepo = monitoredRepo
+        var newMonitoredRepo = removeRepo(repo).monitoredRepo
+        if newRepo != nil {
+            newMonitoredRepo.insert(newRepo!.build()!)
+        }
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: newMonitoredRepo)
+    }
+    public func setShareRemoteLocalPath(_ repo: String, _ newShareLocalPath: String) -> TurtleConfigV1 {
+        var newRepo: TurtleConfigMonitoredRepoMutableV1?
+        monitoredRepo.forEach {
+            if $0.path == repo {
+                newRepo = TurtleConfigMonitoredRepoMutableV1.from($0)
+                newRepo!.shareLocalPath = newShareLocalPath
+            }
+        }
+        var newMonitoredRepo = removeRepo(repo).monitoredRepo
+        if newRepo != nil {
+            newMonitoredRepo.insert(newRepo!.build()!)
+        }
+        return TurtleConfigV1(gitAnnexBin: gitAnnexBin, gitBin: gitBin, monitoredRepo: newMonitoredRepo)
+    }
+    public func setShareRemote(_ repo: String, _ newShareRemote: String) -> TurtleConfigV1 {
+        var newRepo: TurtleConfigMonitoredRepoMutableV1?
+        monitoredRepo.forEach {
+            if $0.path == repo {
+                newRepo = TurtleConfigMonitoredRepoMutableV1.from($0)
+                newRepo!.shareRemote = newShareRemote
+            }
+        }
+        var newMonitoredRepo = removeRepo(repo).monitoredRepo
         if newRepo != nil {
             newMonitoredRepo.insert(newRepo!.build()!)
         }

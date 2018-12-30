@@ -276,49 +276,49 @@ class GitAnnexQueries {
         return (status == 0, error, output, cmd)
     }
     func gitAnnexShare(for path: String, in watchedFolder: WatchedFolder) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        if watchedFolder.shareRemote == nil {
-            return (false, ["Watched Folder \(watchedFolder) does not have share remote settings"], [""], "")
-        }
-        let remote:ShareSettings = watchedFolder.shareRemote!
-
-        // First add file to git-annex in current location
-        let (success0, error0, output0, commandRun0) = gitAnnexCommand(for: path, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
-        if !success0 {
-            return (success0, error0 + ["Unable to 'git-annex add \(path)' for sharing"], output0, commandRun0)
-        }
-    
-        // If File is not already in the public share folder copy it there
-        if !path.starts(with: remote.shareLocalPath) {
-            let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(remote.shareLocalPath)")
-            if !success1 {
-                return (success1, error1 + ["Unable to make directory at '\(remote.shareLocalPath)' for sharing"], output1, commandRun1)
+        let remote:ShareSettings = watchedFolder.shareRemote
+        if let shareLocalPath = remote.shareLocalPath, let shareRemote = remote.shareRemote {
+            // First add file to git-annex in current location
+            let (success0, error0, output0, commandRun0) = gitAnnexCommand(for: path, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+            if !success0 {
+                return (success0, error0 + ["Unable to 'git-annex add \(path)' for sharing"], output0, commandRun0)
             }
-
-            let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(remote.shareLocalPath)/")
-            if !success2 {
-                return (success2, error2 + ["Unable to copy '\(path)' to '\(remote.shareLocalPath)' for sharing"], output2, commandRun2)
+            
+            // If File is not already in the public share folder copy it there
+            if !path.starts(with: shareLocalPath) {
+                let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(shareLocalPath)")
+                if !success1 {
+                    return (success1, error1 + ["Unable to make directory at '\(shareLocalPath)' for sharing"], output1, commandRun1)
+                }
+                
+                let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(shareLocalPath)/")
+                if !success2 {
+                    return (success2, error2 + ["Unable to copy '\(path)' to '\(shareLocalPath)' for sharing"], output2, commandRun2)
+                }
             }
+            
+            // Add file to public share folder
+            let shareFilePath = PathUtils.joinPaths(prefixPath: shareLocalPath, suffixPath: PathUtils.lastPathComponent(path))
+            let (success3, error3, output3, commandRun3) = gitAnnexCommand(for: shareFilePath, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+            if !success3 {
+                return (success3, error3 + ["Unable to 'git-annex add \(path)' for sharing"], output3, commandRun3)
+            }
+            
+            // Perform a partial commit just on the newly added file (in the local share folder)
+            // so that we don't commit any unrelated files the user had already staged
+            // we need to do a commit, since git will create a new tree from the local share directory
+            // and git-annex export requires a tree as input to export
+            let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToPath: shareFilePath, limitToMasterBranch: true)
+            if !success4 {
+                return (success4, error4 + ["Unable to git commit in preparation for sharing"], output4, commandRun4)
+            }
+            
+            // re-export Share folder
+            let (success5, error5, output5, commandRun5) = gitAnnexExport(for: shareLocalPath, in: watchedFolder.pathString, to: shareRemote)
+            return (success5, error5, output5, commandRun5)
+        } else {
+            return (false, ["Watched Folder \(watchedFolder) does not have valid share remote settings"], [""], "")
         }
-        
-        // Add file to public share folder
-        let shareFilePath = PathUtils.joinPaths(prefixPath: remote.shareLocalPath, suffixPath: PathUtils.lastPathComponent(path))
-        let (success3, error3, output3, commandRun3) = gitAnnexCommand(for: shareFilePath, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
-        if !success3 {
-            return (success3, error3 + ["Unable to 'git-annex add \(path)' for sharing"], output3, commandRun3)
-        }
-        
-        // Perform a partial commit just on the newly added file (in the local share folder)
-        // so that we don't commit any unrelated files the user had already staged
-        // we need to do a commit, since git will create a new tree from the local share directory
-        // and git-annex export requires a tree as input to export
-        let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToPath: shareFilePath, limitToMasterBranch: true)
-        if !success4 {
-            return (success4, error4 + ["Unable to git commit in preparation for sharing"], output4, commandRun4)
-        }
-        
-        // re-export Share folder
-        let (success5, error5, output5, commandRun5) = gitAnnexExport(for: remote.shareLocalPath, in: watchedFolder.pathString, to: remote.shareRemote)
-        return (success5, error5, output5, commandRun5)
     }
     func gitAnnexExport(for path: String, in workingDirectory: String, to remote: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let cmd = "export " + "master:\(path)" + " --to \(remote)"

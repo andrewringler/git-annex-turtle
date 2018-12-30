@@ -60,7 +60,7 @@ class HandleCommandRequests: StoppableService {
                     
                 case .turtle:
                     if commandRequest.commandString == CommandString.share {
-                        if(watchedFolder.shareRemote != nil) {
+                        if(watchedFolder.shareRemote.isValid()) {
                             let status = gitAnnexQueries.gitAnnexShare(for: commandRequest.pathString, in: watchedFolder)
                             if !status.success {
                                 dialogs.dialogGitAnnexWarn(title: status.error.first ?? "git-annex: error", message: status.output.joined(separator: "\n"))
@@ -69,7 +69,7 @@ class HandleCommandRequests: StoppableService {
                                 // or show dialog with the public URL
                             }
                         } else {
-                            TurtleLog.todo("don't show Share menu if no share remote configured \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")
+                            dialogs.dialogOSWarn(title: "Share", message: "Before sharing, you must first configure share settings for this repository in the git-annex-turtle Preferences menu.")
                         }
                     } else {
                         TurtleLog.todo("handle Turtle command \(commandRequest.commandString) for \(commandRequest.pathString) in \(watchedFolder.pathString)")

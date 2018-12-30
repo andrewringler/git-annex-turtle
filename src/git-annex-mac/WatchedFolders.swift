@@ -55,17 +55,13 @@ class WatchedFolders: HasWatchedFolders {
                     return $0.uuid == uuid && $0.pathString == watchedFolder.path }).first {
                     // If we already have this WatchedFolder, re-use the object
                     // so current queries are not interrupted
-                    if watchedFolder.shareRemote != nil && watchedFolder.shareLocalPath != nil {
-                        existingWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote!, shareLocalPath: watchedFolder.shareLocalPath!)
-                    }
+                    existingWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote, shareLocalPath: watchedFolder.shareLocalPath)
                     newWatchedFolders.insert(existingWatchedFolder)
                 } else {
                     // OK, we don't already have this watched folder
                     // create a new object with a new handleStatusRequests
                     let newWatchedFolder = WatchedFolder(uuid: uuid, pathString: watchedFolder.path)
-                    if watchedFolder.shareRemote != nil && watchedFolder.shareLocalPath != nil {
-                        newWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote!, shareLocalPath: watchedFolder.shareLocalPath!)
-                    }
+                    newWatchedFolder.shareRemote = ShareSettings(shareRemote: watchedFolder.shareRemote, shareLocalPath: watchedFolder.shareLocalPath)
                     let handleStatusRequests = HandleStatusRequestsProduction(newWatchedFolder, queries: queries, gitAnnexQueries: gitAnnexQueries, canRecheckFoldersForUpdates: canRecheckFoldersForUpdates)
                     newWatchedFolder.handleStatusRequests = handleStatusRequests
                     newWatchedFolders.insert(newWatchedFolder)
@@ -90,9 +86,6 @@ class WatchedFolders: HasWatchedFolders {
                     watchedFolderWatches.remove(watchedFolder)
                 }
             }
-            
-            gitAnnexTurtle.updateMenubarData(with: watchedFolders)
-            
             TurtleLog.info("Finder Sync is now monitoring: [\(WatchedFolder.pretty(watchedFolders))]")
             
             // Save updated folder list to the database
@@ -101,6 +94,10 @@ class WatchedFolders: HasWatchedFolders {
             startFullScanForWatchedFoldersWithNoHistoryInDb()
             watchedFolderWatches.setupMissingWatches()
         }
+        
+        // Update UI
+        gitAnnexTurtle.updateMenubarData(with: watchedFolders)
+        
         updateListOfWatchedFoldersLock.unlock()
     }
     

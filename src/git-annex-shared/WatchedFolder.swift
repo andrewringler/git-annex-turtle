@@ -8,10 +8,17 @@
 import Foundation
 
 struct ShareSettings {
-    let shareRemote: String
-    let shareLocalPath: String
+    let shareRemote: String?
+    let shareLocalPath: String?
     
-    public var description: String { return "'\(shareRemote)' '\(shareLocalPath)'" }
+    public func isValid() -> Bool {
+        if let r = shareRemote, let l = shareLocalPath {
+            return !r.isEmpty && !l.isEmpty
+        }
+        return false
+    }
+    
+    public var description: String { return "'\(String(describing: shareRemote))' '\(String(describing: shareLocalPath))'" }
 }
 
 class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
@@ -21,7 +28,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     }()
     let uuid: UUID
     let pathString: String
-    var shareRemote: ShareSettings? = nil
+    var shareRemote = ShareSettings(shareRemote: nil, shareLocalPath: nil)
     
     private enum CodingKeys: String, CodingKey {
         case uuid

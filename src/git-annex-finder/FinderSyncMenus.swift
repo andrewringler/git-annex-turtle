@@ -108,7 +108,7 @@ class FinderSyncMenus {
         // TODO suport single files… https://git-annex.branchable.com/forum/export_single_file/
         // TODO hide menuitem if user has not specified a share folder for this repo
         if singleFile {
-            menuItem = menu.addItem(withTitle: "Share…", action: #selector(finderSync.share(_:)), keyEquivalent: "")
+            menuItem = menu.addItem(withTitle: "Share", action: #selector(finderSync.share(_:)), keyEquivalent: "")
             menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
             menuItem.image = gitAnnexTurtleLogo
         }

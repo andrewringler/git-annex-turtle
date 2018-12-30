@@ -73,7 +73,9 @@ class shareButtonTests: XCTestCase {
     
     func testShareSharesAlreadyAddedFileNotInShareFolder() {
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
-        XCTAssertTrue(config!.addShare(repo: repo1!.pathString, shareRemote: repo1!.shareRemote!.shareRemote, shareLocalPath: repo1!.shareRemote!.shareLocalPath), "Unable to add share settings to repo1")
+        XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
+        XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")
+
         let fileToShare = "a_file.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "some file content", to: fileToShare, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         let (success, error, output, commandRun) = gitAnnexQueries!.gitAnnexShare(for: fileToShare, in: repo1!)
@@ -87,7 +89,9 @@ class shareButtonTests: XCTestCase {
     
     func testShareSharesNotAddedFileNotInShareFolder() {
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
-        XCTAssertTrue(config!.addShare(repo: repo1!.pathString, shareRemote: repo1!.shareRemote!.shareRemote, shareLocalPath: repo1!.shareRemote!.shareLocalPath), "Unable to add share settings to repo1")
+        XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
+        XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")
+
         let fileToShare = "a_file.txt"
         TestingUtil.writeToFile(content: "some file content", to: fileToShare, in: repo1!)
         let (success, error, output, commandRun) = gitAnnexQueries!.gitAnnexShare(for: fileToShare, in: repo1!)
@@ -101,7 +105,9 @@ class shareButtonTests: XCTestCase {
     
     func testShareSharesNotAddedFileAlreadyInShareFolder() {
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
-        XCTAssertTrue(config!.addShare(repo: repo1!.pathString, shareRemote: repo1!.shareRemote!.shareRemote, shareLocalPath: repo1!.shareRemote!.shareLocalPath), "Unable to add share settings to repo1")
+        XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
+        XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")
+        
         TestingUtil.createDir(dir: "public-share", in: repo1!)
         let fileToShare = "a_file.txt"
         let fileToShareLocalFullPath = "public-share/a_file.txt"
@@ -117,7 +123,9 @@ class shareButtonTests: XCTestCase {
     
     func testShareSharesAddedFileAlreadyInShareFolder() {
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
-        XCTAssertTrue(config!.addShare(repo: repo1!.pathString, shareRemote: repo1!.shareRemote!.shareRemote, shareLocalPath: repo1!.shareRemote!.shareLocalPath), "Unable to add share settings to repo1")
+        XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
+        XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")
+        
         TestingUtil.createDir(dir: "public-share", in: repo1!)
         let fileToShare = "a_file.txt"
         let fileToShareLocalFullPath = "public-share/a_file.txt"
@@ -133,7 +141,8 @@ class shareButtonTests: XCTestCase {
     
     func testSharingSequenceOfShares() {
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
-        XCTAssertTrue(config!.addShare(repo: repo1!.pathString, shareRemote: repo1!.shareRemote!.shareRemote, shareLocalPath: repo1!.shareRemote!.shareLocalPath), "Unable to add share settings to repo1")
+        XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
+        XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")
         
         let fileToShare1 = "a_file.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "some file content", to: fileToShare1, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
