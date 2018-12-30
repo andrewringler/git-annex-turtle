@@ -1,10 +1,10 @@
 ## Bugs, definitely fix
- * test Share… button on actual remote
- * if a repo is added with a branch other than master as current, a full scan should be run when it branch becomes master again, currently folders never get added properly
- * quiting from menubar icon should quit running git processes too
+ * if a repo is added when head is not master, a full scan should be run head becomes master again otherwise folders will never get added properly
+ * quitting from the menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
  * Test with v6 repos
+ * Test with v7 repos
  * Test with git annex watch
  * some process is adding just filenames (not complete relative paths) to the database, verify fixed?
  * occasional UI lockup (IE menubar icon doesn't work) when manual terminal git tasks are running concurrently with git-annex-turtle, verify fixed?
@@ -21,8 +21,6 @@
  * how do we track changes in the numcopies settings from the terminal? changing numcopies in git annex will update numcopies.log in the git-annex branch, so we can detect that, but users can add per file, per path numcopies settings anywhere in the repo in a gitattributes file https://git-annex.branchable.com/copies/, https://git-scm.com/docs/gitattributes
  * partially empty icons are hard to read, possibly switching from horizontally filled to diagonally filled would fix this.
  * get badge icons to grab higher resolution versions of PNG icons when available, currently it is always grabbing the low res one
- * don't show the Share… contextual menu if user has not set share-remote for the repo, will need to add this information to the database so that FinderSync can grab it
- * allow user to Share… multiple times individual files without over-writing previous shares, see https://git-annex.branchable.com/forum/export_single_file/
 
 ## New Features, yes
  * add sidebar icon, so the icon is shown when the user has dragged the repo folder onto the sidebar
@@ -39,7 +37,6 @@
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * Menubar window should show list of remote transfers 
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
- * Share button, IE copy to public repo and place publicly accessible download link in copy/paste buffer. Google Drive or Dropbox might be popular options. see http://git-annex.branchable.com/tips/publishing_your_files_to_the_public/
  * add copy --to buttons, need to add support for listing on remotes for this.
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches. Doing a git annex drop from the context menus does nothing and has no feedback, git annex drop from command-line has similar behavior.
