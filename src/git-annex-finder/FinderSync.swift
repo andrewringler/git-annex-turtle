@@ -110,6 +110,9 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
     @IBAction func gitAdd(_ sender: AnyObject?) {
         commandRequest(with: .git(.add), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
     }
+    @IBAction func share(_ sender: AnyObject?) {
+        commandRequest(with: .turtle(.share), target: FIFinderSyncController.default().targetedURL(), item: sender as? NSMenuItem, items: FIFinderSyncController.default().selectedItemURLs())
+    }
 
     private func commandRequest(with command: GitOrGitAnnexCommand, target: URL?, item: NSMenuItem?, items: [URL]?) {
         if let commandTypeInt = item?.tag, let commandType = MenuCommandTypeTag(rawValue: commandTypeInt) {

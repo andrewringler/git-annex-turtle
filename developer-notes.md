@@ -1,6 +1,6 @@
 ## Bugs, definitely fix
- * if a repo is added with a branch other than master as current, a full scan should be run when it branch becomes master again, currently folders never get added properly
- * quiting from menubar icon should quit running git processes too
+ * if a repo is added when head is not master, a full scan should be run head becomes master again otherwise folders will never get added properly
+ * quitting from the menubar icon should quit running git processes too
  * during a full-scan process memory spikes for git-annex-turtle process, and does not seem to return after some period of time, possibly memory leak here?
  * various timing issues with Queries related to parsing new information from git commits, probably need to switch to SQL (instead of CoreData), use transactions, or time updates more carefully in concert with analyzing git commits, see https://www.raywenderlich.com/167743/sqlite-swift-tutorial-getting-started, https://github.com/stephencelis/SQLite.swift
  * Test with v6 repos
@@ -30,13 +30,14 @@
  * add auto-launch at Login feature in UI, maybe this project https://github.com/sindresorhus/LaunchAtLogin would be useful for that… or just write a file and copy it to the correct place.
  * Handle branch switching, track branches separately in database
  * Button to launch webapp (from menubar icon and toolbar icon)
+ * expose PATHS in config. We use PATHS to determine location of git special remote binararies. user should be able to choose if they want ~/.bash_profile to be loaded before issuing shell commands (to calculate PATH) or just choose their own manual PATH string.
 
 ## New Features, maybe
  * Change main icon to blocky turtle, animated menubar icon to swimming turtle
  * commit workflows, commit, sync, sync --content, show un-committed file status (new icon or badge)
  * Menubar window should show list of remote transfers 
  * Menubar window should show list of files querying and give option to pause, since our querying of git could stall a user's operations in the terminal
- * Share button, IE copy to public repo and place publicly accessible download link in copy/paste buffer. Google Drive or Dropbox might be popular options. see http://git-annex.branchable.com/tips/publishing_your_files_to_the_public/
+ * add copy --to buttons, need to add support for listing on remotes for this.
  * what icons to display for git files, staged, in a commit, unstaged, etc…, maybe copy what git annex status does
  * in v5 repo, unlocked present files have no git annex info, so are currently showing up as a ?. We could save the key for these paths, but many git annex commands don't operate on keys. We could use `git annex readpresentkey <key> <remote uuid>`, but we would have to start storing keys, storing remotes and do a bit of calculating. More generally, when files are unlocked the user can change its content at any time, we could do a file system of kqueue watch? Also, in v5 repo, changing state between unlocked and locked does not affect git or git-annex branches. Doing a git annex drop from the context menus does nothing and has no feedback, git annex drop from command-line has similar behavior.
  * show / hide relevant menu items in contextual menu, IE if file is present don't show get menu. TODO, wait until we are more confident we can maintain an accurate representation of file state until doing this? IE, v6 repos we don't need git add, vs git annex add (they are the same), right? don't display git-annex lock context menu in v5 repos, it always fails without force?
@@ -47,6 +48,7 @@
  * Save to git-annex button in Chrome. We could create a chrome extension to save current page to git-annex using addurl. See http://git-annex.branchable.com/tips/Using_Git-annex_as_a_web_browsing_assistant/, https://developer.chrome.com/extensions/messaging#native-messaging. We could use git-annex-turtle as a native messaging host?
 
 ## Chores
+ * remove custom guards for limiting git-annex requests to the master branch and replace with the newly added `--branch=ref` param where applicable
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.
  * running git-annex-turtle from XCode in debug mode uses and registers finder sync extensions at ~/Library/Developer/Xcode/DerivedData/, but production app installed to /Applications/git-annex-turtle.app wants to use the finder sync extension in the .app bundle. This creates errors on launch. Perhaps the production Finder sync extension needs a different name, so they don't collide? Cleanup of the debug extension is difficult since involves removing the extension using `pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder` to find the path of the extension we are using, removing that extension with pluginkit -r <full path>, then rebooting

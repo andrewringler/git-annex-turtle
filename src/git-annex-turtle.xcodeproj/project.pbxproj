@@ -36,6 +36,7 @@
 		49178B9E201E92C400B98A46 /* ShellScripts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49178B9D201E92C400B98A46 /* ShellScripts.swift */; };
 		49178BA1201EB2B000B98A46 /* changedGitFilesAfterCommit.sh in Resources */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
 		49178BA2201EB2BA00B98A46 /* changedGitFilesAfterCommit.sh in CopyFiles */ = {isa = PBXBuildFile; fileRef = 49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */; };
+		49220D1221D2DC9500E1D499 /* shareButtonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49220D1121D2DC9500E1D499 /* shareButtonTests.swift */; };
 		4922DC791FFD38D000448C22 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4981FE0A1DE61774002E6CB3 /* Config.swift */; };
 		492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491F82040695D00F8D8A0 /* fullScanTests.swift */; };
 		492491FB20406A8800F8D8A0 /* waitForExpectations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492491FA20406A8800F8D8A0 /* waitForExpectations.swift */; };
@@ -114,6 +115,12 @@
 		499AFFED205C0885008BD34A /* FinderSyncProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499AFFEC205C0885008BD34A /* FinderSyncProtocol.swift */; };
 		499B44651DE544F00091E0E3 /* FinderSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499B44641DE544F00091E0E3 /* FinderSync.swift */; };
 		499B44691DE544F00091E0E3 /* git-annex-finder.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 499B44601DE544F00091E0E3 /* git-annex-finder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		49ABCDB420C1BECF00A18F7A /* GeneralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB320C1BECF00A18F7A /* GeneralViewController.swift */; };
+		49ABCDB620C1BEF100A18F7A /* RepositoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB520C1BEF100A18F7A /* RepositoriesViewController.swift */; };
+		49ABCDB720C1C6DA00A18F7A /* RepositoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB520C1BEF100A18F7A /* RepositoriesViewController.swift */; };
+		49ABCDB820C1C6DD00A18F7A /* GeneralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB320C1BECF00A18F7A /* GeneralViewController.swift */; };
+		49ABCDB920C1C6E800A18F7A /* GeneralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB320C1BECF00A18F7A /* GeneralViewController.swift */; };
+		49ABCDBA20C1C6EB00A18F7A /* RepositoriesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ABCDB520C1BEF100A18F7A /* RepositoriesViewController.swift */; };
 		49AF86332069371900945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
 		49AF86342069372A00945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
 		49AF86352069372B00945F57 /* HandleStatusRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49AF86322069371900945F57 /* HandleStatusRequests.swift */; };
@@ -281,6 +288,7 @@
 		49178B98201E886A00B98A46 /* changedAnnexFilesAfterCommit.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = changedAnnexFilesAfterCommit.sh; sourceTree = "<group>"; };
 		49178B9D201E92C400B98A46 /* ShellScripts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellScripts.swift; sourceTree = "<group>"; };
 		49178BA0201EB2B000B98A46 /* changedGitFilesAfterCommit.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = changedGitFilesAfterCommit.sh; sourceTree = "<group>"; };
+		49220D1121D2DC9500E1D499 /* shareButtonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = shareButtonTests.swift; sourceTree = "<group>"; };
 		492491F42040665A00F8D8A0 /* FullScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScan.swift; sourceTree = "<group>"; };
 		492491F82040695D00F8D8A0 /* fullScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fullScanTests.swift; sourceTree = "<group>"; };
 		492491FA20406A8800F8D8A0 /* waitForExpectations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = waitForExpectations.swift; sourceTree = "<group>"; };
@@ -315,6 +323,8 @@
 		499B44631DE544F00091E0E3 /* git_annex_finder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = git_annex_finder.entitlements; sourceTree = "<group>"; };
 		499B44641DE544F00091E0E3 /* FinderSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderSync.swift; sourceTree = "<group>"; };
 		499B44661DE544F00091E0E3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		49ABCDB320C1BECF00A18F7A /* GeneralViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralViewController.swift; sourceTree = "<group>"; };
+		49ABCDB520C1BEF100A18F7A /* RepositoriesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoriesViewController.swift; sourceTree = "<group>"; };
 		49AF86322069371900945F57 /* HandleStatusRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandleStatusRequests.swift; sourceTree = "<group>"; };
 		49AF863A20697DD700945F57 /* DispatchQueueFIFO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchQueueFIFO.swift; sourceTree = "<group>"; };
 		49AF863C2069801A00945F57 /* QueueThreadSafe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueThreadSafe.swift; sourceTree = "<group>"; };
@@ -522,6 +532,7 @@
 				49ED1FFA206A88FA0092AC6D /* pathUtilsTests.swift */,
 				49ED1FFC206BE6890092AC6D /* pathStatusTests.swift */,
 				49FDAAE2207AF25E00FE6043 /* messagePortServices.swift */,
+				49220D1121D2DC9500E1D499 /* shareButtonTests.swift */,
 			);
 			path = "git-annex-macTests";
 			sourceTree = "<group>";
@@ -583,6 +594,8 @@
 				49EFD1D22006CEF7005742DB /* Assets.xcassets */,
 				49EFD1D42006CEF7005742DB /* Main.storyboard */,
 				49EFD1D72006CEF7005742DB /* Info.plist */,
+				49ABCDB320C1BECF00A18F7A /* GeneralViewController.swift */,
+				49ABCDB520C1BEF100A18F7A /* RepositoriesViewController.swift */,
 			);
 			path = "git-annex-preferences";
 			sourceTree = "<group>";
@@ -927,6 +940,7 @@
 				497D1FCD20114F1800106566 /* WatchedFolderMonitor.swift in Sources */,
 				497D1FC920113F3300106566 /* Witness.swift in Sources */,
 				49AF86472069871C00945F57 /* DispatchQueueFIFO.swift in Sources */,
+				49ABCDB920C1C6E800A18F7A /* GeneralViewController.swift in Sources */,
 				49447F261FFBFED6007AAE5F /* GitAnnexQueries.swift in Sources */,
 				49FDAAF3207BD75B00FE6043 /* HandleBadgeRequests.swift in Sources */,
 				490982F1204EDBB000096C92 /* TurtleLog.swift in Sources */,
@@ -952,6 +966,7 @@
 				490BCB861DE5444C00734FF4 /* AppDelegate.swift in Sources */,
 				4936D95F2064900C00FB76C7 /* RunNowOrAgain.swift in Sources */,
 				49BC72F2207A97E700D840AC /* TurtleServiceObjects.swift in Sources */,
+				49ABCDBA20C1C6EB00A18F7A /* RepositoriesViewController.swift in Sources */,
 				497D1FC720113F3300106566 /* EventStream.swift in Sources */,
 				49974035209F93AD009E4B56 /* WatchedFolders.swift in Sources */,
 				490982FD204F136500096C92 /* FullScan.swift in Sources */,
@@ -984,12 +999,14 @@
 				49FDAAE1207AF05200FE6043 /* AppTurtleMessagePort.swift in Sources */,
 				492492062040A18400F8D8A0 /* Constants.swift in Sources */,
 				49DDE17F2059DC09008C55AC /* HandleStatusRequestsProduction.swift in Sources */,
+				49ABCDB720C1C6DA00A18F7A /* RepositoriesViewController.swift in Sources */,
 				492491F92040695D00F8D8A0 /* fullScanTests.swift in Sources */,
 				4981033E205EB0C7006084B2 /* finderSyncCoreTests.swift in Sources */,
 				49FDAAE3207AF25E00FE6043 /* messagePortServices.swift in Sources */,
 				498810F02093CD5E0048BED9 /* CanRecheckGitCommitsAndFullScans.swift in Sources */,
 				492492042040A16A00F8D8A0 /* DataEntrypoint.swift in Sources */,
 				492492022040A15600F8D8A0 /* git_annex_turtle_data.xcdatamodeld in Sources */,
+				49220D1221D2DC9500E1D499 /* shareButtonTests.swift in Sources */,
 				493AA9692093B3D500EA09A0 /* ViewController.swift in Sources */,
 				49DDE18B2059F4F5008C55AC /* WatchedFolderMonitor.swift in Sources */,
 				49FDAAEA207B01AC00FE6043 /* TurtleServers.swift in Sources */,
@@ -1040,6 +1057,7 @@
 				49FDAAEF207BC2B800FE6043 /* HandleCommandRequests.swift in Sources */,
 				49DDE18C2059F543008C55AC /* debounce-throttle.swift in Sources */,
 				4956B9F6207BF7D900D366D4 /* TurtleServerVisibleFolderUpdates.swift in Sources */,
+				49ABCDB820C1C6DD00A18F7A /* GeneralViewController.swift in Sources */,
 				49974036209F9E49009E4B56 /* WatchedFolders.swift in Sources */,
 				49AF8645206986EF00945F57 /* dispatchQueueFIFOTests.swift in Sources */,
 			);
@@ -1084,8 +1102,10 @@
 				49EFD1FD2007BF6B005742DB /* GitAnnexQueries.swift in Sources */,
 				49F0ECFD200E5F6000C8BBCB /* Queries.swift in Sources */,
 				498810EA2093C20B0048BED9 /* ViewControllerProtocol.swift in Sources */,
+				49ABCDB620C1BEF100A18F7A /* RepositoriesViewController.swift in Sources */,
 				490982E8204E1D5A00096C92 /* VisibleFolder.swift in Sources */,
 				490982F6204EDBB600096C92 /* TurtleLog.swift in Sources */,
+				49ABCDB420C1BECF00A18F7A /* GeneralViewController.swift in Sources */,
 				498810F22093CD600048BED9 /* CanRecheckGitCommitsAndFullScans.swift in Sources */,
 				49EFD1FC2007BD89005742DB /* AppDelegate.swift in Sources */,
 				49EFD1D12006CEF7005742DB /* ViewController.swift in Sources */,

@@ -50,11 +50,6 @@ class GitAnnexQueries {
                 return
             }
             
-            //        let task = Process()
-            //        task.launchPath = cmd
-            //        task.currentDirectoryPath = workingDirectory
-            //        task.arguments = args
-            
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
@@ -102,10 +97,7 @@ class GitAnnexQueries {
             // even though the documentation clearly says it is not needed
             errFileHandle.closeFile()
             
-            //        task.waitUntilExit()
-            
             let status = task.terminationStatus
-            
             ret = (output, error, status)
             
             TurtleLog.debug("Task ran in \(endTime.timeIntervalSince(startTime)) seconds, dir=\(workingDirectory) cmd=\(cmd) args=\(args) result=\(ret)")
@@ -145,11 +137,6 @@ class GitAnnexQueries {
                 branchGuard = "if [[ $(git symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
             }
             
-    //        let task = Process()
-    //        task.launchPath = cmd
-    //        task.currentDirectoryPath = workingDirectory
-    //        task.arguments = args
-            
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
@@ -161,7 +148,14 @@ class GitAnnexQueries {
             for arg: String in args {
                 bashCmd.append(arg)
             }
-            let bashArgs :[String] = ["-c", branchGuard + bashCmd.joined(separator: " ")]
+            // Contruct bash command
+            // 1. load users's bash_profile so we have any PATHs to git-annex special remote binaries
+            // 2. limit command to certain git branch (if requested)
+            // 3. run command
+            // ". ~/.bash_profile > /dev/null 2>&1; " +    test without bash_profile loading
+            let runningInTravis: Bool = (ProcessInfo.processInfo.environment["RUNNING_IN_TRAVIS"] ?? "") == "true"
+            let loadBashProfile = !runningInTravis ? ". ~/.bash_profile > /dev/null 2>&1; " : ""
+            let bashArgs :[String] = ["-c", loadBashProfile + branchGuard + bashCmd.joined(separator: " ")]
             task.arguments = bashArgs
             
             let outpipe = Pipe()
@@ -196,8 +190,6 @@ class GitAnnexQueries {
             // i was running out of file descriptors without this
             // even though the documentation clearly says it is not needed
             errFileHandle.closeFile()
-            
-            //        task.waitUntilExit()
             
             let status = task.terminationStatus
             
@@ -260,6 +252,90 @@ class GitAnnexQueries {
         
         return (status == 0, error, output, commandRun)
     }
+    func gitAnnexCommand(in workingDirectory: String, cmd: CommandString, with args: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let commandRun = "git-annex " + cmd.rawValue + " " + args
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, args)
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, commandRun)
+    }
+    func bashCommand(in workingDirectory: String, cmd: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: cmd, limitToMasterBranch: false, args: "")
+        if status != 0 {
+            TurtleLog.error("\(cmd) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, cmd)
+    }
+    func gitAnnexShare(for path: String, in watchedFolder: WatchedFolder) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let remote:ShareSettings = watchedFolder.shareRemote
+        if let shareLocalPath = remote.shareLocalPath, let shareRemote = remote.shareRemote {
+            // First add file to git-annex in current location
+            let (success0, error0, output0, commandRun0) = gitAnnexCommand(for: path, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+            if !success0 {
+                return (success0, error0 + ["Unable to 'git-annex add \(path)' for sharing"], output0, commandRun0)
+            }
+            
+            // If File is not already in the public share folder copy it there
+            if !path.starts(with: shareLocalPath) {
+                let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(shareLocalPath)")
+                if !success1 {
+                    return (success1, error1 + ["Unable to make directory at '\(shareLocalPath)' for sharing"], output1, commandRun1)
+                }
+                
+                let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(shareLocalPath)/")
+                if !success2 {
+                    return (success2, error2 + ["Unable to copy '\(path)' to '\(shareLocalPath)' for sharing"], output2, commandRun2)
+                }
+            }
+            
+            // Add file to public share folder
+            let shareFilePath = PathUtils.joinPaths(prefixPath: shareLocalPath, suffixPath: PathUtils.lastPathComponent(path))
+            let (success3, error3, output3, commandRun3) = gitAnnexCommand(for: shareFilePath, in: watchedFolder.pathString, cmd: CommandString.add, limitToMasterBranch: true)
+            if !success3 {
+                return (success3, error3 + ["Unable to 'git-annex add \(path)' for sharing"], output3, commandRun3)
+            }
+            
+            // Perform a partial commit just on the newly added file (in the local share folder)
+            // so that we don't commit any unrelated files the user had already staged
+            // we need to do a commit, since git will create a new tree from the local share directory
+            // and git-annex export requires a tree as input to export
+            let (success4, error4, output4, commandRun4) = gitCommit(in: watchedFolder.pathString, commitMessage: "commit for sharing \(path)", limitToPath: shareFilePath, limitToMasterBranch: true)
+            if !success4 {
+                return (success4, error4 + ["Unable to git commit in preparation for sharing"], output4, commandRun4)
+            }
+            
+            // re-export Share folder
+            let (success5, error5, output5, commandRun5) = gitAnnexExport(for: shareLocalPath, in: watchedFolder.pathString, to: shareRemote)
+            return (success5, error5, output5, commandRun5)
+        } else {
+            return (false, ["Watched Folder \(watchedFolder) does not have valid share remote settings"], [""], "")
+        }
+    }
+    func gitAnnexExport(for path: String, in workingDirectory: String, to remote: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let cmd = "export " + "master:\(path)" + " --to \(remote)"
+        let commandRun = "git-annex " + cmd
+        guard let gitAnnexCmd = preferences.gitAnnexBin() else {
+            TurtleLog.debug("could not find a valid git-annex application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd)
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        
+        return (status == 0, error, output, commandRun)
+    }
     func gitCommand(for path: String, in workingDirectory: String, cmd: CommandString, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let commandRun = "git " + cmd.rawValue + "\"" + path + "\""
         guard let gitCmd = preferences.gitBin() else {
@@ -296,6 +372,20 @@ class GitAnnexQueries {
         }
         
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        
+        if status != 0 {
+            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+        }
+        return (status == 0, error, output, commandRun)
+    }
+    func gitCommit(in workingDirectory: String, commitMessage: String, limitToPath: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+        let commandRun = "git commit -m \"" + commitMessage + "\" \"\(limitToPath)\""
+        guard let gitCmd = preferences.gitBin() else {
+            TurtleLog.debug("could not find a valid git application")
+            return (false, [], [], commandRun)
+        }
+        
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\" \"\(limitToPath)\"")
         
         if status != 0 {
             TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")

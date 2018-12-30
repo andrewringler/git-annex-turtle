@@ -65,6 +65,21 @@ class TestingUtil {
         return nil
     }
     
+    class func createDirectorySpecialRemoteExportTree(watchedFolder watchedFolder: WatchedFolder, at specialRemotePath: String, named: String, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) -> ExportTreeRemote? {
+        do {
+            let url = PathUtils.urlFor(absolutePath: specialRemotePath)
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+            let (success, _, _, _) = gitAnnexQueries.gitAnnexCommand(in: watchedFolder.pathString, cmd: CommandString.initRemote, with: "\(named) type=directory directory=\(specialRemotePath) encryption=none exporttree=yes", limitToMasterBranch: true)
+            if success {
+                return ExportTreeRemote(name: named, path: specialRemotePath)
+            }
+        } catch {
+            XCTFail("could not add new special directory exporttree remote \(named) at '\(specialRemotePath)' to \(watchedFolder)", file: file, line: line)
+        }
+        XCTFail("could not add new special directory exporttree remote \(named) at '\(specialRemotePath)' to \(watchedFolder)", file: file, line: line)
+        return nil
+    }
+    
     class func setDirectMode(for watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) {
         let gitDirectMode = gitAnnexQueries.gitAnnexCommand(in: watchedFolder.pathString, cmd: CommandString.direct, limitToMasterBranch: false)
         if !gitDirectMode.success { XCTFail("unable to switch to direct mode \(gitDirectMode.error)", file: file, line: line)}
@@ -78,6 +93,16 @@ class TestingUtil {
         catch {
             XCTFail("unable to create file='\(fileName)' in repo \(watchedFolder)", file: file, line: line)
         }
+    }
+    
+    class func readFile(from fileURL: URL, file: StaticString = #file, line: UInt = #line) -> String {
+        do {
+            return try String(contentsOf: fileURL, encoding: .utf8)
+        }
+        catch {
+            XCTFail("unable to read file='\(fileURL)'", file: file, line: line)
+        }
+        return ""
     }
     
     class func createSymlink(from fromRelativePath: String, to toRelativePath: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) -> Bool {
@@ -159,7 +184,7 @@ class TestingUtil {
         writeToFile(content: content, to: fileName, in: watchedFolder)
         gitAnnexAdd(file: fileName, in: watchedFolder, gitAnnexQueries: gitAnnexQueries)
     }
-    
+
     class func createDir(dir: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) {
         do {
             let url = PathUtils.url(for: dir, in: watchedFolder)

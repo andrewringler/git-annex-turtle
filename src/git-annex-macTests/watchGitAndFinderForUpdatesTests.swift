@@ -58,7 +58,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         watchGitAndFinderForUpdates?.stop()
         watchGitAndFinderForUpdates = nil
         
-        wait(for: 5)        
+        wait(for: 10)        
         TestingUtil.removeDir(testDir)
         
         super.tearDown()
@@ -84,7 +84,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         XCTAssertEqual(repo3!.pathString, "\(repo1!.pathString)/repo3")
         
         // The Config file now contains our new repo
-        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [repo1!.pathString, repo2!.pathString, repo3!.pathString].sorted())
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil, nil), WatchedRepoConfig(repo2!.pathString, nil, nil), WatchedRepoConfig(repo3!.pathString, nil, nil)].sorted())
         
         // Add another valid one
         let repo4 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo4", gitAnnexQueries: gitAnnexQueries!)
@@ -94,7 +94,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         XCTAssertTrue(config!.watchRepo(repo: repo4!.pathString), "unable to add repo4 to config file")
 
         // The Config file now contains all 4 repos
-        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [repo1!.pathString, repo2!.pathString, repo3!.pathString, repo4!.pathString].sorted())
+        XCTAssertEqual(config!.listWatchedRepos().sorted(),  [WatchedRepoConfig(repo1!.pathString, nil, nil), WatchedRepoConfig(repo2!.pathString, nil, nil), WatchedRepoConfig(repo3!.pathString, nil, nil), WatchedRepoConfig(repo4!.pathString, nil, nil)].sorted())
 
         waitForIncrementalScanToStartAndFinish()
 
@@ -348,12 +348,13 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
         let changeFile3 = "subdirA/subdirNew2/changeFile3.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "changeFile3 content", to: changeFile3, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
 
-        wait(for: 10)
+        wait(for: 15)
 
         // incremental scanner will only pick up new files once they are committed
         TestingUtil.gitCommit("added some files", in: repo1!, gitAnnexQueries: gitAnnexQueries!)
         
         waitForIncrementalScanToStartAndFinish()
+        wait(for: 3)
 
         if let status = queries!.statusForPathV2Blocking(path: "subdirA", in: repo1!) {
             XCTAssertEqual(status.presentStatus, Present.present)
@@ -643,7 +644,7 @@ class watchGitAndFinderForUpdatesTests: XCTestCase {
     
     func waitForIncrementalScanToStartAndFinish() {
         // wait for the incremental scans to start
-        wait(for: 3)
+        wait(for: 10)
 
         // wait for the incremental scans to complete
         timeAtDoneOptional = nil

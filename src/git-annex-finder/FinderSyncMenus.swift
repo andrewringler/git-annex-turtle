@@ -15,7 +15,8 @@ class FinderSyncMenus {
     
     let gitLogoOrange = NSImage(named:NSImage.Name(rawValue: "git-logo-orange"))
     let gitAnnexLogoNoArrowsColor = NSImage(named:NSImage.Name(rawValue: "git-annex-logo-square-no-arrows"))
-    
+    let gitAnnexTurtleLogo = NSImage(named:NSImage.Name(rawValue: "git-annex-turtle-logo"))
+
     init(finderSync: FinderSync) {
         self.finderSync = finderSync
         self.finderSyncCore = finderSync.finderSyncCore!
@@ -38,8 +39,12 @@ class FinderSyncMenus {
         // If the user control clicked on a single file
         // grab its status, if we have it cached
         var statusOptional: PathStatus? = nil
+        var singleFile: Bool = false
+        var isSingleDirectory: Bool = false
         if let items :[URL] = FIFinderSyncController.default().selectedItemURLs(), items.count == 1, let item = items.first {
             statusOptional = finderSyncCore.status(for: item)
+            isSingleDirectory = item.hasDirectoryPath
+            singleFile = true && !isSingleDirectory
         }
         
         // Produce a menu for the extension.
@@ -95,6 +100,18 @@ class FinderSyncMenus {
         menuItem = menu.addItem(withTitle: "git add", action: #selector(finderSync.gitAdd(_:)), keyEquivalent: "")
         menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
         menuItem.image = gitLogoOrange
+        
+        // TODO handle multiple selection with Share…
+        // if we bundle them in a single folder they will have a single shareable URL
+        // otherwise each selection would have its own URL?
+        // TODO add submenu to support multiple share locations
+        // TODO suport single files… https://git-annex.branchable.com/forum/export_single_file/
+        // TODO hide menuitem if user has not specified a share folder for this repo
+        if singleFile {
+            menuItem = menu.addItem(withTitle: "Share", action: #selector(finderSync.share(_:)), keyEquivalent: "")
+            menuItem.tag = MenuCommandTypeTag.selectedItems.rawValue
+            menuItem.image = gitAnnexTurtleLogo
+        }
         
         return menu
     }

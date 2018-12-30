@@ -7,6 +7,20 @@
 //
 import Foundation
 
+struct ShareSettings {
+    let shareRemote: String?
+    let shareLocalPath: String?
+    
+    public func isValid() -> Bool {
+        if let r = shareRemote, let l = shareLocalPath {
+            return !r.isEmpty && !l.isEmpty
+        }
+        return false
+    }
+    
+    public var description: String { return "'\(String(describing: shareRemote))' '\(String(describing: shareLocalPath))'" }
+}
+
 class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, Swift.Codable {
     public var handleStatusRequests: HandleStatusRequests? = nil
     public lazy var shortName: String = {
@@ -14,6 +28,7 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
     }()
     let uuid: UUID
     let pathString: String
+    var shareRemote = ShareSettings(shareRemote: nil, shareLocalPath: nil)
     
     private enum CodingKeys: String, CodingKey {
         case uuid
@@ -24,8 +39,9 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
         self.uuid = uuid
         self.pathString = pathString
     }
+    
     static func pretty<T>(_ watchedFolders: T) -> String where T: Sequence, T.Iterator.Element : WatchedFolder {
-        return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString)>" }.joined(separator: ",")
+        return  watchedFolders.map { "<\($0.pathString) \($0.uuid.uuidString) \(String(describing: $0.shareRemote))>" }.joined(separator: ",")
     }
     static func ==(lhs: WatchedFolder, rhs: WatchedFolder) -> Bool {
         return lhs.uuid == rhs.uuid && lhs.pathString == rhs.pathString
@@ -37,6 +53,11 @@ class WatchedFolder: Equatable, Hashable, Comparable, CustomStringConvertible, S
         return uuid.hashValue
     }
     
-    public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString)" }
+    public var description: String { return "WatchedFolder: '\(pathString)' \(uuid.uuidString) '\(String(describing: shareRemote))'" }
+}
+
+struct ExportTreeRemote {
+    let name: String
+    let path: String
 }
 

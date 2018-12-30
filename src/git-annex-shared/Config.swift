@@ -8,6 +8,34 @@
 
 import Foundation
 
+struct WatchedRepoConfig {
+    let path: String
+    let shareRemote: String?
+    let shareLocalPath: String?
+
+    init(_ path: String, _ shareRemote: String?, _ shareLocalPath: String?) {
+        self.path = path
+        self.shareRemote = shareRemote
+        self.shareLocalPath = shareLocalPath
+    }
+    
+    lazy var description = "\(path) shareRemote: '\(String(describing: shareRemote))', shareLocalPath: '\(String(describing: shareLocalPath))'"
+}
+extension WatchedRepoConfig: Equatable, Hashable, Comparable {
+    static func == (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
+        return lhs.path == rhs.path &&
+            lhs.shareRemote == rhs.shareRemote
+            && lhs.shareLocalPath == rhs.shareLocalPath
+    }
+    static func < (lhs: WatchedRepoConfig, rhs: WatchedRepoConfig) -> Bool {
+        return lhs.path < rhs.path
+    }
+    var hashValue: Int {
+        return path.hashValue
+    }
+}
+
+
 class Config {
     // Create configuration file
     // at ~/.config/git-annex/turtle-monitor
@@ -19,6 +47,17 @@ class Config {
         self.dataPath = dataPath
         
         if (!FileManager.default.fileExists(atPath: dataPath)) {
+            do {
+                if let parentDir = PathUtils.parent(absolutePath: dataPath) {
+                    try FileManager.default.createDirectory(atPath: parentDir, withIntermediateDirectories: true)
+                } else {
+                    TurtleLog.error("Unable to create configuration file parent folder for \(dataPath)")
+                    exit(-1)
+                }
+            } catch {
+                TurtleLog.error("Unable to create configuration file parent folder for \(dataPath)")
+                exit(-1)
+            }
             let success = FileManager.default.createFile(atPath: dataPath, contents: Data.init())
             if success == false {
                 TurtleLog.error("Unable to create configuration file at \(dataPath)")
@@ -79,6 +118,21 @@ class Config {
         return false
     }
     
+    func updateShareRemoteLocalPath(repo: String, shareLocalPath: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setShareRemoteLocalPath(repo, shareLocalPath))
+        }
+        TurtleLog.error("updateShareRemoteLocalPath: unable to read config")
+        return false
+    }
+    func updateShareRemote(repo: String, shareRemote: String) -> Bool {
+        if let config = readConfig() {
+            return writeConfig(config.setShareRemote(repo, shareRemote))
+        }
+        TurtleLog.error("updateShareRemote: unable to read config")
+        return false
+    }
+    
     func stopWatchingRepo(repo: String) -> Bool {
         if let config = readConfig() {
             return writeConfig(config.removeRepo(repo))
@@ -87,7 +141,7 @@ class Config {
         return false
     }
     
-    func listWatchedRepos() -> [String] {
+    func listWatchedRepos() -> [WatchedRepoConfig] {
         if let config = readConfig() {
             return config.repoPaths()
         }

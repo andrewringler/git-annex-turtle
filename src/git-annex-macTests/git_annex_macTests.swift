@@ -159,7 +159,26 @@ class git_annex_turtleTests: XCTestCase {
         XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder"))
         XCTAssertNil(PathUtils.parent(absolutePath: "aFolder/aNotherFolder/afile"))
     }
-
+    
+    func testJoinPaths() {
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: ""), "")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: ""), "/")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "/"), "")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "/"), "/")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "a"), "/a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/", suffixPath: "/a"), "/a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "/a"), "a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "", suffixPath: "a"), "a")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a", suffixPath: "b"), "a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a", suffixPath: "b"), "/a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a", suffixPath: "/b"), "/a/b")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "c"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "/c"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b", suffixPath: "/c/"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "a/b/", suffixPath: "/c/"), "a/b/c")
+        XCTAssertEqual(PathUtils.joinPaths(prefixPath: "/a/b", suffixPath: "/c"), "/a/b/c")
+    }
+    
     func testPathUtilsLastPath() {
         XCTAssertEqual(PathUtils.lastPathComponent("/"), "/")
         XCTAssertEqual(PathUtils.lastPathComponent("hello"), "hello")
@@ -253,7 +272,24 @@ class git_annex_turtleTests: XCTestCase {
         path = /therepo
         """.components(separatedBy: CharacterSet.newlines)
         
-        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false)])
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: nil, shareLocalPath: nil)])
+        
+        let actual = TurtleConfigV1.parse(from: config)
+        
+        XCTAssertNotNil(actual, "Config was nil")
+        if let actualConfig = actual {
+            XCTAssertEqual(expected, actualConfig)
+        }
+    }
+    func testParseConfigTurtleSectionRepo_ShareRemote() {
+        let config: [String] = """
+        [turtle-monitor]
+        path = /therepo
+        share-remote = public-s3
+        share-local-path = public-share
+        """.components(separatedBy: CharacterSet.newlines)
+        
+        let expected = TurtleConfigV1(gitAnnexBin: nil, gitBin: nil, monitoredRepo: [TurtleConfigMonitoredRepoV1(name: nil, path: "/therepo", finderIntegration: false, contextMenus: false, trackFolderStatus: false, trackFileStatus: false, shareRemote: "public-s3", shareLocalPath: "public-share")])
         
         let actual = TurtleConfigV1.parse(from: config)
         
@@ -279,13 +315,15 @@ class git_annex_turtleTests: XCTestCase {
         [turtle]
         git-annex-bin = /Applications/git-annex.app/Contents/MacOS/git-annex
         git-bin = /Applications/git-annex.app/Contents/MacOS/git
-        
+
         [turtle-monitor "another remote yeah.hmm"]
         path = /Users/Shared/anotherremote
         finder-integration = true
         context-menus = true
         track-folder-status = true
         track-file-status = true
+        share-remote = public-s3
+        share-local-path = public-share
         [turtle-monitor]
         path = /Users/Shared/another remote2
         finder-integration = false
@@ -294,7 +332,7 @@ class git_annex_turtleTests: XCTestCase {
         track-file-status = true
         """.components(separatedBy: CharacterSet.newlines)
         
-        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [TurtleConfigMonitoredRepoV1(name: "another remote yeah.hmm", path: "/Users/Shared/anotherremote", finderIntegration: true, contextMenus: true, trackFolderStatus: true, trackFileStatus: true),TurtleConfigMonitoredRepoV1(name: nil, path: "/Users/Shared/another remote2", finderIntegration: false, contextMenus: false, trackFolderStatus: true, trackFileStatus: true)])
+        let expected = TurtleConfigV1(gitAnnexBin: "/Applications/git-annex.app/Contents/MacOS/git-annex", gitBin: "/Applications/git-annex.app/Contents/MacOS/git", monitoredRepo: [TurtleConfigMonitoredRepoV1(name: "another remote yeah.hmm", path: "/Users/Shared/anotherremote", finderIntegration: true, contextMenus: true, trackFolderStatus: true, trackFileStatus: true, shareRemote: "public-s3", shareLocalPath: "public-share"),TurtleConfigMonitoredRepoV1(name: nil, path: "/Users/Shared/another remote2", finderIntegration: false, contextMenus: false, trackFolderStatus: true, trackFileStatus: true, shareRemote: nil, shareLocalPath: nil)])
         
         let actual = TurtleConfigV1.parse(from: config)
         
@@ -317,23 +355,23 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigWatchRepo() {
-        let repo = "/anewrepo"
+        let repo = WatchedRepoConfig("/anewrepo", nil, nil)
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
-            XCTAssertTrue(config.watchRepo(repo: repo))
+            XCTAssertTrue(config.watchRepo(repo: repo.path))
             XCTAssertEqual(config.listWatchedRepos(), [repo])
             return
         }
         XCTFail()
     }
     func testConfigWatchTwoRepos() {
-        let repo1 = "/anewrepo"
-        let repo2 = "/anewrepo2"
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, nil)
+        let repo2 = WatchedRepoConfig("/anewrepo2", nil, nil)
         
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
-            XCTAssertTrue(config.watchRepo(repo: repo1))
-            XCTAssertTrue(config.watchRepo(repo: repo2))
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.watchRepo(repo: repo2.path))
             
             XCTAssertEqual(Set(config.listWatchedRepos()), Set([repo1, repo2]))
             return
@@ -341,19 +379,104 @@ class git_annex_turtleTests: XCTestCase {
         XCTFail()
     }
     func testConfigRemoveARepo() {
-        let repo1 = "/anewrepo"
-        let repo2 = "/anewrepo2"
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, nil)
+        let repo2 = WatchedRepoConfig("/anewrepo2", nil, nil)
         
         if let configDir = TestingUtil.createTmpDir() {
             let config = Config(dataPath: "\(configDir)/turtle-monitor")
-            XCTAssertTrue(config.watchRepo(repo: repo1))
-            XCTAssertTrue(config.watchRepo(repo: repo2))
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.watchRepo(repo: repo2.path))
             
-            XCTAssertEqual(Set(config.listWatchedRepos()), Set([repo1, repo2]))
+            XCTAssertEqual(Set<WatchedRepoConfig>(config.listWatchedRepos()), Set([repo1, repo2]))
             
-            XCTAssertTrue(config.stopWatchingRepo(repo: repo1))
+            XCTAssertTrue(config.stopWatchingRepo(repo: repo1.path))
             XCTAssertEqual(config.listWatchedRepos(), [repo2])
 
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemoteLocalPath() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: "newlocalpath"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "newlocalpath")
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemoteLocalPathWithoutRemote() {
+        let repo1 = WatchedRepoConfig("/anewrepo", nil, "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+            
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertNil(readRepo.shareRemote)
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: "newlocalpath"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "newlocalpath")
+            XCTAssertNil(readRepo.shareRemote)
+
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemote() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", "localpathname")
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            XCTAssertTrue(config.updateShareRemoteLocalPath(repo: repo1.path, shareLocalPath: repo1.shareLocalPath!), "Unable to update share remote local path")
+
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: "adifferentremote"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareLocalPath, "localpathname")
+            XCTAssertEqual(readRepo.shareRemote, "adifferentremote")
+            
+            return
+        }
+        XCTFail()
+    }
+    func testConfigUpdateShareRemoteNoLocalPath() {
+        let repo1 = WatchedRepoConfig("/anewrepo", "remotename", nil)
+        
+        if let configDir = TestingUtil.createTmpDir() {
+            let config = Config(dataPath: "\(configDir)/turtle-monitor")
+            XCTAssertTrue(config.watchRepo(repo: repo1.path))
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: repo1.shareRemote!), "Unable to update share remote")
+            
+            var readRepo = config.listWatchedRepos().first!
+            XCTAssertEqual(readRepo.shareRemote, "remotename")
+            XCTAssertNil(readRepo.shareLocalPath)
+            
+            XCTAssertTrue(config.updateShareRemote(repo: repo1.path, shareRemote: "adifferentremote"))
+            readRepo = config.listWatchedRepos().first!
+            XCTAssertNil(readRepo.shareLocalPath)
+            XCTAssertEqual(readRepo.shareRemote, "adifferentremote")
+            
             return
         }
         XCTFail()
@@ -410,7 +533,7 @@ class git_annex_turtleTests: XCTestCase {
         }
         XCTFail()
     }
-
+    
     func testSortedByLongestPath() {
         let paths = ["a/a/b", "a", ".", "d/e", "a/b/c/d"]
         let sorted = PathUtils.sortedDeepestDirFirst(paths)
