@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/andrewringler/git-annex-turtle.svg?branch=master)](https://travis-ci.org/andrewringler/git-annex-turtle)
 
-*git-annex-turtle* provides <a href="https://en.wikipedia.org/wiki/Finder_(software)">Apple Finder</a> integration for [git-annex](http://git-annex.branchable.com/) on macOS, including custom badge icons (badges), contextual menus (control-clicks) and a Menubar icon (aka menubar extra). *git-annex-turtle* is a native Mac app written in Swift 4 with XCode 9.2 and requires macOS 10.12 or later. 
+*git-annex-turtle* provides <a href="https://en.wikipedia.org/wiki/Finder_(software)">Apple Finder</a> integration for [git-annex](http://git-annex.branchable.com/) on macOS, including custom badge icons (badges), contextual menus (control-clicks) and a Menubar icon (aka menubar extra). *git-annex-turtle* is a native Mac app written in Swift 4 with XCode 16.2 and requires macOS 10.13 or later. 
 
 *git-annex-turtle* is free, open-source and licensed under [The MIT License](https://opensource.org/licenses/MIT). *git-annex-turtle* includes software and creative works/assets that are licensed under other open source licenses, see [OTHER_LICENSES.txt](OTHER_LICENSES.txt) for more information.
 
@@ -76,8 +76,8 @@ Stores config settings for *git-annex-turtle*, that are editable through the men
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and the many other tools which have provided OS-level filesystem icons for source revision control software.
 
 ## Building
- * Install XCode 9.2
- * Install XCode SDK macOS 10.12 for XCode 9.2
+ * Install XCode 16.2
+ * Install Platform Support for macOS 15.2
  * Open src/git-annex-turtle.xcodeproj in XCode
  * Create a new scheme called git-annex-turtle with build targets `git-annex-turtle` and `git-annex-turtleTests`
  * Run the `git-annex-turtle` scheme
