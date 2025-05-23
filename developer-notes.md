@@ -1,3 +1,6 @@
+## TODO
+ * migrate to Github Actions
+ 
 ## Bugs, definitely fix
  * if a repo is added when head is not master, a full scan should be run head becomes master again otherwise folders will never get added properly
  * quitting from the menubar icon should quit running git processes too
