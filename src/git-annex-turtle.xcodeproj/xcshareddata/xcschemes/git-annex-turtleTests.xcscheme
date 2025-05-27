@@ -40,8 +40,8 @@
       allowLocationSimulation = "YES">
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "RUNNING_IN_TRAVIS"
-            value = "$(RUNNING_IN_TRAVIS)"
+            key = "RUNNING_IN_CI"
+            value = "$(RUNNING_IN_CI)"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

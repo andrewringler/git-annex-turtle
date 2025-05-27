@@ -25,6 +25,6 @@ jobs:
     - name: Show current version of Xcode
       run: xcodebuild -version
     - name: Build
-      run: xcodebuild clean build -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/
+      run: xcodebuild clean build -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/ -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
     - name: Run tests
-      run: RUNNING_IN_TRAVIS='true' xcodebuild test -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/
+      run: RUNNING_IN_CI='true' xcodebuild test -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/
