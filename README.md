@@ -1,7 +1,7 @@
 # git-annex-turtle
 **[Download git-annex-turtle](#getting-started)**
 
-[![Build Status](https://travis-ci.org/andrewringler/git-annex-turtle.svg?branch=master)](https://travis-ci.org/andrewringler/git-annex-turtle)
+[![Build Status](https://github.com/andrewringler/git-annex-turtle/actions/workflows/tests.yml/badge.svg)](https://github.com/andrewringler/git-annex-turtle/actions/workflows/tests.yml)
 
 *git-annex-turtle* provides <a href="https://en.wikipedia.org/wiki/Finder_(software)">Apple Finder</a> integration for [git-annex](http://git-annex.branchable.com/) on macOS, including custom badge icons (badges), contextual menus (control-clicks) and a Menubar icon (aka menubar extra). *git-annex-turtle* is a native Mac app written in Swift 4 with XCode 16.2 and requires macOS 10.13 or later. 
 
