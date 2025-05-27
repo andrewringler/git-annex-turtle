@@ -122,6 +122,7 @@ class shareButtonTests: XCTestCase {
     }
     
     func testShareSharesAddedFileAlreadyInShareFolder() {
+        XCTAssertNotNil(exportRemote1)
         repo1!.shareRemote = ShareSettings(shareRemote: exportRemote1!.name, shareLocalPath: "public-share")
         XCTAssertTrue(config!.updateShareRemote(repo: repo1!.pathString, shareRemote: repo1!.shareRemote.shareRemote!), "Unable to update share remote")
         XCTAssertTrue(config!.updateShareRemoteLocalPath(repo: repo1!.pathString, shareLocalPath: repo1!.shareRemote.shareLocalPath!), "Unable to update share remote local path")

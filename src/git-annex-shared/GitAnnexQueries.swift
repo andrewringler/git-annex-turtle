@@ -214,7 +214,7 @@ class GitAnnexQueries {
             return false
         }
         
-        let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.initCmd, limitToMasterBranch: false)
+        let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.annexInitCmd, limitToMasterBranch: false)
         if !initGitAnnexRepo.success {
             TurtleLog.error("Could not init git annex repo in \(path)")
             return false
@@ -449,6 +449,7 @@ class GitAnnexQueries {
                 return allFilesLackingCopies
             } else {
                 TurtleLog.error("in \(watchedFolder) status= \(status) output=\(output) error=\(error)")
+                return nil
             }
         }
         TurtleLog.error("could not create temporary directory")

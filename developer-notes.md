@@ -51,6 +51,7 @@
  * Save to git-annex button in Chrome. We could create a chrome extension to save current page to git-annex using addurl. See http://git-annex.branchable.com/tips/Using_Git-annex_as_a_web_browsing_assistant/, https://developer.chrome.com/extensions/messaging#native-messaging. We could use git-annex-turtle as a native messaging host?
 
 ## Chores
+ * investigate all uses of `limitToMasterBranch: true` are these needed and/or working with users who have `main` as their main branch?
  * remove custom guards for limiting git-annex requests to the master branch and replace with the newly added `--branch=ref` param where applicable
  * rename git-annex-finder process name to 'git-annex-turtle Finder'
  * bundle git-annex with turtle, or have some install script that will download it. Yes, Joey actually suggested bundling it with the mac version of git-annex.

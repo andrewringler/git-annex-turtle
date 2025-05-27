@@ -81,8 +81,10 @@ class TestingUtil {
     }
     
     class func setDirectMode(for watchedFolder: WatchedFolder, gitAnnexQueries: GitAnnexQueries, file: StaticString = #file, line: UInt = #line) {
-        let gitDirectMode = gitAnnexQueries.gitAnnexCommand(in: watchedFolder.pathString, cmd: CommandString.direct, limitToMasterBranch: false)
-        if !gitDirectMode.success { XCTFail("unable to switch to direct mode \(gitDirectMode.error)", file: file, line: line)}
+        let addUnlocked = gitAnnexQueries.gitCommand(in: watchedFolder.pathString, cmd: CommandString.addUnlocked, limitToMasterBranch: false)
+        if !addUnlocked.success { XCTFail("unable to switch to add unlocked mode \(addUnlocked.error)", file: file, line: line)}
+        let thin = gitAnnexQueries.gitCommand(in: watchedFolder.pathString, cmd: CommandString.thin, limitToMasterBranch: false)
+        if !thin.success { XCTFail("unable to switch to thin mode \(addUnlocked.error)", file: file, line: line)}
     }
     
     class func writeToFile(content: String, to fileName: String, in watchedFolder: WatchedFolder, file: StaticString = #file, line: UInt = #line) {
