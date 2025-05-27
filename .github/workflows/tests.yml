@@ -10,15 +10,14 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: .scripts
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Sign builds for XCode
-      run: ./codesigning.sh
+      run: ./.scripts/codesigning.sh
     - name: Download and install git-annex
-      run: ./dependencies.sh
+      run: ./.scripts/dependencies.sh
     - name: List available Xcode versions
       run: ls /Applications | grep Xcode
     - name: Set up Xcode version

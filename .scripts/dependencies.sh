@@ -1,5 +1,6 @@
 #!/bin/sh
 
+cd .scripts
 echo "downloading git-annex_10.20250520_x64.dmg…"
 curl -O https://downloads.andrewringler.com/git-annex-turtle-dependencies/git-annex_10.20250520_x64.dmg
 VERIFY=`shasum -c git-annex_10.20250520_x64.dmg.sha256`
