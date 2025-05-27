@@ -213,6 +213,7 @@ class GitAnnexQueries {
             TurtleLog.error("Could not create git repo in \(path)")
             return false
         }
+        let gitAnnexStatus = gitCommand(in: path, cmd: CommandString.status, limitToMasterBranch: false)
         
         let initGitAnnexRepo = gitAnnexCommand(in: path, cmd: CommandString.annexInitCmd, limitToMasterBranch: false)
         if !initGitAnnexRepo.success {

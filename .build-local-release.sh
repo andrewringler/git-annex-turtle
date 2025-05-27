@@ -6,7 +6,7 @@ xcodebuild clean build test -project "src/git-annex-turtle.xcodeproj" -scheme "g
 
 if [ $? -ne 0 ]; then echo "Quiting… failure during build|test|release"; exit 1; fi;
 
-.travis/package-release.sh
+.scripts/package-release.sh
 
 if [ $? -ne 0 ]; then echo "Unable to package release"; exit 1; fi;
 

@@ -14,5 +14,12 @@ GIT_CMD=${1:-git}
 GIT_CMD="${GIT_CMD%\"}"
 GIT_CMD="${GIT_CMD#\"}"
 
-$GIT_CMD log --pretty=format:"%H" master | xargs -I {} $GIT_CMD diff-tree --no-commit-id --name-only --root -r {} | uniq
+MAIN_BRANCH="master"
+if git show-ref --quiet --branches master; then
+    MAIN_BRANCH="master"
+elif git show-ref --quiet --branches main; then
+    MAIN_BRANCH="main"
+fi
+
+$GIT_CMD log --pretty=format:"%H" $MAIN_BRANCH | xargs -I {} $GIT_CMD diff-tree --no-commit-id --name-only --root -r {} | uniq
 

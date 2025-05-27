@@ -347,7 +347,7 @@ enum CommandString: String {
     case drop = "drop"
     case unlock = "unlock"
     case lock = "lock"
-    case initCmd = "-c init.defaultBranch='master' init"
+    case initCmd = "-c init.defaultBranch=master init"
     case annexInitCmd = "init"
     case numCopies = "numcopies"
     case commit = "commit"
@@ -357,6 +357,7 @@ enum CommandString: String {
     case share = "share"
     case initRemote = "initremote"
     case sync = "sync"
+    case status = "status"
 }
 
 
