@@ -56,9 +56,9 @@ For **folders** badges signify status of the files contained within. They signif
 | ![grey question mark](documentation/icons/QuestionGray12x12.png) | A file that was scanned successfully but has a state that is not yet handled by *git-annex-turtle* |
 
 ### Requirements
-macOS 10.12 or later
+macOS 10.13 or later
 
-*git-annex-turtle* relies on the Apple Finder Sync API, which is only available on OS-X 10.10 (Yosemite) and later and all versions of macOS. The [Liferay Nativity](https://github.com/liferay/liferay-nativity) library could potentially be used to enable *git-annex-turtle* to run on older Mac OSs. I am also using features of CoreData which are only available on macOS 10.12 and later.
+*git-annex-turtle* relies on the Apple Finder Sync API, which is only available on OS-X 10.10 (Yosemite) and later and all versions of macOS. The [Liferay Nativity](https://github.com/liferay/liferay-nativity) library could potentially be used to enable *git-annex-turtle* to run on older Mac OSs. I am also using features of CoreData which are only available on macOS 10.12 and later. Additionally, XCode 16.2 requires macOS 10.13 or later.
 
 *git-annex-turtle* is released for the the Mac only; it is written in Swift with XCode so is probably not easily portable to Linux and Windows. You may, of course, adapt and use this app's user experience, design, workflow and icon sets when porting to other OSs. See git-annex [related software](http://git-annex.branchable.com/related_software/) for options already built for other OSs.
 
@@ -76,8 +76,8 @@ Stores config settings for *git-annex-turtle*, that are editable through the men
 *git-annex-turtle* takes inspiration in function and name from [TortoiseCVS](https://en.wikipedia.org/wiki/TortoiseCVS) and the many other tools which have provided OS-level filesystem icons for source revision control software.
 
 ## Building
- * Install XCode 16.2
- * Install Platform Support for macOS 15.2
+ * Install XCode 16.2 (or later)
+ * Install Platform Support for macOS 15.2 (or later)
  * Open src/git-annex-turtle.xcodeproj in XCode
  * Create a new scheme called git-annex-turtle with build targets `git-annex-turtle` and `git-annex-turtleTests`
  * Run the `git-annex-turtle` scheme
@@ -88,4 +88,4 @@ Clone git-annex-turtle repo, then run build-release script
     cd git-annex-turtle
 	./.build-local-release.sh 
     
-Release will now be at 
+A Release signed with your developer credentials should now be at: 

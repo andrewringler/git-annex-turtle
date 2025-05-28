@@ -1,14 +1,15 @@
 v0.3
-Notes
+This release contains updates to build on XCode 16.2.
 
 **Upgrade Notes from v0.2**
-N/A. See previous notes for upgrades from v0.1
+The minimum required OS is now macOS 10.13.
 
 **Features**
  * added Share context menu for sharing a single file to a public git exporttree
 
 **Minor**
- * n/a
+ * tests are now running in Github Workflows instead of Travis
+ * we are now building with XCode 16.2 from macOS 15.3
  
 **Bug Fixes**
  * fixed: now sourcing `~/.bash_profile` before running commands so we now have locations for git-annex special remote binaries
