@@ -15,7 +15,7 @@ class folderTrackingTests: XCTestCase {
     var gitAnnexQueries: GitAnnexQueries?
     var repo1: WatchedFolder?
 
-    override func setUp() {
+    override func setUpWithError() throws {
         super.setUp()
         TurtleLog.setLoggingLevel(.debug)
         
@@ -39,14 +39,16 @@ class folderTrackingTests: XCTestCase {
         queries!.updateStatusForPathV2Blocking(presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, isGitAnnexTracked: true, for: PathUtils.CURRENT_DIR, key: nil, in: repo1!, isDir: true, needsUpdate: true)
     }
     
-    override func tearDown() {
+    override func tearDownWithError() throws {
         queries?.stop()
         queries = nil
         gitAnnexQueries = nil
+        repo1 = nil
         
-        wait(for: 1)
+        wait(for: 3)
         TestingUtil.removeDir(testDir)
-        
+        testDir = nil
+
         super.tearDown()
     }
     

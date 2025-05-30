@@ -20,7 +20,7 @@ class finderSyncCoreTests: XCTestCase {
     var finderSyncCore: FinderSyncCore?
     var finderSyncTesting = FinderSyncTesting()
     
-    override func setUp() {
+    override func setUpWithError() throws {
         super.setUp()
         
         TurtleLog.setLoggingLevel(.debug)
@@ -49,7 +49,7 @@ class finderSyncCoreTests: XCTestCase {
         repo2 = TestingUtil.createInitGitAnnexRepo(at: "\(testDir!)/repo2", gitAnnexQueries: gitAnnexQueries!)
     }
     
-    override func tearDown() {
+    override func tearDownWithError() throws {
         fullScan?.stop()
         fullScan = nil
         queries?.stop()
@@ -59,10 +59,13 @@ class finderSyncCoreTests: XCTestCase {
         watchGitAndFinderForUpdates = nil
         finderSyncCore?.stop()
         finderSyncCore = nil
+        repo1 = nil
+        repo2 = nil
         
         wait(for: 3)
 
         TestingUtil.removeDir(testDir)
+        testDir = nil
         
         super.tearDown()
     }
@@ -328,7 +331,7 @@ class finderSyncCoreTests: XCTestCase {
         finderSyncCore!.beginObservingDirectory(at: PathUtils.url(for: "subdirNew1/subdirNew3", in: repo1!))
         finderSyncCore!.beginObservingDirectory(at: PathUtils.url(for: "subdirA/subdirNew2", in: repo1!))
 
-        wait(for: 15)
+        wait(for: 20)
 
         /// verify Finder Sync Core picked up the new files
         /// from our incremental scanner

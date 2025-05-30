@@ -60,7 +60,7 @@ class FinderSyncCore: StoppableService {
                 if let path = PathUtils.relativePath(for: absolutePath, in: watchedFolder) {
                     if path.starts(with: ".git/") {
                         // TODO why does the Finder Sync extension follow symlinks sometimes?
-                        TurtleLog.error("Finder Sync extension followed a symlink to \(path) in \(watchedFolder), ignoring.")
+                        TurtleLog.info("Finder Sync extension followed a symlink to \(path) in \(watchedFolder), ignoring.")
                         return
                     }
                     
