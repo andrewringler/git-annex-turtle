@@ -29,7 +29,15 @@ class GitAnnexQueries {
         let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
         return directoryExistsAt(absolutePath: absolutePath)
     }
-    
+    private static func fileExistsAt(absolutePath: String) -> Bool {
+        let exists = FileManager.default.fileExists(atPath: absolutePath)
+        return exists
+    }
+    public static func fileExistsAt(relativePath: String, in watchedFolder: WatchedFolder) -> Bool {
+        let absolutePath = PathUtils.absolutePath(for: relativePath, in: watchedFolder)
+        return fileExistsAt(absolutePath: absolutePath)
+    }
+
     /* Adapted from https://stackoverflow.com/questions/29514738/get-terminal-output-after-a-command-swift
      * with fixes for leaving dangling open file descriptors from here:
      * http://www.cocoabuilder.com/archive/cocoa/289471-file-descriptors-not-freed-up-without-closefile-call.html
@@ -49,7 +57,18 @@ class GitAnnexQueries {
                 TurtleLog.error("Invalid working directory '%@'", workingDirectory)
                 return
             }
-            
+
+            // Request a security scope for this directory (for sandboxed apps like us)
+            let workingDirectoryURL = Bookmarks.getSecurityScopedURLFor(url: PathUtils.urlFor(absolutePath: workingDirectory))
+            if workingDirectoryURL == nil || !workingDirectoryURL!.startAccessingSecurityScopedResource() {
+                TurtleLog.error("unable to obtain security scoped URL for \(workingDirectory)")
+                return
+            }
+            defer {
+                // release security scoped access to working directory on completion of Process
+                workingDirectoryURL!.stopAccessingSecurityScopedResource()
+            }
+                        
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
             // IE if workingDirectory does not exist we cannot catch that error
             // uncatchable runtime exceptions
@@ -122,6 +141,18 @@ class GitAnnexQueries {
                 return
             }
             
+            // Request a security scope for this directory (for sandboxed apps like us)
+            let workingDirectoryURL = Bookmarks.getSecurityScopedURLFor(url: PathUtils.urlFor(absolutePath: workingDirectory))
+            if workingDirectoryURL == nil || !workingDirectoryURL!.startAccessingSecurityScopedResource() {
+                TurtleLog.error("unable to obtain security scoped URL for \(workingDirectory)")
+                return
+            }
+            defer {
+                // release security scoped access to working directory on completion of Process
+                TurtleLog.info("release security sandbox")
+                workingDirectoryURL!.stopAccessingSecurityScopedResource()
+            }
+
             // prevent queries on anything other than the master git branch
             // TODO this guard is not entirely safe, since the branch could change after
             // we have called this guard, see https://git-annex.branchable.com/todo/add_a_--branch_to_applicable_git-annex_commands/ for a brief discussion on ensuring
@@ -134,7 +165,7 @@ class GitAnnexQueries {
                 }
                 
                 // https://stackoverflow.com/a/1593487/8671834
-                branchGuard = "if [[ $(git symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
+                branchGuard = "if [[ $(\(gitCmd) symbolic-ref --short -q HEAD 2>/dev/null | sed -e \"s/^annex\\/direct\\///\") != \"master\" ]]; then exit 1; fi && "
             }
             
             // wrap commands in a shell (that is likely to exist, /bin/bash) to avoid uncatchable errors
@@ -233,7 +264,7 @@ class GitAnnexQueries {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue)
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
@@ -245,10 +276,10 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
 
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, path.escapeBashPath())
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
@@ -263,15 +294,15 @@ class GitAnnexQueries {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, args)
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
     }
-    func bashCommand(in workingDirectory: String, cmd: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
+    private func bashCommand(in workingDirectory: String, cmd: String) -> (success: Bool, error: [String], output: [String], commandRun: String) {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: cmd, limitToMasterBranch: false, args: "")
         if status != 0 {
-            TurtleLog.error("\(cmd) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(cmd) status=\(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, cmd)
@@ -287,12 +318,12 @@ class GitAnnexQueries {
             
             // If File is not already in the public share folder copy it there
             if !path.starts(with: shareLocalPath) {
-                let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(shareLocalPath)")
+                let (success1, error1, output1, commandRun1) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.makeDirectory.rawValue) -p \(shareLocalPath.escapeBashPath())")
                 if !success1 {
                     return (success1, error1 + ["Unable to make directory at '\(shareLocalPath)' for sharing"], output1, commandRun1)
                 }
                 
-                let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(shareLocalPath)/")
+                let (success2, error2, output2, commandRun2) = bashCommand(in: watchedFolder.pathString, cmd: "\(BashCommandString.copy.rawValue) \(path) \(shareLocalPath.escapeBashPath())/")
                 if !success2 {
                     return (success2, error2 + ["Unable to copy '\(path)' to '\(shareLocalPath)' for sharing"], output2, commandRun2)
                 }
@@ -332,7 +363,7 @@ class GitAnnexQueries {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: cmd)
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         
         return (status == 0, error, output, commandRun)
@@ -347,7 +378,7 @@ class GitAnnexQueries {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue, "\"\(path)\"")
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
@@ -361,7 +392,7 @@ class GitAnnexQueries {
         let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: cmd.rawValue)
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
@@ -372,24 +403,24 @@ class GitAnnexQueries {
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", commitMessage.escapeBashPath())
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
     func gitCommit(in workingDirectory: String, commitMessage: String, limitToPath: String, limitToMasterBranch: Bool) -> (success: Bool, error: [String], output: [String], commandRun: String) {
-        let commandRun = "git commit -m \"" + commitMessage + "\" \"\(limitToPath)\""
+        let commandRun = "git commit -m \"" + commitMessage + "\" \(limitToPath)"
         guard let gitCmd = preferences.gitBin() else {
             TurtleLog.debug("could not find a valid git application")
             return (false, [], [], commandRun)
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\"" + commitMessage.escapeString() + "\" \"\(limitToPath)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitCmd, limitToMasterBranch: limitToMasterBranch, args: CommandString.commit.rawValue, "-m", "\(commitMessage.escapeBashPath()) \(limitToPath.escapeBashPath())")
         
         if status != 0 {
-            TurtleLog.error("\(commandRun) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("\(commandRun) status=\(status) output=\(output) error=\(error)")
         }
         return (status == 0, error, output, commandRun)
     }
@@ -418,7 +449,7 @@ class GitAnnexQueries {
         }
         
         if status != 0 {
-            TurtleLog.error("git config \(GitConfigs.AnnexUUID.name) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("git config \(GitConfigs.AnnexUUID.name) status=\(status) output=\(output) error=\(error)")
         }
         return nil
     }
@@ -437,7 +468,7 @@ class GitAnnexQueries {
             let file = "allfileslackingcopies.txt"
             let resultsFileAbsolutePath = "\(dir)/\(file)"
             
-            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "find", "--fast", "--lackingcopies=1", ">\"\(resultsFileAbsolutePath)\"")
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "find", "--fast", "--lackingcopies=1", ">\(resultsFileAbsolutePath)")
             
             if status == 0 {
                 // TODO use a trie
@@ -449,7 +480,7 @@ class GitAnnexQueries {
                 PathUtils.removeDir(dir)
                 return allFilesLackingCopies
             } else {
-                TurtleLog.error("in \(watchedFolder) status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("in \(watchedFolder) status=\(status) output=\(output) error=\(error)")
                 return nil
             }
         }
@@ -472,7 +503,7 @@ class GitAnnexQueries {
             if status == 0 {
                 return resultsFileAbsolutePath
             } else {
-                TurtleLog.error("\(watchedFolder) status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("\(watchedFolder) status=\(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.error("could not create temp dir")
@@ -520,19 +551,21 @@ class GitAnnexQueries {
         if isDir {
             // Directory
             if includeDirs == false {
+                TurtleLog.debug("gitAnnexPathInfo called with not a dir: \(path)")
                 return (error: false, pathStatus: nil) // skip
             }
         } else {
             // File
             if includeFiles == false {
+                TurtleLog.debug("gitAnnexPathInfo called with a file: \(path)")
                 return (error: false, pathStatus: nil) // skip
             }
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "info", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "info", path.escapeBashPath())
         
         if status != 0 {
-            TurtleLog.error("path='\(path)' in='\(workingDirectory) status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("path='\(path)' in='\(workingDirectory) status=\(status) output=\(output) error=\(error)")
         }
         
         let modificationDate = Date().timeIntervalSince1970 as Double
@@ -618,6 +651,7 @@ class GitAnnexQueries {
             return (error: false, pathStatus: PathStatus(isDir: isDir, isGitAnnexTracked: false, presentStatus: nil, enoughCopies: nil, numberOfCopies: nil, path: path, watchedFolder: watchedFolder, modificationDate: modificationDate, key: nil, needsUpdate: false))
         }
         
+        TurtleLog.error("unknown error tring to get annex path info")
         return (error: true, pathStatus: nil)
     }
     
@@ -631,7 +665,7 @@ class GitAnnexQueries {
             return nil
         }
         
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "whereis", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "whereis", path.escapeBashPath())
         
         // if command didnt return an error, parse the JSON
         // https://stackoverflow.com/questions/25621120/simple-and-clean-way-to-convert-json-string-to-object-in-swift
@@ -671,7 +705,7 @@ class GitAnnexQueries {
                 TurtleLog.error("unable to parse JSON: '\(output)' for path='\(path)' workingdir='\(workingDirectory)'")
             }
         } else {
-            TurtleLog.error("status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("status=\(status) output=\(output) error=\(error)")
             return nil
         }
         
@@ -689,7 +723,7 @@ class GitAnnexQueries {
             return nil
         }
 
-        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "--lackingcopies=1", "find", "\"\(path)\"")
+        let (output, error, status) = runCommand(workingDirectory: workingDirectory, cmd: gitAnnexCmd, limitToMasterBranch: true, args: "--json", "--fast", "--lackingcopies=1", "find", path.escapeBashPath())
         
         // if command didnt return an error, count the lines returned
         if(status == 0){
@@ -698,7 +732,7 @@ class GitAnnexQueries {
             }
             return false
         } else {
-            TurtleLog.error("status= \(status) output=\(output) error=\(error)")
+            TurtleLog.error("status=\(status) output=\(output) error=\(error)")
             return nil
         }
     }
@@ -719,7 +753,7 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
             } else {
-                TurtleLog.error("commitHash: \(commitHash) status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("commitHash: \(commitHash) status=\(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.error("could not find shell script in bundle")
@@ -744,7 +778,7 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
             } else {
-                TurtleLog.error("commitHash: \(commitHash) status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("commitHash: \(commitHash) status=\(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.error("could not find shell script in bundle")
@@ -768,7 +802,7 @@ class GitAnnexQueries {
             if(status == 0){ // success
                 return output.filter { $0.count > 0 }
             } else {
-                TurtleLog.error("status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("status=\(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.error("could not find shell script in bundle")
@@ -791,7 +825,7 @@ class GitAnnexQueries {
             }
         }
         
-        TurtleLog.error("status= \(status) output=\(output) error=\(error)")
+        TurtleLog.error("status=\(status) output=\(output) error=\(error)")
         return nil
     }
     
@@ -809,7 +843,7 @@ class GitAnnexQueries {
             }
         }
         
-        TurtleLog.debug("missing git commit hash, this is OK, since only mixed-mode repos need to commit to the git branch, status= \(status) output=\(output) error=\(error)")
+        TurtleLog.debug("missing git commit hash, this is OK, since only mixed-mode repos need to commit to the git branch, status=\(status) output=\(output) error=\(error)")
         return nil
     }
     
@@ -822,15 +856,15 @@ class GitAnnexQueries {
             TurtleLog.debug("could not find a valid git application")
             return []
         }
-
+        
         let bundle = Bundle(for: ShellScripts.self)
         if let scriptPath: String = bundle.path(forResource: "childrenNotIgnored", ofType: "sh") {
-            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: relativePath, gitCmd, gitAnnexCmd)
+            let (output, error, status) = runCommand(workingDirectory: watchedFolder.pathString, cmd: scriptPath, limitToMasterBranch: false, args: relativePath.escapeBashPath(), gitCmd, gitAnnexCmd)
             
             if(status == 0){ // success
                 return output.filter { $0.count > 0 } // remove empty strings
             } else {
-                TurtleLog.error("relativePath: \(relativePath), in: \(watchedFolder) status= \(status) output=\(output) error=\(error)")
+                TurtleLog.error("relativePath: \(relativePath), in: \(watchedFolder) status=\(status) output=\(output) error=\(error)")
             }
         } else {
             TurtleLog.fatal("could not find shell script in bundle")
@@ -842,11 +876,12 @@ class GitAnnexQueries {
 }
 
 extension String {
-    func escapeString() -> String {
-        let newString = self.replacingOccurrences(of: "\"", with: "\"\"", options: .literal, range: nil)
-        if newString.contains(",") || newString.contains("\n") {
-            return String(format: "\"%@\"", newString)
-        }
-        return newString
+    func escapeBashPath() -> String {
+        // wrap string in single quotes which can contain any character except a single quote (in bash quoting)
+        // replace all single quotes within the string with a close single quote to end the string
+        // followed by a single quote wrapped in double quotes to represent the single quote
+        // then followed by a single quote to re-open our singled quoted string
+        let newString = self.replacingOccurrences(of: "'", with: "'\"'\"'", options: .literal, range: nil)
+        return "'" + newString + "'" // wrap in single-quotes
     }
 }

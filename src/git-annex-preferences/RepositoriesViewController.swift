@@ -161,6 +161,7 @@ class RepositoriesViewController: NSViewController {
         // see https://stackoverflow.com/questions/5682666/restrict-access-to-certain-folders-using-nsopenpanel
         if (folderChooseDialog.runModal() == NSApplication.ModalResponse.OK) {
             if let chosenURL: URL = folderChooseDialog.url {
+                Bookmarks.cacheSecurityScopedBookmark(url: chosenURL)
                 if let path :String = PathUtils.path(for: chosenURL) {
                     // valid git-annex folder?
                     if appDelegate != nil, let _ = appDelegate!.gitAnnexQueries.gitGitAnnexUUID(in: path) {

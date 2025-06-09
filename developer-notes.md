@@ -106,25 +106,28 @@ Combining annex.thin with say a bup repo stored in the .git directory, might pro
  * get bridging headers to build in test targets this https://medium.com/if-let-swift-programming/ios-tests-working-with-objective-c-and-swift-class-together-aaf40f91a27c plus this https://stackoverflow.com/a/26855206/8671834
  
 ## Useful Troubleshooting Notes 
- Check if our Finder Sync extension is running:
+Check if our Finder Sync extension is running:
 
-     pluginkit -m | grep finder
+    pluginkit -m | grep finder
 
-     show installed location of plugin
-     pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder
-     
-     remove plugin at installed location
-     pluginkit -r <path>
+    show installed location of plugin
+    pluginkit -m -v -i com.andrewringler.git-annex-mac.git-annex-finder
+    
+    remove plugin at installed location
+    pluginkit -r <path>
 
- Depending on which target is running, debug output might not show up in the XCode console. But if you launch the system Console app, it should be there.
+Depending on which target is running, debug output might not show up in the XCode console. But if you launch the system Console app, it should be there.
 
- Check for open files <https://www.cyberciti.biz/faq/howto-linux-get-list-of-open-files/>, first get process ID
+Check for open files <https://www.cyberciti.biz/faq/howto-linux-get-list-of-open-files/>, first get process ID
 
-     ps -aef | grep git-annex
-     
- Then list open files
+    ps -aef | grep git-annex
+    
+Then list open files
 
-     lsof -p <process-id> | less
-     
- Full scan
- took 22min. for my 60,000 file repo on solid-state drive
+    lsof -p <process-id> | less
+    
+Full scan
+took 22min. for my 60,000 file repo on solid-state drive
+
+
+While running from XCode the app is sandboxed so your user home directory is not `~`. The logs print out the current home directory usually something like: `/Users/<username>/Library/Containers/com.andrewringler.git-annex-turtle/Data`. If you need to edit the configuration file during development, you'll do that relative to that home directory for example the `turtle-monitor` file would be here: `/Users/andrew/Library/Containers/com.andrewringler.git-annex-turtle/Data/.config/git-annex/turtle-monitor`.

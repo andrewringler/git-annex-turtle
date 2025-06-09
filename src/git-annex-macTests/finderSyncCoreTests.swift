@@ -92,7 +92,12 @@ class finderSyncCoreTests: XCTestCase {
         
         let file5 = "subdirA/e.txt"
         TestingUtil.gitAnnexCreateAndAdd(content: "file5 content", to: file5, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
-        
+
+        let folder5b = "subdir with spaces and quotes \"''$#@$%^ A/dirC"
+        let file5b = "\(folder5b)/d with spaces and quotes \"\"'#$%$`~.txt"
+        TestingUtil.createDir(dir: folder5b, in: repo1!)
+        TestingUtil.gitAnnexCreateAndAdd(content: "file5b content", to: file5b, in: repo1!, gitAnnexQueries: gitAnnexQueries!)
+
         //
         // Repo 2
         //

@@ -358,6 +358,7 @@ enum CommandString: String {
     case initRemote = "initremote"
     case sync = "sync"
     case status = "status"
+    case annexInfo = "info"
 }
 
 

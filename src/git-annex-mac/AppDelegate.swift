@@ -28,7 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             TurtleLog.info("Launching git-annex-turtle")
             gitAnnexTurtle = GitAnnexTurtleProduction()
-        }
+        }        
+        TurtleLog.debug("home path: \(FileManager.default.homeDirectoryForCurrentUser.path)")
         
         super.init()
     }

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 #  Filtered view of immediate children of passed directory
@@ -12,10 +12,6 @@
 #  Copyright © 2018 Andrew Ringler. All rights reserved.
 
 # remove quotes Swift might add
-RELATIVE_PATH=$1
-RELATIVE_PATH="${RELATIVE_PATH%\"}"
-RELATIVE_PATH="${RELATIVE_PATH#\"}"
-
 GIT_CMD=${2:-git}
 GIT_CMD="${GIT_CMD%\"}"
 GIT_CMD="${GIT_CMD#\"}"
@@ -24,8 +20,7 @@ GITANNEX_CMD=${3:-git-annex}
 GITANNEX_CMD="${GITANNEX_CMD%\"}"
 GITANNEX_CMD="${GITANNEX_CMD#\"}"
 
-#!/bin/bash
-find $RELATIVE_PATH -mindepth 1 -maxdepth 1 | sed 's|^\./||' | while read i
+printf "%s\0" "$1" | xargs --null -I % find % -mindepth 1 -maxdepth 1 | sed 's|^\./||' | while read i
 do
     $GIT_CMD check-ignore --no-index "$i" &>/dev/null
     if [ $? -ne 0 -a "$i" != ".git" ]; then

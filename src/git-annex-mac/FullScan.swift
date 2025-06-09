@@ -79,6 +79,18 @@ class FullScan: StoppableService, StopProcessingWatchedFolder {
         var success: Bool = false
         
         while running.isRunning() {
+            // Request a security scope for this directory (for sandboxed apps like us)
+            let workingDirectoryURL = Bookmarks.getSecurityScopedURLFor(url: PathUtils.urlFor(absolutePath: watchedFolder.pathString))
+            if workingDirectoryURL == nil || !workingDirectoryURL!.startAccessingSecurityScopedResource() {
+                TurtleLog.error("unable to obtain security scoped URL for \(watchedFolder), sleeping...")
+                sleep(10)
+                continue
+            }
+            defer {
+                // release security scoped access to working directory on completion of Process
+                workingDirectoryURL!.stopAccessingSecurityScopedResource()
+            }
+
             let scanStartDate = Date()
             
             // Store the current git commit hashes before starting our full scan
