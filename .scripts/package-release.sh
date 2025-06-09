@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+set -e
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # adpated from https://github.com/andreyvit/create-dmg
 CREATE_DMG_BIN="$DIR/create-dmg/create-dmg"

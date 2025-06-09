@@ -28,3 +28,11 @@ jobs:
       run: xcodebuild clean build -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/ -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
     - name: Run tests
       run: RUNNING_IN_CI='true' xcodebuild test -project "src/git-annex-turtle.xcodeproj" -scheme "git-annex-turtle" -configuration "Release" ONLY_ACTIVE_ARCH=NO SYMROOT=dist/ -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
+    - name: Build release DMG
+      run: ./.scripts/package-release.sh
+    - name: Setup SSH keys for downloads.andrewringler.com
+      env:
+        ID_RSA: ${{ secrets.ID_RSA }}
+      run: ./.scripts/ssh_keys.sh
+    - name: Upload release to downloads.andrewringler.com
+      run: ./.scripts/upload-master-release.sh
