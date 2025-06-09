@@ -149,7 +149,6 @@ class GitAnnexQueries {
             }
             defer {
                 // release security scoped access to working directory on completion of Process
-                TurtleLog.info("release security sandbox")
                 workingDirectoryURL!.stopAccessingSecurityScopedResource()
             }
 
