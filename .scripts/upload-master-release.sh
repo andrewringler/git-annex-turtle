@@ -18,10 +18,6 @@ fi
 
 echo "Uploading $DMG_NAME to downloads.andrewringler.com…"
 
-# pipes to /dev/null to minimize chance of pass exposure
-# see https://docs.travis-ci.com/user/best-practices-security/
-# travi-ci.org does not support SSH keys, use passwords instead
-
 scp -i ~/.ssh/id_rsa_andrewringlerdownloads $DMG_PATH ${TURTLE_DEPLOY_DOWNLOADS_USER}@downloads.andrewringler.com:~/downloads.andrewringler.com/git-annex-turtle/$DMG_NAME
 
 if [ $? -eq 0 ]

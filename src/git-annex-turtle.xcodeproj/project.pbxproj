@@ -658,6 +658,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 490BCBA51DE5444D00734FF4 /* Build configuration list for PBXNativeTarget "git-annex-turtle" */;
 			buildPhases = (
+				49E9EC442DF7800000DBE356 /* ShellScript */,
 				490BCB7E1DE5444C00734FF4 /* Sources */,
 				490BCB7F1DE5444C00734FF4 /* Frameworks */,
 				490BCB801DE5444C00734FF4 /* Resources */,
@@ -895,6 +896,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		49E9EC442DF7800000DBE356 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/libexec/PlistBuddy -c \"Set :GIT_COMMIT_HASH `git rev-parse --short HEAD`\" ${SRCROOT}/git-annex-mac/Info.plist\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		490982C8204E1D1200096C92 /* Sources */ = {

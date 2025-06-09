@@ -6,7 +6,7 @@ BACKGROUND_IMG="$DIR/../assets/dmg/dmg-background.png"
 VOL_ICON="$DIR/../assets/dmg/AppIcon.icns"
 APP_LOCATION="$DIR/../src/dist/Release/git-annex-turtle.app"
 
-MAJOR_VERSION=`defaults read "$DIR/../src/git-annex-mac/Info.plist" CFBundleShortVersionString`
+MAJOR_VERSION=`defaults read "$DIR/../src/dist/Release/git-annex-turtle.app/Contents/Info.plist" CFBundleShortVersionString`
 [ -z "$MAJOR_VERSION" ] && echo "unable to read major version number from app" && exit -1
 GIT_COMMIT_HASH=`defaults read "$DIR/../src/git-annex-mac/Info.plist" GIT_COMMIT_HASH`
 [ -z "$GIT_COMMIT_HASH" ] && echo "unable to read git commit hash from app" && exit -1
