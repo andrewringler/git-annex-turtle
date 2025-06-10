@@ -10,16 +10,16 @@ import Foundation
 
 // // see parsing return data example http://ddeville.me/2015/02/interprocess-communication-on-ios-with-mach-messages
 class AppTurtleMessagePortPingKeepAlive {
-    let stoppable: StoppableService
     let id: String
+    var stoppable: StoppableService? = nil
+    var running: Bool = true
     
-    init(id: String, stoppable: StoppableService) {
+    init(id: String, doInit: @escaping () -> Void) {
         self.id = id
-        self.stoppable = stoppable
         
         // Ping keep-alive
         DispatchQueue.global(qos: .background).async {
-            while stoppable.running.isRunning() {
+            while self.running {
                 if let serverPort = CFMessagePortCreateRemote(nil, messagePortNamePing as CFString) {
                     do {
                         let sendPingData = SendPingData(id: id, timeStamp: Date().timeIntervalSince1970)
@@ -27,6 +27,7 @@ class AppTurtleMessagePortPingKeepAlive {
                         let status = CFMessagePortSendRequest(serverPort, 1, data, 1.0, 1.0, nil, nil);
                         if status == Int32(kCFMessagePortSuccess) {
                             TurtleLog.trace("success sending \(sendPingData) to App Turtle Service")
+                            doInit()
                         } else {
                             TurtleLog.error("could not communicate with App Turtle service error=\(status)")
                             self.doQuit()
@@ -47,7 +48,8 @@ class AppTurtleMessagePortPingKeepAlive {
     
     private func doQuit() {
         TurtleLog.info("unable to connect with Turtle App service, quiting…")
-        stoppable.stop()
+        self.running = false
+        stoppable?.stop()
         exit(0)
     }
 }

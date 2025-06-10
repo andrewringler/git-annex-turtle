@@ -25,9 +25,16 @@ class FinderSync: FIFinderSync, FinderSyncProtocol {
         badgeIcons = BadgeIcons(finderSyncController: FIFinderSyncController.default())
 
         super.init()
-        finderSyncCore = FinderSyncCore(finderSync: self, data: DataEntrypoint())
-        keepAlive = AppTurtleMessagePortPingKeepAlive(id: id(), stoppable: finderSyncCore!)
-        finderSyncMenus = FinderSyncMenus(finderSync: self)
+        keepAlive = AppTurtleMessagePortPingKeepAlive(id: id(), doInit: {
+            if self.finderSyncCore == nil {
+                // Since we have registerd a Finder Sync extension, macOS will try to launch this class in many situations (such as File Open dialogs)
+                // even when our application and menu bar icon are not running, so we'll wait to actually launch our Finder Sync extension logic
+                // until we know our Turtle Service is running, ie this callback
+                self.finderSyncCore = FinderSyncCore(finderSync: self, data: DataEntrypoint())
+                self.finderSyncMenus = FinderSyncMenus(finderSync: self)
+                self.keepAlive!.stoppable = self.finderSyncCore!
+            }
+        })
     }
     
     func setWatchedFolders(to newWatchedFolders: Set<URL>) {
