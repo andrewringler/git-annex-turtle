@@ -31,7 +31,7 @@ class TurtleDialogs: Dialogs {
             git-annex by Joey Hess GPLv3+,AGPLv3+,…
             git by Linus Torvalds GPLv2
             
-            ©2017—2018 Andrew Ringler
+            ©2017—2025 Andrew Ringler
             public@andrewringler.com
             https://github.com/andrewringler/git-annex-turtle
             """
